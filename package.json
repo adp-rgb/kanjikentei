@@ -1,6 +1,8 @@
-"scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d out"
+{
+  "name": "kanjikentei",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build"
+  }
 }
