@@ -42,7 +42,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./YOUR-SUBFOLDER-NAME
 
+      - name: Build with Next.js
+        run: npx next build
+        working-directory: ./YOUR-SUBFOLDER-NAME
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./YOUR-SUBFOLDER-NAME/out
   deploy:
     environment:
       name: github-pages
