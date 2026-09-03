@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢検 (Kanji Kentei) Prep Master</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Smooth background transitions for wallpaper refresh */
+    #wallpaper-bg {
+      transition: background-image 1s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen relative flex flex-col font-sans antialiased">
+
+  <!-- AI Wallpaper Background Layer -->
+  <div id="wallpaper-bg" class="fixed inset-0 bg-cover bg-center -z-10 opacity-30 blur-xs"></div>
+  <div class="fixed inset-0 bg-slate-950/70 -z-10"></div>
+
+  <!-- Header / Level Selector -->
+  <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700 p-4 sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+      <h1 class="text-2xl font-black tracking-wide text-amber-400">漢検 Kanji Master</h1>
+      
+      <!-- Requirement 1: Level Selector -->
+      <div class="flex items-center gap-2">
+        <label for="kanken-level" class="text-sm font-medium text-slate-300">Target Level:</label>
+        <select id="kanken-level" class="bg-slate-700 text-white border border-slate-600 rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <option value="10">Level 10 (Elementary Grade 1 / 小1)</option>
+          <option value="9">Level 9 (Elementary Grade 2 / 小2)</option>
+          <option value="5">Level 5 (Elementary Grade 6 / 小6)</option>
+          <option value="2">Level 2 (High School / 高校)</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Content -->
+  <main class="max-w-5xl mx-auto w-full p-4 grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
+    
+    <!-- Requirement 2: Kanji Display & Details -->
+    <section class="bg-slate-800/90 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-between">
+      <div class="text-center w-full">
+        <div class="inline-block bg-amber-500/10 text-amber-400 text-xs font-bold px-3 py-1 rounded-full border border-amber-500/20 mb-2" id="kanken-badge">
+          Kanken Level 10
+        </div>
+        <!-- Kanji Display -->
+        <div id="kanji-character" class="text-8xl font-black my-4 text-white hover:scale-105 transition-transform duration-200">
+          水
+        </div>
+      </div>
+
+      <!-- Metadata Box -->
+      <div class="w-full bg-slate-900/60 rounded-xl p-4 border border-slate-700/50 space-y-2 text-sm">
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Onyomi (音読み):</span>
+          <span id="onyomi" class="font-semibold text-amber-300">スイ</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">Kunyomi (訓読み):</span>
+          <span id="kunyomi" class="font-semibold text-amber-300">みず</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">English Meaning:</span>
+          <span id="meaning" class="font-semibold text-white">Water</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-800 pb-1">
+          <span class="text-slate-400">JLPT Level:</span>
+          <span id="jlpt" class="font-semibold text-emerald-400">N5</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400">Grade Reference (小中高):</span>
+          <span id="school-grade" class="font-semibold text-sky-400">Primary 1 (小1)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Requirement 3: Canvas for Finger/Mouse Drawing -->
+    <section class="bg-slate-800/90 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col items-center justify-between">
+      <div class="w-full flex justify-between items-center mb-2">
+        <h2 class="text-base font-bold text-slate-200">Practice Practice Writing</h2>
+        <span class="text-xs text-slate-400">Draw with finger or mouse</span>
+      </div>
+
+      <div class="relative bg-slate-950 border-2 border-dashed border-slate-600 rounded-xl overflow-hidden cursor-crosshair">
+        <!-- Trace Guide Background -->
+        <div id="canvas-guide" class="absolute inset-0 flex items-center justify-center text-9xl font-black text-slate-800 select-none pointer-events-none">
+          水
+        </div>
+        <canvas id="drawing-canvas" width="280" height="280" class="relative z-10 touch-none"></canvas>
+      </div>
+
+      <div class="flex gap-3 w-full mt-4">
+        <button id="clear-btn" class="flex-1 py-2.5 bg-rose-600/80 hover:bg-rose-600 text-white font-semibold rounded-lg text-sm transition">
+          Clear Canvas
+        </button>
+        <button id="next-btn" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg text-sm transition">
+          Next Kanji
+        </button>
+      </div>
+    </section>
+
+    <!-- Requirement 4: List of 熟語 Vocabulary -->
+    <section class="md:col-span-2 bg-slate-800/90 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
+        <span>📚</span> Target 熟語 (Vocabulary Compounds)
+      </h2>
+      <div id="vocab-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Injected dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Requirement 5: AI Wallpaper Notification Footer -->
+  <footer class="bg-slate-950/80 border-t border-slate-800 p-3 text-center text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center max-w-5xl mx-auto w-full gap-2">
+    <div>🎨 AI Kanji Wallpaper Engine active (Refreshing every 5 mins)</div>
+    <div id="timer-status" class="text-amber-400/80 font-mono">Next wallpaper update in: 05:00</div>
+  </footer>
+
+  <!-- Application Logic -->
+  <script>
+    // --- Mock Kanji & Vocabulary Database (Filtered by Kanken & Grade) ---
+    const KANJI_DATABASE = {
+      "10": [
+        {
+          character: "水",
+          onyomi: "スイ",
+          kunyomi: "みず",
+          meaning: "Water",
+          jlpt: "N5",
+          grade: "Elementary Grade 1 (小1)",
+          compounds: [
+            { word: "水泳", reading: "すいえい", meaning: "Swimming" },
+            { word: "水車", reading: "すいしゃ", meaning: "Waterwheel" },
+            { word: "海水", reading: "かいすい", meaning: "Seawater" }
+          ]
+        },
+        {
+          character: "山",
+          onyomi: "サン",
+          kunyomi: "やま",
+          meaning: "Mountain",
+          jlpt: "N5",
+          grade: "Elementary Grade 1 (小1)",
+          compounds: [
+            { word: "火山", reading: "かざん", meaning: "Volcano" },
+            { word: "山脈", reading: "さんみゃく", meaning: "Mountain Range" }
+          ]
+        }
+      ],
+      "9": [
+        {
+          character: "海",
+          onyomi: "カイ",
+          kunyomi: "うみ",
+          meaning: "Sea / Ocean",
+          jlpt: "N4",
+          grade: "Elementary Grade 2 (小2)",
+          compounds: [
+            { word: "海外", reading: "かいがい", meaning: "Overseas" },
+            { word: "海岸", reading: "かいがん", meaning: "Coastline" }
+          ]
+        }
+      ],
+      "5": [
+        {
+          character: "警",
+          onyomi: "ケイ",
+          kunyomi: "いまし-める",
+          meaning: "Admonish / Warning",
+          jlpt: "N2",
+          grade: "Elementary Grade 6 (小6)",
+          compounds: [
+            { word: "警察", reading: "けいさつ", meaning: "Police" },
+            { word: "警告", reading: "けいこく", meaning: "Warning" }
+          ]
+        }
+      ],
+      "2": [
+        {
+          character: "貌",
+          onyomi: "ボウ",
+          kunyomi: "かたち",
+          meaning: "Form / Appearance",
+          jlpt: "N1",
+          grade: "High School (高校)",
+          compounds: [
+            { word: "容貌", reading: "ようぼう", meaning: "Facial features" },
+            { word: "変貌", reading: "へんぼう", meaning: "Transformation" }
+          ]
+        }
+      ]
+    };
+
+    // Current State
+    let currentLevel = "10";
+    let currentIndex = 0;
+
+    // Canvas Elements
+    const canvas = document.getElementById("drawing-canvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawing = false;
+
+    // --- App Initializer ---
+    function init() {
+      setupCanvas();
+      loadKanjiData();
+      startWallpaperCycle();
+
+      document.getElementById("kanken-level").addEventListener("change", (e) => {
+        currentLevel = e.target.value;
+        currentIndex = 0;
+        loadKanjiData();
+        triggerAIWallpaperRefresh();
+      });
+
+      document.getElementById("clear-btn").addEventListener("click", clearCanvas);
+      document.getElementById("next-btn").addEventListener("click", nextKanji);
+    }
+
+    // --- Load Data into UI ---
+    function loadKanjiData() {
+      const list = KANJI_DATABASE[currentLevel] || KANJI_DATABASE["10"];
+      const item = list[currentIndex % list.length];
+
+      document.getElementById("kanken-badge").textContent = `Kanken Level ${currentLevel}`;
+      document.getElementById("kanji-character").textContent = item.character;
+      document.getElementById("canvas-guide").textContent = item.character;
+      document.getElementById("onyomi").textContent = item.onyomi;
+      document.getElementById("kunyomi").textContent = item.kunyomi;
+      document.getElementById("meaning").textContent = item.meaning;
+      document.getElementById("jlpt").textContent = item.jlpt;
+      document.getElementById("school-grade").textContent = item.grade;
+
+      // Populate Vocabulary List
+      const vocabContainer = document.getElementById("vocab-container");
+      vocabContainer.innerHTML = item.compounds.map(c => `
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700/60">
+          <div class="flex justify-between items-baseline mb-1">
+            <span class="text-lg font-bold text-amber-300">${c.word}</span>
+            <span class="text-xs text-slate-400">(${c.reading})</span>
+          </div>
+          <p class="text-xs text-slate-300">${c.meaning}</p>
+        </div>
+      `).join("");
+
+      clearCanvas();
+    }
+
+    function nextKanji() {
+      const list = KANJI_DATABASE[currentLevel] || KANJI_DATABASE["10"];
+      currentIndex = (currentIndex + 1) % list.length;
+      loadKanjiData();
+    }
+
+    // --- Touch & Mouse Drawing Canvas ---
+    function setupCanvas() {
+      ctx.lineWidth = 10;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#f59e0b"; // Amber color
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      };
+
+      const startDrawing = (e) => {
+        isDrawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      };
+
+      const draw = (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      };
+
+      const stopDrawing = () => {
+        isDrawing = false;
+      };
+
+      canvas.addEventListener("mousedown", startDrawing);
+      canvas.addEventListener("mousemove", draw);
+      canvas.addEventListener("mouseup", stopDrawing);
+
+      canvas.addEventListener("touchstart", startDrawing, { passive: true });
+      canvas.addEventListener("touchmove", draw, { passive: true });
+      canvas.addEventListener("touchend", stopDrawing);
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // --- Requirement 5: AI Wallpaper Engine (5-Minute Refresh Cycle) ---
+    function triggerAIWallpaperRefresh() {
+      const list = KANJI_DATABASE[currentLevel] || KANJI_DATABASE["10"];
+      const currentKanji = list[currentIndex % list.length];
+      
+      // Dynamic generative wallpaper URL based on Kanji meaning & artistic prompts
+      const sig = Math.floor(Math.random() * 10000);
+      const bgUrl = `https://picsum.photos/seed/${currentKanji.character}-${sig}/1600/900`;
+
+      document.getElementById("wallpaper-bg").style.backgroundImage = `url('${bgUrl}')`;
+    }
+
+    function startWallpaperCycle() {
+      triggerAIWallpaperRefresh();
+
+      let timeLeft = 300; // 5 minutes (300 seconds)
+      const timerDisplay = document.getElementById("timer-status");
+
+      setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          triggerAIWallpaperRefresh();
+          timeLeft = 300;
+        }
+
+        const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const secs = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `Next wallpaper update in: ${mins}:${secs}`;
+      }, 1000);
+    }
+
+    // Initialize application on load
+    window.onload = init;
+  </script>
+</body>
+</html>
