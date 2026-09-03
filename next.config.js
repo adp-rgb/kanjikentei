@@ -1,11 +1,10 @@
-/** @type {import('Next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Outputs static HTML/CSS/JS assets
+  output: 'export',
   images: {
-    unoptimized: true, // Required for static exports
+    unoptimized: true,
   },
-  // If deploying to a project page (e.g., username.github.io/kanji-app), set basePath:
-  // basePath: '/kanji-app',
+  basePath: process.env.NODE_ENV === 'production' ? '/kanjikentei' : '',
 };
 
 module.exports = nextConfig;
