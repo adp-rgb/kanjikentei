@@ -10,22 +10,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;900&family=Noto+Sans+JP:wght@400;500;700&display=swap');
         body { font-family: 'Noto Sans JP', sans-serif; }
         .kanken-font { font-family: 'Noto Serif JP', serif; }
-        .wallpaper-overlay { background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.92) 100%); }
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); }
         #sketch-canvas { touch-action: none; cursor: crosshair; }
     </style>
 </head>
-<body class="relative min-h-screen text-slate-800 bg-slate-900 flex flex-col justify-between overflow-x-hidden">
-
-    <!-- Dynamic AI Wallpaper Layer -->
-    <div id="wallpaper-bg" class="fixed inset-0 z-0 bg-cover bg-center transition-all duration-1000 transform scale-105"></div>
-    <div class="fixed inset-0 z-0 wallpaper-overlay"></div>
+<body class="min-h-screen text-slate-800 bg-slate-100 flex flex-col justify-between overflow-x-hidden">
 
     <!-- Main Container -->
-    <div class="relative z-10 max-w-6xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
+    <div class="max-w-6xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
 
         <!-- App Navigation Header -->
-        <header class="glass-panel rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="glass-panel rounded-2xl p-4 md:p-6 shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-red-600 text-white font-black px-3 py-1.5 rounded-lg text-sm tracking-widest shadow">漢検 8級</div>
                 <div>
@@ -51,7 +46,7 @@
         <div id="section-practice" class="space-y-6">
             
             <!-- Controls Bar -->
-            <div class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="glass-panel rounded-2xl p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-2">
                     <button id="prev-kanji-btn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold transition">◀ Prev</button>
                     <div class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
@@ -70,7 +65,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
                 <!-- Kanji Card & Vocabulary (7 Cols) -->
-                <section class="lg:col-span-7 glass-panel rounded-2xl p-6 shadow-xl flex flex-col gap-6">
+                <section class="lg:col-span-7 glass-panel rounded-2xl p-6 shadow-md flex flex-col gap-6">
                     
                     <!-- Main Card -->
                     <div class="flex flex-col sm:flex-row items-center gap-6 border-b border-slate-200/80 pb-6">
@@ -116,7 +111,7 @@
                 </section>
 
                 <!-- Finger Canvas Pad (5 Cols) -->
-                <section class="lg:col-span-5 glass-panel rounded-2xl p-6 shadow-xl flex flex-col items-center gap-4">
+                <section class="lg:col-span-5 glass-panel rounded-2xl p-6 shadow-md flex flex-col items-center gap-4">
                     <div class="w-full flex justify-between items-center">
                         <h2 class="text-base font-bold text-slate-800">✍️ Finger Writing Pad</h2>
                         <span class="text-xs text-slate-500">Touch / Mouse Canvas</span>
@@ -138,7 +133,7 @@
         <!-- SECTION 2: OFFICIAL KANKEN 8級 EXAM MODE                          -->
         <!-- ================================================================= -->
         <div id="section-exam" class="hidden space-y-6">
-            <div class="glass-panel rounded-2xl p-6 md:p-8 shadow-xl space-y-8">
+            <div class="glass-panel rounded-2xl p-6 md:p-8 shadow-md space-y-8">
                 
                 <!-- Exam Meta Header -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
@@ -189,18 +184,17 @@
             </div>
         </div>
 
-        <!-- Footer / Refresh Status Bar -->
-        <footer class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
+        <!-- Footer / Status Bar -->
+        <footer class="glass-panel rounded-2xl p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
             <div class="flex items-center gap-3">
                 <span class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span id="ai-agent-status" class="font-medium">AI Agent: Active | Kanken 8級 API Data Synchronized</span>
+                <span id="ai-agent-status" class="font-medium">System Active | Kanken 8級 Data Ready</span>
             </div>
-            <div class="flex items-center gap-4">
-                <span>Wallpaper cycle: <strong id="timer-display" class="text-slate-900 font-mono">05:00</strong></span>
-                <button id="manual-refresh-bg" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition text-[11px]">↻ Refresh Image</button>
+            <div class="text-slate-400">
+                Official Kanken 8級 Pattern (150 Marks / Grade 3 Kanji)
             </div>
         </footer>
 
@@ -208,16 +202,9 @@
 
     <!-- Main Logic Script -->
     <script>
-        const WALLPAPERS = [
-            "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1600&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1528164344705-47542687990d?q=80&w=1600&auto=format&fit=crop"
-        ];
-
         let grade3KanjiList = [];
         let currentIndex = 0;
         let examQuestions = { reading: [], writing: [], strokes: [] };
-        let countdownTimer = 300;
 
         const canvas = document.getElementById("sketch-canvas");
         const ctx = canvas.getContext("2d");
@@ -225,8 +212,6 @@
 
         document.addEventListener("DOMContentLoaded", async () => {
             initCanvas();
-            startTimer();
-            refreshWallpaper();
             initTabs();
             await fetchGrade3Dataset();
 
@@ -244,10 +229,6 @@
             document.getElementById("clear-canvas-btn").addEventListener("click", clearCanvas);
             document.getElementById("generate-exam-btn").addEventListener("click", generateOfficialExam);
             document.getElementById("submit-exam-btn").addEventListener("click", scoreExam);
-            document.getElementById("manual-refresh-bg").addEventListener("click", () => {
-                refreshWallpaper();
-                countdownTimer = 300;
-            });
         });
 
         // Tab Navigation
@@ -272,7 +253,7 @@
             });
         }
 
-        // 1. Fetch Grade 3 (8級) Kanji Dataset
+        // Fetch Grade 3 (8級) Kanji Dataset
         async function fetchGrade3Dataset() {
             try {
                 const res = await fetch('https://kanjiapi.dev/v1/kanji/grade-3');
@@ -288,7 +269,7 @@
             }
         }
 
-        // SECTION 1: Practice Loader
+        // Practice Loader
         async function loadKanjiPracticeDetails(character) {
             document.getElementById("kanji-display").textContent = character;
             document.getElementById("kanji-index-input").value = currentIndex + 1;
@@ -341,7 +322,7 @@
             loadKanjiPracticeDetails(grade3KanjiList[currentIndex]);
         }
 
-        // SECTION 2: Official Exam Pattern Generator
+        // Official Exam Pattern Generator
         async function generateOfficialExam() {
             if (grade3KanjiList.length === 0) return;
 
@@ -458,24 +439,6 @@
 
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function refreshWallpaper() {
-            const randomImg = WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)];
-            document.getElementById("wallpaper-bg").style.backgroundImage = `url('${randomImg}')`;
-        }
-
-        function startTimer() {
-            setInterval(() => {
-                countdownTimer--;
-                if (countdownTimer <= 0) {
-                    refreshWallpaper();
-                    countdownTimer = 300;
-                }
-                const mins = Math.floor(countdownTimer / 60).toString().padStart(2, '0');
-                const secs = (countdownTimer % 60).toString().padStart(2, '0');
-                document.getElementById("timer-display").textContent = `${mins}:${secs}`;
-            }, 1000);
         }
     </script>
 </body>
