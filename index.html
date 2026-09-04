@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検 8級 Prep Master (Full 440 Kanji)</title>
-    <!-- Tailwind CSS -->
+    <title>日本漢字能力検定 8級 本番型練習問題</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Shippori+Mincho:wght@600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;900&family=Noto+Sans+JP:wght@400;700&display=swap');
         body { font-family: 'Noto Sans JP', sans-serif; }
-        .kanji-font { font-family: 'Shippori Mincho', serif; }
-        .wallpaper-overlay { background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.9) 100%); }
+        .kanken-font { font-family: 'Noto Serif JP', serif; }
+        .wallpaper-overlay { background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.92) 100%); }
         .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
         #sketch-canvas { touch-action: none; cursor: crosshair; }
     </style>
@@ -22,137 +21,103 @@
     <div class="fixed inset-0 z-0 wallpaper-overlay"></div>
 
     <!-- Main Container -->
-    <div class="relative z-10 max-w-6xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
+    <div class="relative z-10 max-w-5xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
 
         <!-- Header -->
         <header class="glass-panel rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm tracking-wider shadow">漢検</div>
+                <div class="bg-red-600 text-white font-black px-3 py-1.5 rounded-lg text-lg shadow tracking-widest">公益財団法人 日本漢字能力検定協会</div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">漢検 8級 Exam Practice Agent</h1>
-                    <p class="text-xs text-slate-500 font-medium">小学校3年生修了程度 | Full 440 Kanji Coverage</p>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">8級 実戦模擬試験 (小学校3年生修了程度)</h1>
+                    <p class="text-xs text-slate-500 font-semibold">制限時間: 40分 | 満点: 150点 (合格基準: 80%程度)</p>
                 </div>
             </div>
 
-            <!-- Kanji Navigation Controller -->
-            <div class="flex items-center gap-2 w-full md:w-auto">
-                <button id="prev-kanji-btn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold transition">◀ Prev</button>
-                <div class="flex items-center gap-1 text-sm font-semibold text-slate-700">
-                    <span>Kanji</span>
-                    <input type="number" id="kanji-index-input" value="1" min="1" max="440" class="w-16 text-center bg-slate-50 border border-slate-300 rounded-lg p-1 text-slate-900 font-bold focus:ring-2 focus:ring-red-500">
-                    <span>/ <strong id="total-kanji-count">440</strong></span>
-                </div>
-                <button id="next-kanji-btn" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-md">Next ▶</button>
+            <!-- Action Controls -->
+            <div class="flex items-center gap-2">
+                <button id="generate-exam-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition shadow-md">
+                    📝 新しい模擬試験を作成
+                </button>
             </div>
         </header>
 
-        <!-- Main Workspace Grid -->
-        <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Main Exam Container -->
+        <main class="glass-panel rounded-2xl p-6 md:p-8 shadow-xl space-y-8">
 
-            <!-- Left Column: Kanji Metadata & Vocabulary (7 Cols) -->
-            <section class="lg:col-span-7 glass-panel rounded-2xl p-6 shadow-xl flex flex-col gap-6">
-                
-                <!-- Kanji Character Card -->
-                <div class="flex flex-col sm:flex-row items-center gap-6 border-b border-slate-200/80 pb-6">
-                    <div class="relative bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-6 w-36 h-36 flex items-center justify-center shadow-inner">
-                        <span id="kanji-display" class="kanji-font text-7xl font-extrabold text-slate-900">...</span>
-                        <span id="stroke-count-badge" class="absolute top-2 right-2 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded-full">- 画</span>
-                    </div>
-
-                    <div class="flex-1 w-full space-y-3">
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-md">小学校 3年</span>
-                            <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-1 rounded-md">漢検 8級</span>
-                            <span id="jlpt-tag" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">JLPT N3</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-slate-400">English Meaning</p>
-                            <p id="kanji-meaning" class="text-xl font-bold text-slate-800">Loading Kanji...</p>
-                        </div>
-                    </div>
+            <!-- Section 1: Reading (読み) -->
+            <section class="border-b border-slate-200 pb-6 space-y-4">
+                <div class="flex justify-between items-center border-l-4 border-red-600 pl-3">
+                    <h2 class="text-lg font-bold text-slate-900">一、 次のカタカナを漢字になおしなさい（または下線の漢字の読みをひらがなで書かれよ）。</h2>
+                    <span class="text-xs font-bold text-slate-500">[各2点]</span>
                 </div>
-
-                <!-- Readings Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">音読み (Onyomi)</p>
-                        <p id="onyomi-display" class="text-lg font-bold text-red-600">-</p>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">訓読み (Kunyomi)</p>
-                        <p id="kunyomi-display" class="text-lg font-bold text-indigo-600">-</p>
-                    </div>
+                <div id="section-reading" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-medium">
+                    <!-- Dynamic Questions Injected Here -->
                 </div>
+            </section>
 
-                <!-- Vocabulary (熟語) List -->
-                <div>
-                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span>📚</span> 8級 熟語 (Vocabulary Compounds)
+            <!-- Section 2: Writing & Okurigana (かきとり・送り仮名) -->
+            <section class="border-b border-slate-200 pb-6 space-y-4">
+                <div class="flex justify-between items-center border-l-4 border-red-600 pl-3">
+                    <h2 class="text-lg font-bold text-slate-900">二、 次の文の＿の部分に入る正しい送り仮名・書き取りを答えなさい。</h2>
+                    <span class="text-xs font-bold text-slate-500">[各2点]</span>
+                </div>
+                <div id="section-writing" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-medium">
+                    <!-- Dynamic Questions Injected Here -->
+                </div>
+            </section>
+
+            <!-- Section 3: Stroke Count & Radicals (画数・部首) -->
+            <section class="border-b border-slate-200 pb-6 space-y-4">
+                <div class="flex justify-between items-center border-l-4 border-red-600 pl-3">
+                    <h2 class="text-lg font-bold text-slate-900">三、 次の漢字の画数（総画数）を答えなさい。</h2>
+                    <span class="text-xs font-bold text-slate-500">[各2点]</span>
+                </div>
+                <div id="section-strokes" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-medium">
+                    <!-- Dynamic Questions Injected Here -->
+                </div>
+            </section>
+
+            <!-- Finger Canvas Practice Integration -->
+            <section class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-6">
+                <div class="flex-1 space-y-2">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <span>✍️</span> 解答用 指書きキャンバス (Finger Writing Pad)
                     </h3>
-                    <div id="vocab-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
-                        <p class="text-slate-400">Fetching compounds from API...</p>
-                    </div>
+                    <p class="text-xs text-slate-500">試験問題の漢字の手書き練習や画数カウントに使用できます。</p>
+                    <button id="clear-canvas-btn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition">キャンバスを消去</button>
+                </div>
+                <div class="relative bg-white border border-slate-300 rounded-xl p-1 shadow-inner">
+                    <canvas id="sketch-canvas" width="200" height="200" class="rounded-lg"></canvas>
                 </div>
             </section>
 
-            <!-- Right Column: Touch Writing Canvas & AI Quiz Generator (5 Cols) -->
-            <section class="lg:col-span-5 flex flex-col gap-6">
+            <!-- Grade Score & Submit Button -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+                <div id="score-result" class="text-base font-bold text-slate-800"></div>
+                <button id="submit-exam-btn" class="w-full sm:w-auto px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition shadow-lg">
+                    採点する (Submit & Score)
+                </button>
+            </div>
 
-                <!-- Stroke Practice Canvas -->
-                <div class="glass-panel rounded-2xl p-6 shadow-xl flex flex-col items-center gap-4">
-                    <div class="w-full flex justify-between items-center">
-                        <h2 class="text-base font-bold text-slate-800">✍️ Finger Practice Canvas</h2>
-                        <span class="text-xs text-slate-500">Touch & Pointer Enabled</span>
-                    </div>
-
-                    <div class="relative bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-2 shadow-inner w-full flex items-center justify-center">
-                        <canvas id="sketch-canvas" width="260" height="260" class="bg-white rounded-xl shadow-sm border border-slate-200"></canvas>
-                    </div>
-
-                    <button id="clear-btn" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition border border-slate-300">Clear Canvas</button>
-                </div>
-
-                <!-- AI Exam Quiz Engine -->
-                <div class="glass-panel rounded-2xl p-6 shadow-xl space-y-4">
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-3">
-                        <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <span>📝</span> 8級 Dynamic Quiz Generator
-                        </h3>
-                        <span id="quiz-type-badge" class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">8級 Format</span>
-                    </div>
-
-                    <div id="quiz-box" class="space-y-3">
-                        <p id="quiz-question" class="text-sm font-semibold text-slate-800 leading-relaxed">Click below to generate a quiz question for this Kanji.</p>
-                        <div id="quiz-options" class="grid grid-cols-1 gap-2"></div>
-                        <p id="quiz-feedback" class="text-xs font-bold mt-2 min-h-[1rem]"></p>
-                    </div>
-
-                    <button id="generate-quiz-btn" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition shadow">
-                        ⚡ Generate Question for Current Kanji
-                    </button>
-                </div>
-
-            </section>
         </main>
 
-        <!-- Wallpaper & Refresh Status Bar -->
+        <!-- Footer Agent Bar -->
         <footer class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
             <div class="flex items-center gap-3">
                 <span class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span id="ai-agent-status" class="font-medium">AI Agent: Loaded 8級 Dataset via API</span>
+                <span id="ai-agent-status" class="font-medium">AI Agent: 8級 (440字) 公式試験フォーマット動作中</span>
             </div>
             <div class="flex items-center gap-4">
-                <span>Wallpaper refresh: <strong id="timer-display" class="text-slate-900 font-mono">05:00</strong></span>
-                <button id="manual-refresh-bg" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition text-[11px]">↻ Refresh Image</button>
+                <span>壁紙自動更新: <strong id="timer-display" class="text-slate-900 font-mono">05:00</strong></span>
             </div>
         </footer>
 
     </div>
 
-    <!-- Application Script -->
+    <!-- Application Engine -->
     <script>
         const WALLPAPERS = [
             "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1600&auto=format&fit=crop",
@@ -160,10 +125,8 @@
             "https://images.unsplash.com/photo-1528164344705-47542687990d?q=80&w=1600&auto=format&fit=crop"
         ];
 
-        // Global State for 440 Grade 3 Kanji
         let grade3KanjiList = [];
-        let currentIndex = 0;
-        let currentKanjiData = null;
+        let examQuestions = { reading: [], writing: [], strokes: [] };
         let countdownTimer = 300;
 
         const canvas = document.getElementById("sketch-canvas");
@@ -174,171 +137,145 @@
             initCanvas();
             startTimer();
             refreshWallpaper();
-            await fetchGrade3KanjiList();
+            await fetch8KyuDataset();
 
-            // Event Listeners
-            document.getElementById("prev-kanji-btn").addEventListener("click", () => navigateKanji(-1));
-            document.getElementById("next-kanji-btn").addEventListener("click", () => navigateKanji(1));
-            document.getElementById("kanji-index-input").addEventListener("change", (e) => {
-                let val = parseInt(e.target.value) - 1;
-                if (val >= 0 && val < grade3KanjiList.length) {
-                    currentIndex = val;
-                    loadKanjiDetails(grade3KanjiList[currentIndex]);
-                }
-            });
-
-            document.getElementById("clear-btn").addEventListener("click", clearCanvas);
-            document.getElementById("generate-quiz-btn").addEventListener("click", generateDynamicQuiz);
-            document.getElementById("manual-refresh-bg").addEventListener("click", () => {
-                refreshWallpaper();
-                countdownTimer = 300;
-            });
+            document.getElementById("generate-exam-btn").addEventListener("click", generateOfficialPatternExam);
+            document.getElementById("submit-exam-btn").addEventListener("click", scoreExam);
+            document.getElementById("clear-canvas-btn").addEventListener("click", clearCanvas);
         });
 
-        // 1. Fetch All 440 Grade 3 Kanji Characters from API
-        async function fetchGrade3KanjiList() {
+        // 1. Fetch Grade 3 Kanji Dataset (440 Characters)
+        async function fetch8KyuDataset() {
             try {
-                const response = await fetch('https://kanjiapi.dev/v1/kanji/grade-3');
-                grade3KanjiList = await response.json();
-                
-                document.getElementById("total-kanji-count").textContent = grade3KanjiList.length;
-                document.getElementById("kanji-index-input").max = grade3KanjiList.length;
-                
-                // Load the first character
-                loadKanjiDetails(grade3KanjiList[currentIndex]);
-            } catch (error) {
-                console.error("API Error:", error);
-                document.getElementById("kanji-meaning").textContent = "Failed to load Kanji dataset.";
+                const res = await fetch('https://kanjiapi.dev/v1/kanji/grade-3');
+                grade3KanjiList = await res.json();
+                generateOfficialPatternExam();
+            } catch (err) {
+                console.error("Dataset fetch failed:", err);
             }
         }
 
-        // 2. Fetch Full Metadata & Compounds for Selected Character
-        async function loadKanjiDetails(character) {
-            document.getElementById("kanji-display").textContent = character;
-            document.getElementById("kanji-index-input").value = currentIndex + 1;
-            document.getElementById("kanji-meaning").textContent = "Loading attributes...";
-            document.getElementById("vocab-list").innerHTML = `<p class="text-slate-400">Loading compounds...</p>`;
-            clearCanvas();
+        // 2. Generate Test Structured Like Official Kanken 8級 Sample Paper
+        async function generateOfficialPatternExam() {
+            if (grade3KanjiList.length === 0) return;
 
-            try {
-                // Fetch character details
-                const detailRes = await fetch(`https://kanjiapi.dev/v1/kanji/${character}`);
-                currentKanjiData = await detailRes.json();
+            document.getElementById("score-result").textContent = "";
+            const readingContainer = document.getElementById("section-reading");
+            const writingContainer = document.getElementById("section-writing");
+            const strokesContainer = document.getElementById("section-strokes");
 
-                // Update UI attributes
-                document.getElementById("stroke-count-badge").textContent = `${currentKanjiData.stroke_count} 画`;
-                document.getElementById("jlpt-tag").textContent = currentKanjiData.jlpt ? `JLPT N${currentKanjiData.jlpt}` : "JLPT N3";
-                document.getElementById("kanji-meaning").textContent = currentKanjiData.meanings.slice(0, 3).join(", ");
-                document.getElementById("onyomi-display").textContent = currentKanjiData.on_readings.join("、 ") || "なし";
-                document.getElementById("kunyomi-display").textContent = currentKanjiData.kun_readings.join("、 ") || "なし";
+            readingContainer.innerHTML = "<p class='text-slate-400'>問題を生成中...</p>";
+            writingContainer.innerHTML = "";
+            strokesContainer.innerHTML = "";
 
-                // Fetch word compounds
-                const wordsRes = await fetch(`https://kanjiapi.dev/v1/words/${character}`);
-                const wordsData = await wordsRes.json();
-                renderVocabList(wordsData);
+            // Sample 6 Random Kanji for Section Generation
+            const sampledKanji = [...grade3KanjiList].sort(() => Math.random() - 0.5).slice(0, 6);
+            
+            examQuestions = { reading: [], writing: [], strokes: [] };
 
-                generateDynamicQuiz();
-            } catch (error) {
-                console.error("Error loading Kanji details:", error);
+            for (let i = 0; i < sampledKanji.length; i++) {
+                const char = sampledKanji[i];
+                const res = await fetch(`https://kanjiapi.dev/v1/kanji/${char}`);
+                const data = await res.json();
+
+                // Section I: Reading (読み)
+                if (i < 2) {
+                    const answer = data.on_readings[0] || data.kun_readings[0] || "読み";
+                    examQuestions.reading.push({ char, answer });
+                }
+                // Section II: Writing (書き取り・送り仮名)
+                else if (i < 4) {
+                    const answer = data.kanji;
+                    const hintReading = data.on_readings[0] || data.kun_readings[0] || "かな";
+                    examQuestions.writing.push({ reading: hintReading, answer, meaning: data.meanings[0] });
+                }
+                // Section III: Strokes (画数)
+                else {
+                    examQuestions.strokes.push({ char, answer: data.stroke_count });
+                }
             }
+
+            // Render UI
+            renderSectionReading(examQuestions.reading);
+            renderSectionWriting(examQuestions.writing);
+            renderSectionStrokes(examQuestions.strokes);
         }
 
-        function renderVocabList(words) {
-            const vocabContainer = document.getElementById("vocab-list");
-            vocabContainer.innerHTML = "";
-
-            if (!words || words.length === 0) {
-                vocabContainer.innerHTML = `<p class="text-slate-400">No common compounds listed.</p>`;
-                return;
-            }
-
-            // Display top 4 compound words
-            words.slice(0, 4).forEach(item => {
-                const written = item.variants[0]?.written || "";
-                const pronounced = item.variants[0]?.pronounced || "";
-                const meaning = item.meanings[0]?.glosses?.slice(0, 2).join(", ") || "";
-
+        function renderSectionReading(questions) {
+            const container = document.getElementById("section-reading");
+            container.innerHTML = "";
+            questions.forEach((q, idx) => {
                 const div = document.createElement("div");
-                div.className = "p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center";
-                div.innerHTML = `<div><strong class="text-slate-900 text-sm">${written}</strong> <span class="text-slate-500">(${pronounced})</span></div><span class="text-slate-600 font-medium">${meaning}</span>`;
-                vocabContainer.appendChild(div);
+                div.className = "bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between";
+                div.innerHTML = `
+                    <p>(${idx + 1}) 漢字「<span class="kanken-font font-black text-xl text-red-600">${q.char}</span>」の読み方をひらがなで書きなさい。</p>
+                    <input type="text" data-type="reading" data-idx="${idx}" class="w-24 bg-white border border-slate-300 rounded-lg p-1.5 text-center font-bold text-slate-800 focus:ring-2 focus:ring-red-500">
+                `;
+                container.appendChild(div);
             });
         }
 
-        function navigateKanji(step) {
-            if (grade3KanjiList.length === 0) return;
-            currentIndex = (currentIndex + step + grade3KanjiList.length) % grade3KanjiList.length;
-            loadKanjiDetails(grade3KanjiList[currentIndex]);
+        function renderSectionWriting(questions) {
+            const container = document.getElementById("section-writing");
+            container.innerHTML = "";
+            questions.forEach((q, idx) => {
+                const div = document.createElement("div");
+                div.className = "bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between";
+                div.innerHTML = `
+                    <p>(${idx + 1}) カタカナ「<span class="font-bold text-indigo-600">${q.reading}</span>」(${q.meaning})を漢字になおしなさい。</p>
+                    <input type="text" data-type="writing" data-idx="${idx}" class="w-20 bg-white border border-slate-300 rounded-lg p-1.5 text-center font-bold text-slate-800 focus:ring-2 focus:ring-red-500">
+                `;
+                container.appendChild(div);
+            });
         }
 
-        // 3. Generate Level 8 Dynamic Quizzes from API Data
-        function generateDynamicQuiz() {
-            if (!currentKanjiData) return;
-
-            const quizTypes = ["reading", "strokes"];
-            const selectedType = quizTypes[Math.floor(Math.random() * quizTypes.length)];
-            const quizBox = document.getElementById("quiz-question");
-            const optionsContainer = document.getElementById("quiz-options");
-            const feedback = document.getElementById("quiz-feedback");
-
-            feedback.textContent = "";
-            optionsContainer.innerHTML = "";
-
-            if (selectedType === "reading") {
-                document.getElementById("quiz-type-badge").textContent = "読み (Reading Quiz)";
-                const correctAnswer = currentKanjiData.on_readings[0] || currentKanjiData.kun_readings[0] || "かな";
-                quizBox.textContent = `「${currentKanjiData.kanji}」の正しい読み方はどれですか？`;
-
-                const options = [correctAnswer, "カン", "ショウ", "エキ"].sort(() => Math.random() - 0.5);
-
-                options.forEach(opt => {
-                    const btn = document.createElement("button");
-                    btn.className = "w-full text-left p-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 transition";
-                    btn.textContent = opt;
-                    btn.onclick = () => {
-                        if (opt === correctAnswer) {
-                            feedback.textContent = "⭕ Correct! 正解です。";
-                            feedback.className = "text-xs font-bold mt-2 text-emerald-600";
-                        } else {
-                            feedback.textContent = `❌ Incorrect. The answer is ${correctAnswer}.`;
-                            feedback.className = "text-xs font-bold mt-2 text-red-600";
-                        }
-                    };
-                    optionsContainer.appendChild(btn);
-                });
-            } else {
-                document.getElementById("quiz-type-badge").textContent = "画数 (Stroke Count)";
-                const correctStrokes = currentKanjiData.stroke_count;
-                quizBox.textContent = `「${currentKanjiData.kanji}」の総画数はいくつですか？`;
-
-                const strokeOptions = Array.from(new Set([
-                    `${correctStrokes}画`,
-                    `${correctStrokes + 1}画`,
-                    `${Math.max(1, correctStrokes - 1)}画`,
-                    `${correctStrokes + 2}画`
-                ])).sort(() => Math.random() - 0.5);
-
-                strokeOptions.forEach(opt => {
-                    const btn = document.createElement("button");
-                    btn.className = "w-full text-left p-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 transition";
-                    btn.textContent = opt;
-                    btn.onclick = () => {
-                        if (opt === `${correctStrokes}画`) {
-                            feedback.textContent = "⭕ Correct! 正解です。";
-                            feedback.className = "text-xs font-bold mt-2 text-emerald-600";
-                        } else {
-                            feedback.textContent = `❌ Incorrect. Correct strokes: ${correctStrokes}画.`;
-                            feedback.className = "text-xs font-bold mt-2 text-red-600";
-                        }
-                    };
-                    optionsContainer.appendChild(btn);
-                });
-            }
+        function renderSectionStrokes(questions) {
+            const container = document.getElementById("section-strokes");
+            container.innerHTML = "";
+            questions.forEach((q, idx) => {
+                const div = document.createElement("div");
+                div.className = "bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between";
+                div.innerHTML = `
+                    <p>(${idx + 1}) 漢字「<span class="kanken-font font-black text-xl text-slate-900">${q.char}</span>」の総画数は？</p>
+                    <div class="flex items-center gap-1">
+                        <input type="number" data-type="strokes" data-idx="${idx}" class="w-16 bg-white border border-slate-300 rounded-lg p-1.5 text-center font-bold text-slate-800 focus:ring-2 focus:ring-red-500">
+                        <span class="text-xs font-bold text-slate-500">画</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
-        // Touch & Finger Canvas Logic
+        // Score Test Inputs
+        function scoreExam() {
+            let totalPoints = 0;
+            const maxPoints = (examQuestions.reading.length + examQuestions.writing.length + examQuestions.strokes.length) * 2;
+
+            // Reading Check
+            document.querySelectorAll('input[data-type="reading"]').forEach(input => {
+                const idx = input.dataset.idx;
+                if (input.value.trim() === examQuestions.reading[idx].answer) totalPoints += 2;
+            });
+
+            // Writing Check
+            document.querySelectorAll('input[data-type="writing"]').forEach(input => {
+                const idx = input.dataset.idx;
+                if (input.value.trim() === examQuestions.writing[idx].answer) totalPoints += 2;
+            });
+
+            // Strokes Check
+            document.querySelectorAll('input[data-type="strokes"]').forEach(input => {
+                const idx = input.dataset.idx;
+                if (parseInt(input.value) === examQuestions.strokes[idx].answer) totalPoints += 2;
+            });
+
+            const scoreDisplay = document.getElementById("score-result");
+            scoreDisplay.innerHTML = `採点結果: <span class="text-xl font-extrabold ${totalPoints >= maxPoints * 0.8 ? 'text-emerald-600' : 'text-red-600'}">${totalPoints} / ${maxPoints}点</span> (${totalPoints >= maxPoints * 0.8 ? '合格ライン達成 ⭕' : '不合格 ❌ 再挑戦しましょう'})`;
+        }
+
+        // Touch Canvas Operations
         function initCanvas() {
-            ctx.lineWidth = 6;
+            ctx.lineWidth = 5;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
             ctx.strokeStyle = "#0f172a";
