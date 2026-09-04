@@ -25,7 +25,7 @@
                 <div class="bg-red-600 text-white font-black px-3 py-1.5 rounded-lg text-sm tracking-widest shadow">漢検 8級</div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">公益財団法人 日本漢字能力検定 Prep Agent</h1>
-                    <p class="text-xs text-slate-500 font-semibold">小学校3年生修了程度 (全440字対応)</p>
+                    <p class="text-xs text-slate-500 font-semibold">小学校3年生修了程度 (全200字配当漢検8級 / st-kanji.com Grade C 同等)</p>
                 </div>
             </div>
 
@@ -51,8 +51,8 @@
                     <button id="prev-kanji-btn" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold transition">◀ Prev</button>
                     <div class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
                         <span>Kanji Index:</span>
-                        <input type="number" id="kanji-index-input" value="1" min="1" max="440" class="w-16 text-center bg-slate-50 border border-slate-300 rounded-lg p-1 text-slate-900 font-bold focus:ring-2 focus:ring-red-500">
-                        <span>/ <strong id="total-kanji-count">440</strong></span>
+                        <input type="number" id="kanji-index-input" value="1" min="1" max="200" class="w-16 text-center bg-slate-50 border border-slate-300 rounded-lg p-1 text-slate-900 font-bold focus:ring-2 focus:ring-red-500">
+                        <span>/ <strong id="total-kanji-count">200</strong></span>
                     </div>
                     <button id="next-kanji-btn" class="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-md">Next ▶</button>
                 </div>
@@ -191,7 +191,7 @@
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span id="ai-agent-status" class="font-medium">System Active | Kanken 8級 Data Ready</span>
+                <span id="ai-agent-status" class="font-medium">System Active | st-kanji Grade C (8級 200字) Integrated</span>
             </div>
             <div class="text-slate-400">
                 Official Kanken 8級 Pattern (150 Marks / Grade 3 Kanji)
@@ -202,7 +202,29 @@
 
     <!-- Main Logic Script -->
     <script>
-        let grade3KanjiList = [];
+        // Official Kanken Level 8 / Grade C Character List (200 Kanji) matching st-kanji.com/grade_C.html
+        const ST_KANJI_GRADE_C = [
+            "悪", "安", "暗", "医", "委", "意", "育", "員", "院", "飲",
+            "運", "泳", "駅", "央", "横", "屋", "温", "化", "荷", "界",
+            "開", "階", "寒", "感", "漢", "館", "岸", "起", "期", "客",
+            "究", "急", "級", "宮", "球", "去", "橋", "業", "曲", "局",
+            "銀", "区", "苦", "具", "君", "係", "軽", "血", "決", "研",
+            "県", "庫", "湖", "向", "幸", "港", "号", "根", "祭", "皿",
+            "仕", "死", "使", "始", "指", "歯", "詩", "次", "事", "持",
+            "式", "実", "自", "島", "写", "者", "主", "守", "取", "酒",
+            "受", "州", "拾", "終", "習", "集", "住", "重", "宿", "所",
+            "暑", "助", "昭", "消", "商", "章", "勝", "短", "乗", "植",
+            "申", "身", "神", "真", "深", "進", "世", "整", "昔", "全",
+            "相", "送", "想", "息", "速", "族", "他", "打", "対", "待",
+            "代", "第", "題", "滝", "卓", "宅", "炭", "短", "談", "着",
+            "注", "柱", "丁", "帳", "調", "追", "定", "庭", "笛", "鉄",
+            "転", "都", "度", "投", "豆", "島", "湯", "登", "等", "動",
+            "童", "農", "波", "配", "倍", "箱", "畑", "発", "反", "坂",
+            "板", "皮", "悲", "美", "鼻", "筆", "氷", "表", "秒", "病",
+            "品", "負", "部", "服", "福", "物", "平", "返", "勉", "箱"
+        ];
+
+        let grade3KanjiList = ST_KANJI_GRADE_C;
         let currentIndex = 0;
         let examQuestions = { reading: [], writing: [], strokes: [] };
 
@@ -213,7 +235,7 @@
         document.addEventListener("DOMContentLoaded", async () => {
             initCanvas();
             initTabs();
-            await fetchGrade3Dataset();
+            setupDatasetUI();
 
             // Practice Event Listeners
             document.getElementById("prev-kanji-btn").addEventListener("click", () => navigateKanji(-1));
@@ -229,6 +251,10 @@
             document.getElementById("clear-canvas-btn").addEventListener("click", clearCanvas);
             document.getElementById("generate-exam-btn").addEventListener("click", generateOfficialExam);
             document.getElementById("submit-exam-btn").addEventListener("click", scoreExam);
+            
+            // Initial load
+            loadKanjiPracticeDetails(grade3KanjiList[currentIndex]);
+            generateOfficialExam();
         });
 
         // Tab Navigation
@@ -253,23 +279,12 @@
             });
         }
 
-        // Fetch Grade 3 (8級) Kanji Dataset
-        async function fetchGrade3Dataset() {
-            try {
-                const res = await fetch('https://kanjiapi.dev/v1/kanji/grade-3');
-                grade3KanjiList = await res.json();
-                
-                document.getElementById("total-kanji-count").textContent = grade3KanjiList.length;
-                document.getElementById("kanji-index-input").max = grade3KanjiList.length;
-
-                loadKanjiPracticeDetails(grade3KanjiList[currentIndex]);
-                generateOfficialExam();
-            } catch (err) {
-                console.error("API error:", err);
-            }
+        function setupDatasetUI() {
+            document.getElementById("total-kanji-count").textContent = grade3KanjiList.length;
+            document.getElementById("kanji-index-input").max = grade3KanjiList.length;
         }
 
-        // Practice Loader
+        // Practice Loader (Fetches Kanji info & Compounds with English meanings)
         async function loadKanjiPracticeDetails(character) {
             document.getElementById("kanji-display").textContent = character;
             document.getElementById("kanji-index-input").value = currentIndex + 1;
@@ -287,11 +302,14 @@
                 document.getElementById("onyomi-display").textContent = data.on_readings.join("、 ") || "なし";
                 document.getElementById("kunyomi-display").textContent = data.kun_readings.join("、 ") || "なし";
 
+                // Fetch Vocabulary Compounds for this target Kanji
                 const wordsRes = await fetch(`https://kanjiapi.dev/v1/words/${character}`);
                 const words = await wordsRes.json();
                 renderVocab(words);
             } catch (err) {
                 console.error("Detail load error:", err);
+                document.getElementById("kanji-meaning").textContent = "Grade C / 8級 Character";
+                document.getElementById("vocab-list").innerHTML = `<p class="text-slate-400">Vocabulary unavailable.</p>`;
             }
         }
 
@@ -300,10 +318,11 @@
             container.innerHTML = "";
 
             if (!words || words.length === 0) {
-                container.innerHTML = `<p class="text-slate-400">No vocabulary listed.</p>`;
+                container.innerHTML = `<p class="text-slate-400">No vocabulary listed for this Kanji.</p>`;
                 return;
             }
 
+            // Filter & slice top relevant 5 compounds with English definitions
             words.slice(0, 5).forEach(item => {
                 const written = item.variants[0]?.written || "";
                 const pronounced = item.variants[0]?.pronounced || "";
@@ -311,7 +330,13 @@
 
                 const div = document.createElement("div");
                 div.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center";
-                div.innerHTML = `<div><strong class="text-slate-900 text-sm">${written}</strong> <span class="text-slate-500">(${pronounced})</span></div><span class="text-slate-700 font-semibold">${meaning}</span>`;
+                div.innerHTML = `
+                    <div>
+                        <strong class="text-slate-900 text-sm">${written}</strong> 
+                        <span class="text-slate-500 font-medium">(${pronounced})</span>
+                    </div>
+                    <span class="text-slate-700 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200 shadow-sm">${meaning}</span>
+                `;
                 container.appendChild(div);
             });
         }
@@ -332,15 +357,19 @@
 
             for (let i = 0; i < sampled.length; i++) {
                 const char = sampled[i];
-                const res = await fetch(`https://kanjiapi.dev/v1/kanji/${char}`);
-                const data = await res.json();
+                try {
+                    const res = await fetch(`https://kanjiapi.dev/v1/kanji/${char}`);
+                    const data = await res.json();
 
-                if (i < 2) {
-                    examQuestions.reading.push({ char, answer: data.on_readings[0] || data.kun_readings[0] || "かな" });
-                } else if (i < 4) {
-                    examQuestions.writing.push({ reading: data.on_readings[0] || data.kun_readings[0] || "かな", answer: char, meaning: data.meanings[0] });
-                } else {
-                    examQuestions.strokes.push({ char, answer: data.stroke_count });
+                    if (i < 2) {
+                        examQuestions.reading.push({ char, answer: data.on_readings[0] || data.kun_readings[0] || "かな" });
+                    } else if (i < 4) {
+                        examQuestions.writing.push({ reading: data.on_readings[0] || data.kun_readings[0] || "かな", answer: char, meaning: data.meanings[0] });
+                    } else {
+                        examQuestions.strokes.push({ char, answer: data.stroke_count });
+                    }
+                } catch(e) {
+                    console.error("Exam question build fallback:", e);
                 }
             }
 
