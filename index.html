@@ -30,12 +30,16 @@
             </div>
 
             <!-- Mode Switcher Tabs -->
-            <div class="flex bg-slate-200/80 p-1 rounded-xl w-full md:w-auto shadow-inner">
-                <button id="tab-practice-btn" class="flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow">
+            <div class="flex flex-wrap bg-slate-200/80 p-1 rounded-xl w-full md:w-auto shadow-inner gap-1">
+                <button id="tab-practice-btn" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow">
                     📖 1. Practice & Learn
                 </button>
-                <button id="tab-exam-btn" class="flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">
+                <button id="tab-exam-btn" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">
                     📝 2. Official Exam Mode
+                </button>
+                <!-- NEW OPTION: 主な出題内容 Sectional Practice -->
+                <button id="tab-syutudai-btn" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-amber-900 bg-amber-400/80 hover:bg-amber-400 shadow-sm">
+                    🎯 3. 主な出題内容 Drill
                 </button>
             </div>
         </header>
@@ -184,6 +188,54 @@
             </div>
         </div>
 
+        <!-- ================================================================= -->
+        <!-- SECTION 3: 主な出題内容 PRACTICE DRILL (NEW)                       -->
+        <!-- ================================================================= -->
+        <div id="section-syutudai" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-6 shadow-md space-y-6">
+                
+                <div>
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight">8級 主な出題内容・分野別ドリル</h2>
+                    <p class="text-xs text-slate-500 font-semibold mt-1">Select a official section target to practice specific test patterns.</p>
+                </div>
+
+                <!-- Section Badges / Pills (Matched with Screenshot) -->
+                <div id="syutudai-pills" class="flex flex-wrap gap-2.5 pb-2 border-b border-slate-200">
+                    <button data-cat="reading" class="syutudai-pill bg-amber-400 text-amber-950 font-bold px-4 py-2 rounded-full text-xs shadow-sm hover:brightness-95 transition">漢字の読み</button>
+                    <button data-cat="writing" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">漢字の書取</button>
+                    <button data-cat="radical" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">部首・部首名</button>
+                    <button data-cat="strokes" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">筆順・画数</button>
+                    <button data-cat="okurigana" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">送り仮名</button>
+                    <button data-cat="antonym" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">対義語</button>
+                    <button data-cat="homophone" class="syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition">同じ漢字の読み</button>
+                </div>
+
+                <!-- Active Category Container -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 id="drill-category-title" class="text-base font-bold text-slate-900 border-l-4 border-amber-500 pl-3">
+                            漢字の読み (Kanji Reading Drill)
+                        </h3>
+                        <button id="refresh-drill-btn" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-700 transition">
+                            ↻ New Questions
+                        </button>
+                    </div>
+
+                    <div id="drill-questions-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-medium">
+                        <!-- Questions dynamically loaded here -->
+                    </div>
+
+                    <div class="border-t border-slate-200 pt-4 flex justify-between items-center">
+                        <div id="drill-score-result" class="text-sm font-bold text-slate-800"></div>
+                        <button id="check-drill-btn" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition shadow">
+                            解答合わせ (Check Answers)
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <!-- Footer / Status Bar -->
         <footer class="glass-panel rounded-2xl p-4 shadow-md flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
             <div class="flex items-center gap-3">
@@ -191,7 +243,7 @@
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span id="ai-agent-status" class="font-medium">System Active | st-kanji Grade C (8級 200字) Integrated</span>
+                <span id="ai-agent-status" class="font-medium">System Active | st-kanji Grade C & 主な出題内容 Integrated</span>
             </div>
             <div class="text-slate-400">
                 Official Kanken 8級 Pattern (150 Marks / Grade 3 Kanji)
@@ -202,7 +254,7 @@
 
     <!-- Main Logic Script -->
     <script>
-        // Official Kanken Level 8 / Grade C Character List (200 Kanji) matching st-kanji.com/grade_C.html
+        // Official Kanken Level 8 / Grade C Character List (200 Kanji)
         const ST_KANJI_GRADE_C = [
             "悪", "安", "暗", "医", "委", "意", "育", "員", "院", "飲",
             "運", "泳", "駅", "央", "横", "屋", "温", "化", "荷", "界",
@@ -224,6 +276,53 @@
             "品", "負", "部", "服", "福", "物", "平", "返", "勉", "箱"
         ];
 
+        // Specific dataset for Section 3 (主な出題内容)
+        const SYUTUDAI_DATA = {
+            reading: [
+                { q: "「安心」の読み方をひらがなで書きなさい。", kanji: "安心", a: "あんしん", hint: "Anshin / Peace of mind" },
+                { q: "「急行」の読み方をひらがなで書きなさい。", kanji: "急行", a: "きゅうこう", hint: "Kyūkō / Express train" },
+                { q: "「文章」の読み方をひらがなで書きなさい。", kanji: "文章", a: "ぶんしょう", hint: "Bunshō / Sentence" },
+                { q: "「太陽」の読み方をひらがなで書きなさい。", kanji: "太陽", a: "たいよう", hint: "Taiyō / Sun" }
+            ],
+            writing: [
+                { q: "「アンシン」して暮らす。(カタカナを漢字に)", a: "安心", hint: "Peace of mind" },
+                { q: "「キキュウ」の事態。(カタカナを漢字に)", a: "急", hint: "Emergency / Urgent" },
+                { q: "「ジドウシャ」に乗る。(カタカナを漢字に)", a: "自動車", hint: "Automobile" },
+                { q: "「ハタケ」で野菜を作る。(カタカナを漢字に)", a: "畑", hint: "Field / Farm" }
+            ],
+            radical: [
+                { q: "漢字「泳」の部首名を答えなさい。", kanji: "泳", a: "さんずい", hint: "Water radical (氵)" },
+                { q: "漢字「神」の部首名を答えなさい。", kanji: "神", a: "しめすへん", hint: "Altar radical (礻)" },
+                { q: "漢字「箱」の部首名を答えなさい。", kanji: "箱", a: "たけかんむり", hint: "Bamboo radical (⺮)" },
+                { q: "漢字「病」の部首名を答えなさい。", kanji: "病", a: "やまいだれ", hint: "Sickness radical (疒)" }
+            ],
+            strokes: [
+                { q: "漢字「農」の総画数を答えなさい。", kanji: "農", a: "13", hint: "13 strokes" },
+                { q: "漢字「鉄」の総画数を答えなさい。", kanji: "鉄", a: "13", hint: "13 strokes" },
+                { q: "漢字「港」の総画数を答えなさい。", kanji: "港", a: "12", hint: "12 strokes" },
+                { q: "漢字「館」の総画数を答えなさい。", kanji: "館", a: "16", hint: "16 strokes" }
+            ],
+            okurigana: [
+                { q: "「おく（る）」を漢字と正しい送り仮名で書きなさい。", kanji: "送", a: "送る", hint: "To send" },
+                { q: "「みじか（い）」を漢字と正しい送り仮名で書きなさい。", kanji: "短", a: "短い", hint: "Short" },
+                { q: "「おのぞ（み）」を漢字と正しい送り仮名で書きなさい。", kanji: "望", a: "望み", hint: "Wish / Hope" },
+                { q: "「あつ（まる）」を漢字と正しい送り仮名で書きなさい。", kanji: "集", a: "集まる", hint: "To gather" }
+            ],
+            antonym: [
+                { q: "「勝」の対義語（反対の意味の漢字）は？", kanji: "勝", a: "負", hint: "Win vs Lose (負)" },
+                { q: "「暑」の対義語（反対の意味の漢字）は？", kanji: "暑", a: "寒", hint: "Hot vs Cold (寒)" },
+                { q: "「重」の対義語（反対の意味の漢字）は？", kanji: "重", a: "軽", hint: "Heavy vs Light (軽)" },
+                { q: "「始」の対義語（反対の意味の漢字）は？", kanji: "始", a: "終", hint: "Start vs End (終)" }
+            ],
+            homophone: [
+                { q: "「開く」と「開校」で共通する同じ漢字の読み（ひらがな）は？", kanji: "開", a: "かい", hint: "On-reading: かい" },
+                { q: "「集まる」と「集合」で共通する漢字の訓/音の読みは？", kanji: "集", a: "しゅう", hint: "On-reading: しゅう" },
+                { q: "「安心」と「安定」で共通する同じ漢字の読みは？", kanji: "安", a: "あん", hint: "On-reading: あん" },
+                { q: "「波」と「津波」で共通する漢字の読みは？", kanji: "波", a: "なみ", hint: "Kun-reading: なみ" }
+            ]
+        };
+
+        let currentDrillCategory = "reading";
         let grade3KanjiList = ST_KANJI_GRADE_C;
         let currentIndex = 0;
         let examQuestions = { reading: [], writing: [], strokes: [] };
@@ -236,6 +335,7 @@
             initCanvas();
             initTabs();
             setupDatasetUI();
+            initSyutudaiDrill();
 
             // Practice Event Listeners
             document.getElementById("prev-kanji-btn").addEventListener("click", () => navigateKanji(-1));
@@ -261,21 +361,38 @@
         function initTabs() {
             const pBtn = document.getElementById("tab-practice-btn");
             const eBtn = document.getElementById("tab-exam-btn");
+            const sBtn = document.getElementById("tab-syutudai-btn");
+
             const pSec = document.getElementById("section-practice");
             const eSec = document.getElementById("section-exam");
+            const sSec = document.getElementById("section-syutudai");
+
+            function resetTabs() {
+                pSec.classList.add("hidden");
+                eSec.classList.add("hidden");
+                sSec.classList.add("hidden");
+
+                pBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                eBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                sBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-amber-900 bg-amber-100 hover:bg-amber-300";
+            }
 
             pBtn.addEventListener("click", () => {
+                resetTabs();
                 pSec.classList.remove("hidden");
-                eSec.classList.add("hidden");
-                pBtn.className = "flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow";
-                eBtn.className = "flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                pBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow";
             });
 
             eBtn.addEventListener("click", () => {
+                resetTabs();
                 eSec.classList.remove("hidden");
-                pSec.classList.add("hidden");
-                eBtn.className = "flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow";
-                pBtn.className = "flex-1 md:flex-none px-5 py-2.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                eBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition bg-white text-slate-900 shadow";
+            });
+
+            sBtn.addEventListener("click", () => {
+                resetTabs();
+                sSec.classList.remove("hidden");
+                sBtn.className = "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition text-amber-950 bg-amber-400 font-extrabold shadow";
             });
         }
 
@@ -284,7 +401,75 @@
             document.getElementById("kanji-index-input").max = grade3KanjiList.length;
         }
 
-        // Practice Loader (Fetches Kanji info & Compounds with English meanings)
+        // Section 3 (主な出題内容) Handler Logic
+        function initSyutudaiDrill() {
+            const pills = document.querySelectorAll(".syutudai-pill");
+            pills.forEach(pill => {
+                pill.addEventListener("click", (e) => {
+                    pills.forEach(p => p.className = "syutudai-pill bg-amber-100 text-amber-900 hover:bg-amber-400 font-bold px-4 py-2 rounded-full text-xs transition");
+                    e.target.className = "syutudai-pill bg-amber-400 text-amber-950 font-bold px-4 py-2 rounded-full text-xs shadow-sm hover:brightness-95 transition";
+                    
+                    currentDrillCategory = e.target.dataset.cat;
+                    loadDrillQuestions(currentDrillCategory);
+                });
+            });
+
+            document.getElementById("refresh-drill-btn").addEventListener("click", () => loadDrillQuestions(currentDrillCategory));
+            document.getElementById("check-drill-btn").addEventListener("click", scoreDrillQuestions);
+
+            loadDrillQuestions(currentDrillCategory);
+        }
+
+        function loadDrillQuestions(category) {
+            const container = document.getElementById("drill-questions-list");
+            const title = document.getElementById("drill-category-title");
+            document.getElementById("drill-score-result").textContent = "";
+
+            const catNames = {
+                reading: "漢字の読み (Kanji Reading)",
+                writing: "漢字の書取 (Kanji Writing)",
+                radical: "部首・部首名 (Radicals & Names)",
+                strokes: "筆順・画数 (Stroke Order & Count)",
+                okurigana: "送り仮名 (Okurigana Practice)",
+                antonym: "対義語 (Antonyms & Opposites)",
+                homophone: "同じ漢字の読み (Common Kanji Readings)"
+            };
+
+            title.textContent = `${catNames[category]} Drill`;
+            container.innerHTML = "";
+
+            const items = SYUTUDAI_DATA[category] || [];
+            items.forEach((q, idx) => {
+                container.innerHTML += `
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
+                        <p class="font-semibold text-slate-800">問 ${idx + 1}. ${q.q}</p>
+                        <p class="text-xs text-slate-400">Meaning / Hint: ${q.hint}</p>
+                        <div class="flex items-center gap-2 pt-1">
+                            <input type="text" data-drill-idx="${idx}" class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 text-sm">
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function scoreDrillQuestions() {
+            const items = SYUTUDAI_DATA[currentDrillCategory] || [];
+            let correct = 0;
+
+            document.querySelectorAll('input[data-drill-idx]').forEach(input => {
+                const idx = parseInt(input.dataset.drill-idx);
+                const userAns = input.value.trim();
+                if (userAns === items[idx].a) {
+                    correct++;
+                    input.classList.add("border-emerald-500", "bg-emerald-50");
+                } else {
+                    input.classList.add("border-red-500", "bg-red-50");
+                }
+            });
+
+            document.getElementById("drill-score-result").innerHTML = `Score: <span class="text-lg font-black ${correct === items.length ? 'text-emerald-600' : 'text-slate-800'}">${correct} / ${items.length} Correct</span>`;
+        }
+
+        // Practice Loader
         async function loadKanjiPracticeDetails(character) {
             document.getElementById("kanji-display").textContent = character;
             document.getElementById("kanji-index-input").value = currentIndex + 1;
@@ -302,7 +487,6 @@
                 document.getElementById("onyomi-display").textContent = data.on_readings.join("、 ") || "なし";
                 document.getElementById("kunyomi-display").textContent = data.kun_readings.join("、 ") || "なし";
 
-                // Fetch Vocabulary Compounds for this target Kanji
                 const wordsRes = await fetch(`https://kanjiapi.dev/v1/words/${character}`);
                 const words = await wordsRes.json();
                 renderVocab(words);
@@ -322,7 +506,6 @@
                 return;
             }
 
-            // Filter & slice top relevant 5 compounds with English definitions
             words.slice(0, 5).forEach(item => {
                 const written = item.variants[0]?.written || "";
                 const pronounced = item.variants[0]?.pronounced || "";
