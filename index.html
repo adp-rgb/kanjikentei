@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢検 Prep Master & AI Quiz Generator</title>
+    <title>漢検 8級 Prep Master (Full 440 Kanji)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -24,50 +24,50 @@
     <!-- Main Container -->
     <div class="relative z-10 max-w-6xl mx-auto px-4 py-6 w-full flex-grow flex flex-col gap-6">
 
-        <!-- Header & Level Selection -->
+        <!-- Header -->
         <header class="glass-panel rounded-2xl p-4 md:p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg text-sm tracking-wider shadow">漢検</div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">日本漢字能力検定 Prep & Quiz Agent</h1>
-                    <p class="text-xs text-slate-500 font-medium">Official Exam-Aligned Practice (Levels 10 to 2)</p>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">漢検 8級 Exam Practice Agent</h1>
+                    <p class="text-xs text-slate-500 font-medium">小学校3年生修了程度 | Full 440 Kanji Coverage</p>
                 </div>
             </div>
 
-            <!-- Level Selector -->
+            <!-- Kanji Navigation Controller -->
             <div class="flex items-center gap-2 w-full md:w-auto">
-                <label for="kanken-level" class="text-sm font-semibold text-slate-700 whitespace-nowrap">Target Level:</label>
-                <select id="kanken-level" class="w-full md:w-56 bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-red-500 p-2.5 font-semibold shadow-sm transition">
-                    <option value="10">10級 (小1 / Elem 1)</option>
-                    <option value="8">8級 (小3 / Elem 3)</option>
-                    <option value="5">5級 (小6 / Elem 6)</option>
-                    <option value="2">2級 (高校・一般 / HS)</option>
-                </select>
+                <button id="prev-kanji-btn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-xl text-xs font-bold transition">◀ Prev</button>
+                <div class="flex items-center gap-1 text-sm font-semibold text-slate-700">
+                    <span>Kanji</span>
+                    <input type="number" id="kanji-index-input" value="1" min="1" max="440" class="w-16 text-center bg-slate-50 border border-slate-300 rounded-lg p-1 text-slate-900 font-bold focus:ring-2 focus:ring-red-500">
+                    <span>/ <strong id="total-kanji-count">440</strong></span>
+                </div>
+                <button id="next-kanji-btn" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-md">Next ▶</button>
             </div>
         </header>
 
-        <!-- Main Dashboard: Practice & Quiz Grid -->
+        <!-- Main Workspace Grid -->
         <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-            <!-- Left Column: Kanji Reference Card & Vocabulary (7 Cols) -->
+            <!-- Left Column: Kanji Metadata & Vocabulary (7 Cols) -->
             <section class="lg:col-span-7 glass-panel rounded-2xl p-6 shadow-xl flex flex-col gap-6">
                 
-                <!-- Kanji Main Card -->
+                <!-- Kanji Character Card -->
                 <div class="flex flex-col sm:flex-row items-center gap-6 border-b border-slate-200/80 pb-6">
                     <div class="relative bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 rounded-2xl p-6 w-36 h-36 flex items-center justify-center shadow-inner">
-                        <span id="kanji-display" class="kanji-font text-7xl font-extrabold text-slate-900">水</span>
-                        <span id="stroke-count-badge" class="absolute top-2 right-2 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded-full">4 画</span>
+                        <span id="kanji-display" class="kanji-font text-7xl font-extrabold text-slate-900">...</span>
+                        <span id="stroke-count-badge" class="absolute top-2 right-2 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded-full">- 画</span>
                     </div>
 
                     <div class="flex-1 w-full space-y-3">
                         <div class="flex flex-wrap gap-2">
-                            <span id="grade-tag" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-md">小学校 1年</span>
-                            <span id="jlpt-tag" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">JLPT N5</span>
-                            <span id="kanken-badge" class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-1 rounded-md">漢検 10級</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded-md">小学校 3年</span>
+                            <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-1 rounded-md">漢検 8級</span>
+                            <span id="jlpt-tag" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">JLPT N3</span>
                         </div>
                         <div>
                             <p class="text-xs font-bold uppercase tracking-wider text-slate-400">English Meaning</p>
-                            <p id="kanji-meaning" class="text-xl font-bold text-slate-800">Water</p>
+                            <p id="kanji-meaning" class="text-xl font-bold text-slate-800">Loading Kanji...</p>
                         </div>
                     </div>
                 </div>
@@ -76,77 +76,76 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">音読み (Onyomi)</p>
-                        <p id="onyomi-display" class="text-lg font-bold text-red-600">スイ</p>
+                        <p id="onyomi-display" class="text-lg font-bold text-red-600">-</p>
                     </div>
                     <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">訓読み (Kunyomi)</p>
-                        <p id="kunyomi-display" class="text-lg font-bold text-indigo-600">みず</p>
+                        <p id="kunyomi-display" class="text-lg font-bold text-indigo-600">-</p>
                     </div>
                 </div>
 
                 <!-- Vocabulary (熟語) List -->
                 <div>
                     <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <span>📚</span> Level-Aligned 熟語 (Compounds)
+                        <span>📚</span> 8級 熟語 (Vocabulary Compounds)
                     </h3>
-                    <div id="vocab-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                    <div id="vocab-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
+                        <p class="text-slate-400">Fetching compounds from API...</p>
+                    </div>
                 </div>
             </section>
 
-            <!-- Right Column: Canvas Practice & Level-Specific AI Quiz Engine (5 Cols) -->
+            <!-- Right Column: Touch Writing Canvas & AI Quiz Generator (5 Cols) -->
             <section class="lg:col-span-5 flex flex-col gap-6">
 
-                <!-- Stroke Canvas Card -->
+                <!-- Stroke Practice Canvas -->
                 <div class="glass-panel rounded-2xl p-6 shadow-xl flex flex-col items-center gap-4">
                     <div class="w-full flex justify-between items-center">
-                        <h2 class="text-base font-bold text-slate-800">✍️ Practice Writing</h2>
-                        <span class="text-xs text-slate-500">Touch / Finger Canvas</span>
+                        <h2 class="text-base font-bold text-slate-800">✍️ Finger Practice Canvas</h2>
+                        <span class="text-xs text-slate-500">Touch & Pointer Enabled</span>
                     </div>
 
                     <div class="relative bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-2 shadow-inner w-full flex items-center justify-center">
                         <canvas id="sketch-canvas" width="260" height="260" class="bg-white rounded-xl shadow-sm border border-slate-200"></canvas>
                     </div>
 
-                    <div class="flex gap-3 w-full">
-                        <button id="clear-btn" class="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition border border-slate-300">Clear</button>
-                        <button id="next-kanji-btn" class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl text-xs transition shadow-md">Next Kanji ➔</button>
-                    </div>
+                    <button id="clear-btn" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition border border-slate-300">Clear Canvas</button>
                 </div>
 
-                <!-- AI Exam Quiz Generator Card -->
+                <!-- AI Exam Quiz Engine -->
                 <div class="glass-panel rounded-2xl p-6 shadow-xl space-y-4">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-3">
                         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                            <span>📝</span> Kanken AI Quiz Engine
+                            <span>📝</span> 8級 Dynamic Quiz Generator
                         </h3>
-                        <span id="quiz-type-badge" class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Level Format</span>
+                        <span id="quiz-type-badge" class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">8級 Format</span>
                     </div>
 
                     <div id="quiz-box" class="space-y-3">
-                        <p id="quiz-question" class="text-sm font-semibold text-slate-800 leading-relaxed"></p>
+                        <p id="quiz-question" class="text-sm font-semibold text-slate-800 leading-relaxed">Click below to generate a quiz question for this Kanji.</p>
                         <div id="quiz-options" class="grid grid-cols-1 gap-2"></div>
                         <p id="quiz-feedback" class="text-xs font-bold mt-2 min-h-[1rem]"></p>
                     </div>
 
                     <button id="generate-quiz-btn" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition shadow">
-                        ⚡ Generate New Level-Specific Question
+                        ⚡ Generate Question for Current Kanji
                     </button>
                 </div>
 
             </section>
         </main>
 
-        <!-- Wallpaper Refresh Status Bar -->
+        <!-- Wallpaper & Refresh Status Bar -->
         <footer class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-600">
             <div class="flex items-center gap-3">
                 <span class="relative flex h-3 w-3">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                 </span>
-                <span id="ai-agent-status" class="font-medium">AI Agent: Monitoring Level Switch & Generating Wallpapers</span>
+                <span id="ai-agent-status" class="font-medium">AI Agent: Loaded 8級 Dataset via API</span>
             </div>
             <div class="flex items-center gap-4">
-                <span>Auto-refresh: <strong id="timer-display" class="text-slate-900 font-mono">05:00</strong></span>
+                <span>Wallpaper refresh: <strong id="timer-display" class="text-slate-900 font-mono">05:00</strong></span>
                 <button id="manual-refresh-bg" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-lg transition text-[11px]">↻ Refresh Image</button>
             </div>
         </footer>
@@ -155,164 +154,189 @@
 
     <!-- Application Script -->
     <script>
-        // Official Kanken Exam-Aligned Specifications Dataset
-        const KANKEN_DATASET = {
-            "10": {
-                grade: "小学校 1年 (Elem 1)",
-                kanjiList: [
-                    {
-                        kanji: "水", strokes: 4, onyomi: "スイ", kunyomi: "みず", meaning: "Water", jlpt: "N5",
-                        compounds: [{ word: "水泳", reading: "すいえい", meaning: "Swimming" }, { word: "水道", reading: "すいどう", meaning: "Water supply" }]
-                    },
-                    {
-                        kanji: "山", strokes: 3, onyomi: "サン", kunyomi: "やま", meaning: "Mountain", jlpt: "N5",
-                        compounds: [{ word: "火山", reading: "かざん", meaning: "Volcano" }]
-                    }
-                ],
-                // Exam Specs: Basic Reading/Writing, Stroke Count, Simple Selection
-                quizzes: [
-                    { q: "「水曜日」の「水」の正しい読み方は？", options: ["みず", "スイ", "さん", "キ"], ans: 1, type: "読み (Reading)" },
-                    { q: "「山」の総画数はいくつですか？", options: ["2画", "3画", "4画", "5画"], ans: 1, type: "画数 (Stroke Count)" }
-                ]
-            },
-            "8": {
-                grade: "小学校 3年 (Elem 3)",
-                kanjiList: [
-                    {
-                        kanji: "鉄", strokes: 13, onyomi: "テツ", kunyomi: "くろがね", meaning: "Iron / Steel", jlpt: "N3",
-                        compounds: [{ word: "鉄道", reading: "てつどう", meaning: "Railway" }, { word: "地下鉄", reading: "ちかてつ", meaning: "Subway" }]
-                    }
-                ],
-                // Exam Specs: Okurigana, Antonyms, Homonyms
-                quizzes: [
-                    { q: "「鉄」の部首（へん）は何ですか？", options: ["金（かねへん）", "木（きへん）", "日（ひへん）", "水（みずさんずい）"], ans: 0, type: "部首 (Radical)" },
-                    { q: "「表」の対義語（反対の意味の漢字）は？", options: ["裏", "内", "後", "底"], ans: 0, type: "対義語 (Antonym)" }
-                ]
-            },
-            "5": {
-                grade: "小学校 6年 (Elem 6)",
-                kanjiList: [
-                    {
-                        kanji: "策", strokes: 12, onyomi: "サク", kunyomi: "-", meaning: "Strategy / Policy", jlpt: "N2",
-                        compounds: [{ word: "対策", reading: "たいさく", meaning: "Countermeasure" }, { word: "政策", reading: "せいさく", meaning: "Political policy" }]
-                    }
-                ],
-                // Exam Specs: Compound Idioms, Synonyms, Complex Reading
-                quizzes: [
-                    { q: "「対策」の正しい読み方はどれですか？", options: ["たいさく", "ていさく", "たいさく", "だいさく"], ans: 0, type: "熟語 (Compound Reading)" },
-                    { q: "「一期一会」のような四字熟語の構成要素として適切なのは？", options: ["四字熟語", "対義語", "類義語", "同音異義語"], ans: 0, type: "四字熟語 (Idioms)" }
-                ]
-            },
-            "2": {
-                grade: "高校・一般 (High School / Adult)",
-                kanjiList: [
-                    {
-                        kanji: "薫", strokes: 16, onyomi: "クン", kunyomi: "かお-る", meaning: "Fragrance / Balmy", jlpt: "N1",
-                        compounds: [{ word: "薫陶", reading: "くんとう", meaning: "Moral discipline" }, { word: "薫風", reading: "くんぷう", meaning: "Balmy breeze" }]
-                    }
-                ],
-                // Exam Specs: Jouyou Kanji Full Set, Ateji (当て字), Advanced Vocabulary
-                quizzes: [
-                    { q: "「薫陶（くんとう）」の意味として最も適当なものは？", options: ["徳によって人を教育すること", "香りを嗅ぐこと", "風が吹くこと", "議論を交わすこと"], ans: 0, type: "高度熟語 (Advanced Vocab)" },
-                    { q: "「時計」のように漢字の音訓を無視した当て字の読み方を何と呼ぶか？", options: ["熟字訓・当て字", "音読み", "訓読み", "国字"], ans: 0, type: "当て字 (Ateji)" }
-                ]
-            }
-        };
-
         const WALLPAPERS = [
             "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?q=80&w=1600&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1600&auto=format&fit=crop",
             "https://images.unsplash.com/photo-1528164344705-47542687990d?q=80&w=1600&auto=format&fit=crop"
         ];
 
-        let currentLevel = "10";
+        // Global State for 440 Grade 3 Kanji
+        let grade3KanjiList = [];
         let currentIndex = 0;
+        let currentKanjiData = null;
         let countdownTimer = 300;
+
         const canvas = document.getElementById("sketch-canvas");
         const ctx = canvas.getContext("2d");
         let isDrawing = false;
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             initCanvas();
-            renderKanjiData();
-            generateQuiz();
-            refreshWallpaper();
             startTimer();
+            refreshWallpaper();
+            await fetchGrade3KanjiList();
 
-            document.getElementById("kanken-level").addEventListener("change", (e) => {
-                currentLevel = e.target.value;
-                currentIndex = 0;
-                renderKanjiData();
-                generateQuiz();
-                refreshWallpaper();
-            });
-
-            document.getElementById("next-kanji-btn").addEventListener("click", () => {
-                const list = KANKEN_DATASET[currentLevel].kanjiList;
-                currentIndex = (currentIndex + 1) % list.length;
-                renderKanjiData();
+            // Event Listeners
+            document.getElementById("prev-kanji-btn").addEventListener("click", () => navigateKanji(-1));
+            document.getElementById("next-kanji-btn").addEventListener("click", () => navigateKanji(1));
+            document.getElementById("kanji-index-input").addEventListener("change", (e) => {
+                let val = parseInt(e.target.value) - 1;
+                if (val >= 0 && val < grade3KanjiList.length) {
+                    currentIndex = val;
+                    loadKanjiDetails(grade3KanjiList[currentIndex]);
+                }
             });
 
             document.getElementById("clear-btn").addEventListener("click", clearCanvas);
-            document.getElementById("generate-quiz-btn").addEventListener("click", generateQuiz);
+            document.getElementById("generate-quiz-btn").addEventListener("click", generateDynamicQuiz);
             document.getElementById("manual-refresh-bg").addEventListener("click", () => {
                 refreshWallpaper();
                 countdownTimer = 300;
             });
         });
 
-        function renderKanjiData() {
-            const data = KANKEN_DATASET[currentLevel].kanjiList[currentIndex] || KANKEN_DATASET[currentLevel].kanjiList[0];
-            
-            document.getElementById("kanji-display").textContent = data.kanji;
-            document.getElementById("stroke-count-badge").textContent = `${data.strokes} 画`;
-            document.getElementById("grade-tag").textContent = KANKEN_DATASET[currentLevel].grade;
-            document.getElementById("jlpt-tag").textContent = `JLPT ${data.jlpt}`;
-            document.getElementById("kanken-badge").textContent = `漢検 ${currentLevel}級`;
-            document.getElementById("kanji-meaning").textContent = data.meaning;
-            document.getElementById("onyomi-display").textContent = data.onyomi;
-            document.getElementById("kunyomi-display").textContent = data.kunyomi;
+        // 1. Fetch All 440 Grade 3 Kanji Characters from API
+        async function fetchGrade3KanjiList() {
+            try {
+                const response = await fetch('https://kanjiapi.dev/v1/kanji/grade-3');
+                grade3KanjiList = await response.json();
+                
+                document.getElementById("total-kanji-count").textContent = grade3KanjiList.length;
+                document.getElementById("kanji-index-input").max = grade3KanjiList.length;
+                
+                // Load the first character
+                loadKanjiDetails(grade3KanjiList[currentIndex]);
+            } catch (error) {
+                console.error("API Error:", error);
+                document.getElementById("kanji-meaning").textContent = "Failed to load Kanji dataset.";
+            }
+        }
 
+        // 2. Fetch Full Metadata & Compounds for Selected Character
+        async function loadKanjiDetails(character) {
+            document.getElementById("kanji-display").textContent = character;
+            document.getElementById("kanji-index-input").value = currentIndex + 1;
+            document.getElementById("kanji-meaning").textContent = "Loading attributes...";
+            document.getElementById("vocab-list").innerHTML = `<p class="text-slate-400">Loading compounds...</p>`;
+            clearCanvas();
+
+            try {
+                // Fetch character details
+                const detailRes = await fetch(`https://kanjiapi.dev/v1/kanji/${character}`);
+                currentKanjiData = await detailRes.json();
+
+                // Update UI attributes
+                document.getElementById("stroke-count-badge").textContent = `${currentKanjiData.stroke_count} 画`;
+                document.getElementById("jlpt-tag").textContent = currentKanjiData.jlpt ? `JLPT N${currentKanjiData.jlpt}` : "JLPT N3";
+                document.getElementById("kanji-meaning").textContent = currentKanjiData.meanings.slice(0, 3).join(", ");
+                document.getElementById("onyomi-display").textContent = currentKanjiData.on_readings.join("、 ") || "なし";
+                document.getElementById("kunyomi-display").textContent = currentKanjiData.kun_readings.join("、 ") || "なし";
+
+                // Fetch word compounds
+                const wordsRes = await fetch(`https://kanjiapi.dev/v1/words/${character}`);
+                const wordsData = await wordsRes.json();
+                renderVocabList(wordsData);
+
+                generateDynamicQuiz();
+            } catch (error) {
+                console.error("Error loading Kanji details:", error);
+            }
+        }
+
+        function renderVocabList(words) {
             const vocabContainer = document.getElementById("vocab-list");
             vocabContainer.innerHTML = "";
-            data.compounds.forEach(item => {
+
+            if (!words || words.length === 0) {
+                vocabContainer.innerHTML = `<p class="text-slate-400">No common compounds listed.</p>`;
+                return;
+            }
+
+            // Display top 4 compound words
+            words.slice(0, 4).forEach(item => {
+                const written = item.variants[0]?.written || "";
+                const pronounced = item.variants[0]?.pronounced || "";
+                const meaning = item.meanings[0]?.glosses?.slice(0, 2).join(", ") || "";
+
                 const div = document.createElement("div");
-                div.className = "p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-xs";
-                div.innerHTML = `<div><strong class="text-slate-900 text-sm">${item.word}</strong> <span class="text-slate-500">(${item.reading})</span></div><span class="text-slate-600 font-medium">${item.meaning}</span>`;
+                div.className = "p-2 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center";
+                div.innerHTML = `<div><strong class="text-slate-900 text-sm">${written}</strong> <span class="text-slate-500">(${pronounced})</span></div><span class="text-slate-600 font-medium">${meaning}</span>`;
                 vocabContainer.appendChild(div);
             });
-            clearCanvas();
         }
 
-        function generateQuiz() {
-            const quizzes = KANKEN_DATASET[currentLevel].quizzes;
-            const quiz = quizzes[Math.floor(Math.random() * quizzes.length)];
+        function navigateKanji(step) {
+            if (grade3KanjiList.length === 0) return;
+            currentIndex = (currentIndex + step + grade3KanjiList.length) % grade3KanjiList.length;
+            loadKanjiDetails(grade3KanjiList[currentIndex]);
+        }
 
-            document.getElementById("quiz-type-badge").textContent = quiz.type;
-            document.getElementById("quiz-question").textContent = quiz.q;
-            document.getElementById("quiz-feedback").textContent = "";
+        // 3. Generate Level 8 Dynamic Quizzes from API Data
+        function generateDynamicQuiz() {
+            if (!currentKanjiData) return;
 
+            const quizTypes = ["reading", "strokes"];
+            const selectedType = quizTypes[Math.floor(Math.random() * quizTypes.length)];
+            const quizBox = document.getElementById("quiz-question");
             const optionsContainer = document.getElementById("quiz-options");
+            const feedback = document.getElementById("quiz-feedback");
+
+            feedback.textContent = "";
             optionsContainer.innerHTML = "";
 
-            quiz.options.forEach((opt, idx) => {
-                const btn = document.createElement("button");
-                btn.className = "w-full text-left p-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 transition";
-                btn.textContent = `${idx + 1}. ${opt}`;
-                btn.onclick = () => {
-                    const feedback = document.getElementById("quiz-feedback");
-                    if (idx === quiz.ans) {
-                        feedback.textContent = "⭕ Correct! 正解です。";
-                        feedback.className = "text-xs font-bold mt-2 text-emerald-600";
-                    } else {
-                        feedback.textContent = "❌ Incorrect. Try again!";
-                        feedback.className = "text-xs font-bold mt-2 text-red-600";
-                    }
-                };
-                optionsContainer.appendChild(btn);
-            });
+            if (selectedType === "reading") {
+                document.getElementById("quiz-type-badge").textContent = "読み (Reading Quiz)";
+                const correctAnswer = currentKanjiData.on_readings[0] || currentKanjiData.kun_readings[0] || "かな";
+                quizBox.textContent = `「${currentKanjiData.kanji}」の正しい読み方はどれですか？`;
+
+                const options = [correctAnswer, "カン", "ショウ", "エキ"].sort(() => Math.random() - 0.5);
+
+                options.forEach(opt => {
+                    const btn = document.createElement("button");
+                    btn.className = "w-full text-left p-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 transition";
+                    btn.textContent = opt;
+                    btn.onclick = () => {
+                        if (opt === correctAnswer) {
+                            feedback.textContent = "⭕ Correct! 正解です。";
+                            feedback.className = "text-xs font-bold mt-2 text-emerald-600";
+                        } else {
+                            feedback.textContent = `❌ Incorrect. The answer is ${correctAnswer}.`;
+                            feedback.className = "text-xs font-bold mt-2 text-red-600";
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+            } else {
+                document.getElementById("quiz-type-badge").textContent = "画数 (Stroke Count)";
+                const correctStrokes = currentKanjiData.stroke_count;
+                quizBox.textContent = `「${currentKanjiData.kanji}」の総画数はいくつですか？`;
+
+                const strokeOptions = Array.from(new Set([
+                    `${correctStrokes}画`,
+                    `${correctStrokes + 1}画`,
+                    `${Math.max(1, correctStrokes - 1)}画`,
+                    `${correctStrokes + 2}画`
+                ])).sort(() => Math.random() - 0.5);
+
+                strokeOptions.forEach(opt => {
+                    const btn = document.createElement("button");
+                    btn.className = "w-full text-left p-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 transition";
+                    btn.textContent = opt;
+                    btn.onclick = () => {
+                        if (opt === `${correctStrokes}画`) {
+                            feedback.textContent = "⭕ Correct! 正解です。";
+                            feedback.className = "text-xs font-bold mt-2 text-emerald-600";
+                        } else {
+                            feedback.textContent = `❌ Incorrect. Correct strokes: ${correctStrokes}画.`;
+                            feedback.className = "text-xs font-bold mt-2 text-red-600";
+                        }
+                    };
+                    optionsContainer.appendChild(btn);
+                });
+            }
         }
 
+        // Touch & Finger Canvas Logic
         function initCanvas() {
             ctx.lineWidth = 6;
             ctx.lineCap = "round";
@@ -358,7 +382,6 @@
         function refreshWallpaper() {
             const randomImg = WALLPAPERS[Math.floor(Math.random() * WALLPAPERS.length)];
             document.getElementById("wallpaper-bg").style.backgroundImage = `url('${randomImg}')`;
-            document.getElementById("ai-agent-status").textContent = `AI Agent: Active | Syncing Level ${currentLevel}級 Study Wallpaper`;
         }
 
         function startTimer() {
