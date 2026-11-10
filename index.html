@@ -360,12 +360,18 @@
     let mockSerial=0;
     const BANK = {
       choice: [
-        ['木の（えだ）に鳥がいる。','枝',['枝','技','校','枚']],['（きせつ）が変わる。','季節',['季節','汽節','季説','記節']],
-        ['（しぜん）を大切にする。','自然',['自然','自燃','時然','事前']],['（けっか）を知らせる。','結果',['結果','結課','決果','血果']],
-        ['（かんさつ）日記を書く。','観察',['観察','感察','観祭','関察']],['学校の（こうてい）で遊ぶ。','校庭',['校庭','校定','交庭','公庭']],
-        ['（あんぜん）に気をつける。','安全',['安全','安前','案全','暗全']],['（せいこう）をよろこぶ。','成功',['成功','成工','正功','生功']],
-        ['（しゅうかん）を身につける。','習慣',['習慣','週慣','習観','集慣']],['（たいよう）がのぼる。','太陽',['太陽','大陽','太洋','大洋']],
-        ['（どうぶつ）を観察する。','動物',['動物','同物','働物','道物']],['（はっぴょう）を聞く。','発表',['発表','発票','初表','発標']]
+        ['学級のお楽しみ会でシ会をつとめる。','司',['司','詩','詞'],'シ'],
+        ['作文を原こう用紙にセイ書する。','清',['成','清','省'],'セイ'],
+        ['遠くの景色を見てキョウを楽しむ。','鏡',['協','共','鏡'],'キョウ'],
+        ['ぶどうをカ工してジャムを作る。','加',['加','化','課'],'カ'],
+        ['妹とけんかしたことをハン省する。','反',['飯','半','反'],'ハン'],
+        ['消火キの使い方を教わった。','器',['起','器','希'],'キ'],
+        ['今度の試験に受かる自シンがある。','信',['信','臣','神'],'シン'],
+        ['緑化運動のヒョウ語を考える。','標',['標','票','表'],'ヒョウ'],
+        ['理科のサン考書を買ってもらう。','参',['算','散','参'],'サン'],
+        ['船底に貝がフ着している。','付',['不','付','夫'],'フ'],
+        ['学校のシキであいさつをする。','式',['式','識','職'],'シキ'],
+        ['本の内容をセツ明する。','説',['説','雪','節'],'セツ']
       ],
       opposite: [
         ['安全','危険'],['開始','終了'],['成功','失敗'],['賛成','反対'],['増加','減少'],
@@ -422,16 +428,17 @@
       {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
     ];
     function sample(pool,n){const a=[...pool];shuffleArray(a);if(a.length<n)throw Error('Question bank too small: '+n);return a.slice(0,n)}
+    function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
     function makeSections(){
       const sentences=sample(SENTENCE_BANK,50);
       let cursor=0;
       return SPECS.map(spec=>{
         let questions;
         if(spec.type==='reading'||spec.type==='writing'){
-          questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3],answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:row[1]}));cursor+=spec.count;
+          questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else {
           questions=sample(BANK[spec.type],spec.count).map(row=>{
-            if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2]};
+            if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
             if(spec.type==='homophone')return {prompt:row[1]+'／'+row[3],answer:row[2]+'・'+row[4]};
             return {prompt:row[0],answer:row[1]};
           });
@@ -460,14 +467,14 @@
         out+=ht(x,top+13,String(i+1),8,'text-anchor="middle"');
         let prompt=q.prompt;
         // For narrow sections, concise context keeps each vertical column legible.
-        if(s.type==='choice')prompt=prompt.replace(/（[^）]+）/,'□');
+        // Choice questions keep the full sentence and mark its target katakana.
         if(s.type==='homophone')prompt=prompt.replace('／','・');
-        const maxChars=Math.max(7,Math.floor((height-80)/fs));
+        const maxChars=Math.max(7,Math.floor((height-(s.type==='choice'?124:80))/fs));
         if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
         out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
         // Reading section: mark precisely the kanji word whose reading is requested.
         // Japanese vertical text uses a thin rule immediately to the right of the target glyphs.
-        if(s.type==='reading' && q.target){
+        if((s.type==='reading'||s.type==='writing'||s.type==='choice') && q.target){
           const chars=[...prompt], targetChars=[...q.target];
           const start=prompt.indexOf(q.target);
           if(start>=0){
@@ -476,6 +483,11 @@
             const markEnd=markY+targetChars.length*fs;
             out+=line(x+fs*.72,markY+1,x+fs*.72,markEnd-1,'#111',1.15);
           }
+        }
+        // Section 三: three labeled candidate kanji beneath each full sentence.
+        if(s.type==='choice' && q.choices){
+          const choiceText=q.choices.map((c,j)=>'（'+['ア','イ','ウ'][j]+c+'）').join('');
+          out+=vt(x,bottom-112,choiceText,Math.min(9,fs),'text-anchor="start"');
         }
         // Answer boxes remain attached to the same fixed x coordinate.
         const boxW=Math.min(17,Math.max(11,spacing-5));
