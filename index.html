@@ -152,24 +152,32 @@
     @media print{body{padding:0;background:#fff}header,#status,#kanji-container,.mock-toolbar{display:none!important}#mock-panel{display:block!important}.exam-page{max-width:none;width:100%;height:190mm;min-height:0;margin:0;padding:6mm;border:0;box-shadow:none;break-after:page}.exam-sections{grid-template-columns:repeat(5,minmax(0,1fr))}.exam-section{padding:6px}.exam-questions li{margin-bottom:5px;font-size:.77rem}.exam-section p{font-size:.68rem}#mock-answers{border:0;max-width:none;break-before:page}#mock-answers[hidden]{display:none!important}}
 
     [hidden]{display:none!important}
-    /* Vertical Japanese examination layout, right-to-left section flow. */
-    .japanese-paper{display:flex;flex-direction:row-reverse;gap:8mm;overflow:hidden;height:190mm;min-height:0;padding:8mm!important}
-    .exam-side{flex:0 0 25mm;display:flex;flex-direction:column;align-items:center;gap:5mm;border-left:2px solid #111;padding-left:3mm;font-family:"Yu Mincho","Hiragino Mincho ProN",serif}
-    .exam-side strong{border:2px solid #111;padding:2mm;font-size:22px}
-    .exam-side>span{writing-mode:vertical-rl;font-size:17px;font-weight:700;letter-spacing:.1em;max-height:78mm}
-    .exam-side small{font-size:10px}.exam-side label{writing-mode:vertical-rl;font-size:12px;max-height:55mm}
-    .vertical-sheet{flex:1;display:flex;flex-direction:row-reverse;gap:2mm;min-width:0}
-    .vertical-section{writing-mode:vertical-rl;text-orientation:mixed;flex:1 1 0;min-width:0;overflow:hidden;border-left:1px solid #999;padding:2mm 1mm;display:flex;align-items:stretch;gap:2mm;font-family:"Yu Mincho","Hiragino Mincho ProN",serif}
-    .section-title{font-size:15px;font-weight:700;border-right:3px solid #222;padding-right:2mm;white-space:nowrap}
-    .section-title small{font-size:10px}.section-instruction{font-size:10px;line-height:1.3;max-height:100%;}
-    .vertical-questions{display:flex;flex-direction:row-reverse;flex-wrap:wrap;align-content:flex-start;gap:1mm 2mm;min-width:0;overflow:hidden}
-    .exam-question{writing-mode:vertical-rl;display:flex;align-items:center;gap:2mm;font-size:11px;line-height:1.35;max-height:145mm;min-width:5mm;border-left:1px dotted #bbb;padding-left:1mm}
-    .qnumber{font-size:9px;color:#555}.qprompt{max-height:105mm;overflow-wrap:anywhere}
-    .writebox{display:inline-block;width:7mm;height:10mm;border:1px solid #555;flex-shrink:0}
-    .choices{font-size:9px;display:block;margin-top:2mm}
-    @media screen and (max-width:850px){.japanese-paper{overflow:auto;min-width:950px}.exam-page{margin-left:0}}
+    /* Two-page Japanese examination facsimile-inspired structure: monochrome,
+       compact Mincho type, thin rules, right-hand title strip, and vertical text. */
+    .japanese-paper{box-sizing:border-box;width:283mm;height:196mm;min-height:0!important;display:grid!important;grid-template-columns:minmax(0,1fr) 26mm;gap:3mm;padding:4mm!important;background:white;color:#111;overflow:hidden;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif}
+    .exam-side{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:2.5mm;border-left:1px solid #888;padding-left:2mm;min-width:0;font-family:inherit}
+    .exam-side strong{border:1.5px solid #111;padding:1mm 2mm;font-size:19px;line-height:1.2}
+    .exam-side>span{writing-mode:vertical-rl;letter-spacing:.12em;font-size:17px;font-weight:bold;max-height:85mm}
+    .exam-side small{font-size:9px;writing-mode:vertical-rl;max-height:25mm}
+    .exam-side label{writing-mode:vertical-rl;font-size:11px;max-height:42mm;border:1px solid #999;padding:2mm}
+    .vertical-sheet{grid-column:1;grid-row:1;min-width:0;display:grid;grid-template-rows:1fr 1.08fr;gap:1.5mm;direction:rtl}
+    .vertical-sheet.page-two{grid-template-rows:.9fr .9fr 1.1fr}
+    .exam-band{display:flex;flex-direction:row;direction:rtl;min-width:0;min-height:0;gap:1.2mm;border-bottom:1px solid #aaa;padding-bottom:1mm}
+    .exam-band:last-child{border-bottom:0}
+    .vertical-section{box-sizing:border-box;writing-mode:vertical-rl;text-orientation:mixed;flex:1 1 0;min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:1mm;border-left:1px solid #bbb;padding:1mm;font-family:inherit}
+    .vertical-section:last-child{border-left:0}
+    .section-title{font-size:12px;font-weight:700;border-right:3px solid #222;padding-right:1mm;white-space:nowrap;line-height:1.1}
+    .section-title small{font-size:8px}
+    .section-instruction{font-size:8.2px;line-height:1.2;max-height:100%;white-space:normal}
+    .vertical-questions{display:flex;flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:1mm;min-width:0;min-height:0;overflow:hidden}
+    .exam-question{writing-mode:vertical-rl;display:flex;align-items:center;gap:1mm;font-size:9px;line-height:1.2;max-height:100%;min-width:4mm;border-left:0;padding-left:.5mm}
+    .qnumber{font-size:8px;color:#333}.qprompt{max-height:100%;overflow-wrap:anywhere}
+    .writebox{display:inline-block;width:5.5mm;height:7mm;border:1px solid #555;flex-shrink:0}
+    .choices{font-size:7.5px;display:block;margin-top:1mm}
+    .mock-disclaimer{font-size:8px;border:1px solid #888;padding:1mm;writing-mode:vertical-rl}
+    @media screen and (max-width:1100px){.japanese-paper{min-width:1069px}.exam-page{overflow-x:auto}}
     @page{size:A4 landscape;margin:7mm}
-    @media print{.japanese-paper{width:283mm!important;height:196mm!important;padding:2mm!important;break-after:page!important;box-sizing:border-box}.exam-question{font-size:10px}.section-title{font-size:13px}.vertical-section{padding:1mm}.exam-side{flex-basis:20mm}#mock-answers[hidden]{display:none!important}}
+    @media print{.japanese-paper{width:283mm!important;height:196mm!important;min-width:0!important;margin:0!important;break-after:page!important;border:0!important;box-shadow:none!important}.exam-page:last-of-type{break-after:auto!important}#mock-answers[hidden]{display:none!important}}
   </style>
 </head>
 <body>
@@ -394,11 +402,11 @@
       {id:'三',title:'正しい漢字',type:'choice',count:10,points:2},
       {id:'四',title:'反対の意味の言葉',type:'opposite',count:5,points:2},
       {id:'五',title:'部首',type:'radical',count:10,points:2},
-      {id:'六',title:'送り仮名',type:'okurigana',count:5,points:2},
+      {id:'六',title:'送り仮名',type:'okurigana',count:10,points:2},
       {id:'七',title:'まちがい直し',type:'correct',count:7,points:2},
       {id:'八',title:'同じ読みの漢字',type:'homophone',count:10,points:2},
       {id:'九',title:'熟語の組み立て',type:'compound',count:8,points:2},
-      {id:'十',title:'漢字の書き取り',type:'writing',count:25,points:2}
+      {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
      ]; // 200 points total; unofficial practice layout.
     const cleanReading = v=>String(v||'').trim().replace(/[ー－]/g,'ー');
     // Offline question fallback: mock generation works even if GitHub data is unavailable.
@@ -455,8 +463,9 @@
         });
         mockSerial++;
         mockPaper.innerHTML=[0,1].map(page=>{
-          const half=sections.slice(page*5,page*5+5);
-          return `<article class="exam-page japanese-paper"><div class="exam-side"><strong>7級</strong><span>日本漢字能力検定　模擬試験問題</span><small>非公式・学習用</small><small>第${mockSerial}回</small><small>${page+1}／2</small><label>氏名：＿＿＿＿＿＿＿＿</label></div><div class="vertical-sheet">${half.map(sectionHTML).join('')}</div></article>`;
+          const bands=page===0?[[0,1],[2,3,4]]:[[5,6],[7,8],[9]];
+          const bandHTML=bands.map(indices=>`<div class="exam-band">${indices.map(i=>sectionHTML(sections[i])).join('')}</div>`).join('');
+          return `<article class="exam-page japanese-paper"><div class="exam-side"><strong>7級</strong><span>日本漢字能力検定　模擬試験問題</span><small>2026年度・練習用</small><small>第${mockSerial}回</small><small>問題（${page+1}／2）</small><label>氏名：＿＿＿＿＿＿＿＿</label><div class="mock-disclaimer">非公式・学習用</div></div><div class="vertical-sheet ${page===1?'page-two':''}">${bandHTML}</div></article>`;
         }).join('');
         mockAnswers.innerHTML=`<h2>解答用紙 / 第${mockSerial}回</h2><p>非公式のオリジナル練習問題。読み・書き取りは登録データに基づきます。その他の問題は内蔵の編集済み練習問題です。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;
