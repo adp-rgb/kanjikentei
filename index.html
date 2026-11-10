@@ -132,6 +132,24 @@
     .hide-reading rt {
       visibility: hidden;
     }
+
+    .mock-toolbar{max-width:1100px;margin:0 auto 16px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+    .mock-toolbar span{font-size:.85rem;color:#475569}
+    .exam-page{box-sizing:border-box;max-width:1100px;min-height:740px;margin:16px auto;padding:22px 30px;background:#fff;border:1px solid #aeb7c5;box-shadow:0 2px 8px #0001;color:#111;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
+    .exam-head{display:flex;justify-content:space-between;align-items:start;border-bottom:2px solid #111;padding-bottom:9px;margin-bottom:12px;gap:12px}
+    .exam-head h2{margin:0;font-size:1.2rem}.exam-head small{font-size:.75rem}
+    .exam-meta{display:flex;gap:15px;font-size:.8rem;flex-wrap:wrap}.exam-meta span{border-bottom:1px solid #444;min-width:110px}
+    .exam-sections{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;align-items:stretch}
+    .exam-section{border:1px solid #aaa;padding:9px;min-width:0}.exam-section h3{font-size:.9rem;margin:0 0 7px;border-bottom:1px solid #aaa;padding-bottom:5px}
+    .exam-section p{font-size:.74rem;margin:0 0 9px;line-height:1.45}
+    .exam-questions{margin:0;padding:0;list-style:none}.exam-questions li{font-size:.85rem;line-height:1.6;margin-bottom:8px;overflow-wrap:anywhere;break-inside:avoid}
+    .exam-questions .num{font-size:.7rem;color:#555;margin-right:4px}.answer-space{display:block;height:20px;border-bottom:1px solid #888;margin-top:2px}
+    .exam-questions .choices{font-size:.75rem;color:#333}.exam-questions ruby rt{font-size:.6em}
+    #mock-answers{max-width:1100px;margin:16px auto;padding:20px;background:#fff;border:1px solid #aaa}
+    .key-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.key-grid section{break-inside:avoid}.key-grid p{font-size:.85rem;line-height:1.6}
+    @media(max-width:800px){.exam-sections{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-page{min-height:0}.key-grid{grid-template-columns:1fr}}
+    @page{size:A4 landscape;margin:10mm}
+    @media print{body{padding:0;background:#fff}header,#status,#kanji-container,.mock-toolbar{display:none!important}#mock-panel{display:block!important}.exam-page{max-width:none;width:100%;height:190mm;min-height:0;margin:0;padding:6mm;border:0;box-shadow:none;break-after:page}.exam-sections{grid-template-columns:repeat(5,minmax(0,1fr))}.exam-section{padding:6px}.exam-questions li{margin-bottom:5px;font-size:.77rem}.exam-section p{font-size:.68rem}#mock-answers{border:0;max-width:none;break-before:page}#mock-answers[hidden]{display:none!important}}
   </style>
 </head>
 <body>
@@ -145,11 +163,16 @@
       </select>
       <button id="shuffle-btn">Shuffle Cards</button>
       <button id="toggle-furigana">Toggle Readings</button>
+      <button id="mock-btn" type="button">Level 7 Mock Test</button>
     </div>
   </header>
 
   <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
   <main id="kanji-container" class="kanji-grid"></main>
+  <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
+    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">Print / Save PDF</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
+    <div id="mock-paper"></div><div id="mock-answers" hidden></div>
+  </section>
 
   <script>
     const DATA_ROOT = 'https://raw.githubusercontent.com/adp-rgb/kanji-data/main/';
@@ -287,6 +310,98 @@
     toggleBtn.addEventListener('click', () => {
       container.classList.toggle('hide-reading');
       toggleBtn.setAttribute('aria-pressed', String(container.classList.contains('hide-reading')));
+    });
+    // Exam mode: generated only from verified kanji-to-reading mappings in the two source files.
+    // The sample exam includes additional linguistic tasks (radicals, antonyms, homophones)
+    // which cannot be reliably generated from these datasets alone.
+    const mockPanel = document.getElementById('mock-panel');
+    const mockPaper = document.getElementById('mock-paper');
+    const mockAnswers = document.getElementById('mock-answers');
+    const mockInfo = document.getElementById('mock-info');
+    const mockButton = document.getElementById('mock-btn');
+    let mockSerial = 0;
+    const EXAM_SECTIONS = [
+      {name:'一',type:'reading',count:20,points:1},
+      {name:'二',type:'writing',count:10,points:2},
+      {name:'三',type:'choice',count:10,points:2},
+      {name:'四',type:'reading',count:10,points:2},
+      {name:'五',type:'writing',count:10,points:2},
+      {name:'六',type:'choice',count:10,points:2},
+      {name:'七',type:'reading',count:10,points:2},
+      {name:'八',type:'writing',count:10,points:2},
+      {name:'九',type:'choice',count:10,points:2},
+      {name:'十',type:'reading',count:10,points:2}
+    ]; // 200 points, 110 questions, two printable pages
+    const cleanReading = value => String(value || '').trim().replace(/[ー－]/g,'ー');
+    function examCandidates() {
+      const result = [];
+      const seen = new Set();
+      const allowed = new Set(['10級','9級','8級','7級']);
+      for (const item of kanjiData) {
+        if (!allowed.has(item.level) || !/^[\u3400-\u9fff]$/.test(item.kanji)) continue;
+        for (const r of item.readings) {
+          const reading = cleanReading(r['読み']);
+          // Restrict to standalone kana readings; skip annotation, parenthetical notes,
+          // okurigana and exceptional readings that need manual linguistic validation.
+          if (!/^[ぁ-ゖァ-ヺー]{1,9}$/.test(reading)) continue;
+          const key = item.kanji + '|' + reading;
+          if (!seen.has(key)) {seen.add(key);result.push({kanji:item.kanji,reading,level:item.level});}
+        }
+      }
+      return result;
+    }
+    function drawQuestions(pool, count, used, type) {
+      const available = pool.filter(q => !used.has(q.kanji));
+      shuffleArray(available);
+      if (available.length < count) throw new Error('Not enough unique Level 7 kanji with readings to create this paper.');
+      const selected = available.slice(0,count);
+      selected.forEach(q => used.add(q.kanji));
+      return selected.map(q => {
+        if (type !== 'choice') return {...q};
+        const other = [...new Set(pool.filter(p => p.kanji !== q.kanji).map(p => p.kanji))];
+        shuffleArray(other);
+        const choices = [q.kanji,...other.slice(0,3)];
+        shuffleArray(choices);
+        return {...q,choices};
+      });
+    }
+    function renderQuestion(q,i,type) {
+      let prompt = '';
+      if(type === 'reading') prompt = `<strong>${escapeHTML(q.kanji)}</strong>`;
+      else if(type === 'writing') prompt = `<strong>${escapeHTML(q.reading)}</strong>`;
+      else prompt = `${escapeHTML(q.reading)}<div class="choices">${q.choices.map((c,j)=>`${j+1}. ${escapeHTML(c)}`).join('　')}</div>`;
+      return `<li><span class="num">${i+1}.</span>${prompt}<span class="answer-space"></span></li>`;
+    }
+    function createMock() {
+      try {
+        if (!kanjiData.length) throw new Error('Load the kanji datasets first.');
+        const pool = examCandidates();
+        const used = new Set();
+        const sections = EXAM_SECTIONS.map(spec=>({...spec,questions:drawQuestions(pool,spec.count,used,spec.type)}));
+        mockSerial++;
+        mockPaper.innerHTML = [0,1].map(page=>{
+          const part = sections.slice(page*5,page*5+5);
+          return `<article class="exam-page"><div class="exam-head"><div><h2>日本漢字能力検定　7級　模擬試験問題</h2><small>非公式・学習用オリジナル問題 / 第${mockSerial}回 / ${page+1}枚目（全2枚）</small></div><div class="exam-meta"><label>氏名 <span>　　　　　　　　　</span></label><label>得点 <span>　　　　/ 200</span></label></div></div><div class="exam-sections">${part.map(spec=>`<section class="exam-section"><h3>${spec.name}　${spec.type==='reading'?'漢字の読み':spec.type==='writing'?'漢字の書き取り':'正しい漢字を選ぶ'}　(${spec.count*spec.points}点)</h3><p>${spec.type==='reading'?'次の漢字の読みをひらがなで書きなさい。':spec.type==='writing'?'次の読みを漢字で書きなさい。':'読みが合う漢字を選び、番号を書きなさい。'}（各${spec.points}点）</p><ol class="exam-questions">${spec.questions.map((q,i)=>renderQuestion(q,i,spec.type)).join('')}</ol></section>`).join('')}</div></article>`;
+        }).join('');
+        mockAnswers.innerHTML = `<h2>解答　/ Answer Key — 第${mockSerial}回</h2><p>学習用の自動生成問題です。読み方が複数ある漢字については、出題した読みを正答とします。</p><div class="key-grid">${sections.map(spec=>`<section><h3>${spec.name}　${spec.type==='reading'?'漢字の読み':spec.type==='writing'?'漢字の書き取り':'正しい漢字を選ぶ'}</h3><p>${spec.questions.map((q,i)=>`${i+1}. ${escapeHTML(spec.type==='reading'?q.reading:spec.type==='writing'?q.kanji:String(q.choices.indexOf(q.kanji)+1)+'（'+q.kanji+'）')}`).join('　 / 　')}</p></section>`).join('')}</div>`;
+        mockAnswers.hidden = true;
+        mockInfo.textContent = '110 questions · 200 points · 2 pages · Kanken 7級 cumulative (10–7級)';
+      } catch(err) { mockPaper.innerHTML = `<p role="alert" style="color:#b91c1c">${escapeHTML(err.message)}</p>`; mockInfo.textContent=''; }
+    }
+    mockButton.addEventListener('click',()=>{
+      document.querySelector('header').hidden=true;
+      status.hidden=true;container.hidden=true;mockPanel.hidden=false;
+      createMock();window.scrollTo(0,0);
+    });
+    document.getElementById('back-btn').addEventListener('click',()=>{
+      document.querySelector('header').hidden=false;
+      status.hidden=false;container.hidden=false;mockPanel.hidden=true;
+    });
+    document.getElementById('regenerate-btn').addEventListener('click',createMock);
+    document.getElementById('print-btn').addEventListener('click',()=>window.print());
+    document.getElementById('answers-btn').addEventListener('click',()=>{
+      mockAnswers.hidden=!mockAnswers.hidden;
+      document.getElementById('answers-btn').textContent=mockAnswers.hidden?'Show Answer Key':'Hide Answer Key';
     });
     loadData();
   </script>
