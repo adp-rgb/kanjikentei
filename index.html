@@ -106,6 +106,10 @@
     }
 
     .vocab-item {
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      overflow-wrap: anywhere;
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
@@ -135,44 +139,108 @@
   <header>
     <h1>Kanji Study Hub</h1>
     <div class="controls">
-      <label for="step-select">Step:</label>
+      <label for="step-select">Kanken:</label>
       <select id="step-select">
-        <option value="all">All Steps</option>
+        <option value="all">All Levels</option>
       </select>
       <button id="shuffle-btn">Shuffle Cards</button>
       <button id="toggle-furigana">Toggle Readings</button>
     </div>
   </header>
 
+  <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
   <main id="kanji-container" class="kanji-grid"></main>
 
   <script>
+    const DATA_ROOT = 'https://raw.githubusercontent.com/adp-rgb/kanji-data/main/';
+    const CSV_URL = DATA_ROOT + encodeURIComponent('漢検漢字辞典漢字.csv');
+    const JOYO_URL = DATA_ROOT + encodeURIComponent('常用漢字表本表.json');
+    const LEVELS = ['10級','9級','8級','7級','6級','5級','4級','3級','準2級','2級','準1級','1/準1級','1級','配当外'];
     let kanjiData = [];
+    let shuffledOrder = null;
     const container = document.getElementById('kanji-container');
     const stepSelect = document.getElementById('step-select');
+    const status = document.getElementById('status');
     const shuffleBtn = document.getElementById('shuffle-btn');
     const toggleBtn = document.getElementById('toggle-furigana');
+    const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 
-    // Item 1: Load external JSON file from GitHub relative path
+    // RFC-style CSV parsing, including quoted fields, commas, embedded newlines and BOM.
+    function parseCSV(text) {
+      text = text.replace(/^\uFEFF/, '');
+      const rows = []; let row = [], cell = '', quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          if (quoted && text[i + 1] === '"') { cell += '"'; i++; }
+          else quoted = !quoted;
+        } else if (ch === ',' && !quoted) { row.push(cell); cell = ''; }
+        else if ((ch === '\n' || ch === '\r') && !quoted) {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell); if (row.some(v => v !== '')) rows.push(row);
+          row = []; cell = '';
+        } else cell += ch;
+      }
+      row.push(cell); if (row.some(v => v !== '')) rows.push(row);
+      const headers = rows.shift() || [];
+      return rows.map(values => Object.fromEntries(headers.map((h, i) => [h, values[i] || ''])));
+    }
+
+    async function fetchText(url) {
+      const response = await fetch(url, { cache: 'no-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
+      return response.text();
+    }
+
+    function initFilter() {
+      const previous = localStorage.getItem('selectedKanjiStep') || '7級';
+      stepSelect.innerHTML = '<option value="all">All Levels</option>';
+      for (const level of LEVELS) {
+        if (!kanjiData.some(item => item.level === level)) continue;
+        const option = document.createElement('option');
+        option.value = level;
+        option.textContent = level + (level === '7級' ? ' (new at Level 7)' : '');
+        stepSelect.appendChild(option);
+      }
+      const cumulative = document.createElement('option');
+      cumulative.value = '7級-cumulative';
+      cumulative.textContent = '7級 (cumulative: 10–7)';
+      stepSelect.appendChild(cumulative);
+      stepSelect.value = [...stepSelect.options].some(o => o.value === previous) ? previous : '7級';
+    }
+
     async function loadData() {
       try {
-        const response = await fetch('./kanji_data.json');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        kanjiData = await response.json();
-        
-        initFilter();
-        
-        // Item 4: Restore saved filter step from localStorage
-        const savedStep = localStorage.getItem('selectedKanjiStep') || 'all';
-        stepSelect.value = savedStep;
-        
-        renderCards(savedStep);
+        const [csvText, jsonText] = await Promise.all([fetchText(CSV_URL), fetchText(JOYO_URL)]);
+        const rows = parseCSV(csvText);
+        const joyo = JSON.parse(jsonText);
+        if (!Array.isArray(joyo)) throw new Error('Unexpected Jōyō JSON structure');
+        const joyoByKanji = new Map();
+        for (const entry of joyo) {
+          const forms = entry['漢字'] || {};
+          for (const form of [forms['通用字体'], forms['康熙字典体']]) {
+            if (form) joyoByKanji.set(form, entry);
+          }
+        }
+        kanjiData = rows.filter(row => row['漢字テキスト'] && row['漢検級'] && row['字体'] === '親字').map(row => {
+          const kanji = row['漢字テキスト'];
+          const entry = joyoByKanji.get(kanji);
+          const readings = Array.isArray(entry?.['音訓']) ? entry['音訓'] : [];
+          return {
+            kanji, level: row['漢検級'], readings,
+            dictionaryUrl: row['漢字ペディア'] || '',
+            form: row['字体'], matched: !!entry
+          };
+        });
+        if (!kanjiData.length) throw new Error('No kanji found. Check CSV columns and data.');
+        initFilter(); renderCards();
       } catch (error) {
-        container.innerHTML = `<p style="color:red;">Error loading kanji_data.json: ${error.message}</p>`;
+        status.textContent = 'Could not load the data. Check your internet connection and GitHub availability.';
+        container.innerHTML = `<p style="color:#b91c1c">${escapeHTML(error.message)}</p>`;
+        console.error('Kanji data load failed:', error);
       }
     }
 
-    // Item 3: Fisher-Yates Shuffling Algorithm
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -180,73 +248,46 @@
       }
     }
 
-    // Populate filter dropdown dynamically
-    function initFilter() {
-      stepSelect.innerHTML = '<option value="all">All Steps</option>';
-      kanjiData.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.step;
-        option.textContent = `Step ${item.step}`;
-        stepSelect.appendChild(option);
-      });
-    }
-
-    // Render cards to UI
-    function renderCards(filterStep = 'all') {
+    function renderCards() {
+      const filter = stepSelect.value;
+      let active = kanjiData.filter(item => filter === 'all' || item.level === filter ||
+        (filter === '7級-cumulative' && ['10級','9級','8級','7級'].includes(item.level)));
+      if (shuffledOrder) active.sort((a,b) => (shuffledOrder.get(a.kanji) ?? Infinity) - (shuffledOrder.get(b.kanji) ?? Infinity));
+      const withReadings = active.filter(item => item.readings.length).length;
+      status.textContent = `${active.length} kanji • ${withReadings} with Jōyō readings • ${filter === '7級-cumulative' ? 'Kanken Level 7 cumulative' : filter === 'all' ? 'All levels' : filter}`;
       container.innerHTML = '';
-      
-      // Extract kanji items based on filter
-      let activeItems = [];
-      kanjiData.forEach(stepGroup => {
-        if (filterStep === 'all' || stepGroup.step == filterStep) {
-          activeItems.push(...stepGroup.kanji_items);
-        }
-      });
-
-      activeItems.forEach(item => {
-        const card = document.createElement('div');
+      const fragment = document.createDocumentFragment();
+      for (const item of active) {
+        const card = document.createElement('article');
         card.className = 'kanji-card';
-
-        const vocabListHTML = item.vocabulary.map(v => `
-          <li class="vocab-item">
-            <ruby>${v.kanji}<rt>${v.reading}</rt></ruby>
-            <span>${v.meaning}</span>
-          </li>
-        `).join('');
-
-        card.innerHTML = `
-          <div class="kanji-header">
-            <span class="kanji-main">${item.kanji}</span>
-            <span class="kanji-meaning">${item.meaning}</span>
-          </div>
-          <ul class="vocab-list">
-            ${vocabListHTML}
-          </ul>
-        `;
-
-        container.appendChild(card);
-      });
+        const readingHTML = item.readings.map(reading => {
+          const examples = Array.isArray(reading['例']) ? reading['例'] : [];
+          return `<li class="vocab-item"><span><ruby>${escapeHTML(item.kanji)}<rt>${escapeHTML(reading['読み'] || '')}</rt></ruby></span><span>${examples.map(escapeHTML).join(' · ') || '—'}</span></li>`;
+        }).join('');
+        const link = /^https:\/\/www\.kanjipedia\.jp\/kanji\//.test(item.dictionaryUrl)
+          ? `<a href="${escapeHTML(item.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">Kanjipedia ↗</a>` : '';
+        card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}</span></div>
+          <ul class="vocab-list">${readingHTML || '<li class="vocab-item">No Jōyō reading in this dataset</li>'}</ul>
+          <div style="margin-top:12px;font-size:.85rem">${link}</div>`;
+        fragment.appendChild(card);
+      }
+      container.appendChild(fragment);
     }
 
-    // Event Listener 1: Filter Change & Persistent State (Item 4)
-    stepSelect.addEventListener('change', (e) => {
-      const selectedValue = e.target.value;
-      localStorage.setItem('selectedKanjiStep', selectedValue);
-      renderCards(selectedValue);
+    stepSelect.addEventListener('change', () => {
+      localStorage.setItem('selectedKanjiStep', stepSelect.value);
+      renderCards();
     });
-
-    // Event Listener 2: Shuffle Cards (Item 3)
     shuffleBtn.addEventListener('click', () => {
-      kanjiData.forEach(stepGroup => shuffleArray(stepGroup.kanji_items));
-      renderCards(stepSelect.value);
+      const order = kanjiData.map(item => item.kanji);
+      shuffleArray(order);
+      shuffledOrder = new Map(order.map((kanji, i) => [kanji, i]));
+      renderCards();
     });
-
-    // Event Listener 3: Toggle Readings
     toggleBtn.addEventListener('click', () => {
       container.classList.toggle('hide-reading');
+      toggleBtn.setAttribute('aria-pressed', String(container.classList.contains('hide-reading')));
     });
-
-    // Start App
     loadData();
   </script>
 </body>
