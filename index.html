@@ -465,6 +465,18 @@
         const maxChars=Math.max(7,Math.floor((height-80)/fs));
         if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
         out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
+        // Reading section: mark precisely the kanji word whose reading is requested.
+        // Japanese vertical text uses a thin rule immediately to the right of the target glyphs.
+        if(s.type==='reading' && q.target){
+          const chars=[...prompt], targetChars=[...q.target];
+          const start=prompt.indexOf(q.target);
+          if(start>=0){
+            const before=[...prompt.slice(0,start)].length;
+            const markY=top+27+before*fs;
+            const markEnd=markY+targetChars.length*fs;
+            out+=line(x+fs*.72,markY+1,x+fs*.72,markEnd-1,'#111',1.15);
+          }
+        }
         // Answer boxes remain attached to the same fixed x coordinate.
         const boxW=Math.min(17,Math.max(11,spacing-5));
         const boxH=s.type==='reading'?25:18;
