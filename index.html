@@ -150,6 +150,25 @@
     @media(max-width:800px){.exam-sections{grid-template-columns:repeat(2,minmax(0,1fr))}.exam-page{min-height:0}.key-grid{grid-template-columns:1fr}}
     @page{size:A4 landscape;margin:10mm}
     @media print{body{padding:0;background:#fff}header,#status,#kanji-container,.mock-toolbar{display:none!important}#mock-panel{display:block!important}.exam-page{max-width:none;width:100%;height:190mm;min-height:0;margin:0;padding:6mm;border:0;box-shadow:none;break-after:page}.exam-sections{grid-template-columns:repeat(5,minmax(0,1fr))}.exam-section{padding:6px}.exam-questions li{margin-bottom:5px;font-size:.77rem}.exam-section p{font-size:.68rem}#mock-answers{border:0;max-width:none;break-before:page}#mock-answers[hidden]{display:none!important}}
+
+    /* Vertical Japanese examination layout, right-to-left section flow. */
+    .japanese-paper{display:flex;flex-direction:row-reverse;gap:8mm;overflow:hidden;height:190mm;min-height:0;padding:8mm!important}
+    .exam-side{flex:0 0 25mm;display:flex;flex-direction:column;align-items:center;gap:5mm;border-left:2px solid #111;padding-left:3mm;font-family:"Yu Mincho","Hiragino Mincho ProN",serif}
+    .exam-side strong{border:2px solid #111;padding:2mm;font-size:22px}
+    .exam-side>span{writing-mode:vertical-rl;font-size:17px;font-weight:700;letter-spacing:.1em;max-height:78mm}
+    .exam-side small{font-size:10px}.exam-side label{writing-mode:vertical-rl;font-size:12px;max-height:55mm}
+    .vertical-sheet{flex:1;display:flex;flex-direction:row-reverse;gap:2mm;min-width:0}
+    .vertical-section{writing-mode:vertical-rl;text-orientation:mixed;flex:1 1 0;min-width:0;overflow:hidden;border-left:1px solid #999;padding:2mm 1mm;display:flex;align-items:stretch;gap:2mm;font-family:"Yu Mincho","Hiragino Mincho ProN",serif}
+    .section-title{font-size:15px;font-weight:700;border-right:3px solid #222;padding-right:2mm;white-space:nowrap}
+    .section-title small{font-size:10px}.section-instruction{font-size:10px;line-height:1.3;max-height:100%;}
+    .vertical-questions{display:flex;flex-direction:row-reverse;flex-wrap:wrap;align-content:flex-start;gap:1mm 2mm;min-width:0;overflow:hidden}
+    .exam-question{writing-mode:vertical-rl;display:flex;align-items:center;gap:2mm;font-size:11px;line-height:1.35;max-height:145mm;min-width:5mm;border-left:1px dotted #bbb;padding-left:1mm}
+    .qnumber{font-size:9px;color:#555}.qprompt{max-height:105mm;overflow-wrap:anywhere}
+    .writebox{display:inline-block;width:7mm;height:10mm;border:1px solid #555;flex-shrink:0}
+    .choices{font-size:9px;display:block;margin-top:2mm}
+    @media screen and (max-width:850px){.japanese-paper{overflow:auto;min-width:950px}.exam-page{margin-left:0}}
+    @page{size:A4 landscape;margin:7mm}
+    @media print{.japanese-paper{width:283mm!important;height:196mm!important;padding:2mm!important;break-after:page!important;box-sizing:border-box}.exam-question{font-size:10px}.section-title{font-size:13px}.vertical-section{padding:1mm}.exam-side{flex-basis:20mm}#mock-answers[hidden]{display:none!important}}
   </style>
 </head>
 <body>
@@ -163,7 +182,7 @@
       </select>
       <button id="shuffle-btn">Shuffle Cards</button>
       <button id="toggle-furigana">Toggle Readings</button>
-      <button id="mock-btn" type="button">Level 7 Mock Test</button>
+      <button id="mock-btn" type="button">Level 7 Mock Test (Vertical)</button>
     </div>
   </header>
 
@@ -311,82 +330,131 @@
       container.classList.toggle('hide-reading');
       toggleBtn.setAttribute('aria-pressed', String(container.classList.contains('hide-reading')));
     });
-    // Exam mode: generated only from verified kanji-to-reading mappings in the two source files.
-    // The sample exam includes additional linguistic tasks (radicals, antonyms, homophones)
-    // which cannot be reliably generated from these datasets alone.
+    // Original practice questions. These are not copied from the official sample.
     const mockPanel = document.getElementById('mock-panel');
     const mockPaper = document.getElementById('mock-paper');
     const mockAnswers = document.getElementById('mock-answers');
     const mockInfo = document.getElementById('mock-info');
     const mockButton = document.getElementById('mock-btn');
     let mockSerial = 0;
-    const EXAM_SECTIONS = [
-      {name:'一',type:'reading',count:20,points:1},
-      {name:'二',type:'writing',count:10,points:2},
-      {name:'三',type:'choice',count:10,points:2},
-      {name:'四',type:'reading',count:10,points:2},
-      {name:'五',type:'writing',count:10,points:2},
-      {name:'六',type:'choice',count:10,points:2},
-      {name:'七',type:'reading',count:10,points:2},
-      {name:'八',type:'writing',count:10,points:2},
-      {name:'九',type:'choice',count:10,points:2},
-      {name:'十',type:'reading',count:10,points:2}
-    ]; // 200 points, 110 questions, two printable pages
-    const cleanReading = value => String(value || '').trim().replace(/[ー－]/g,'ー');
-    function examCandidates() {
-      const result = [];
-      const seen = new Set();
-      const allowed = new Set(['10級','9級','8級','7級']);
-      for (const item of kanjiData) {
-        if (!allowed.has(item.level) || !/^[\u3400-\u9fff]$/.test(item.kanji)) continue;
-        for (const r of item.readings) {
-          const reading = cleanReading(r['読み']);
-          // Restrict to standalone kana readings; skip annotation, parenthetical notes,
-          // okurigana and exceptional readings that need manual linguistic validation.
-          if (!/^[ぁ-ゖァ-ヺー]{1,9}$/.test(reading)) continue;
-          const key = item.kanji + '|' + reading;
-          if (!seen.has(key)) {seen.add(key);result.push({kanji:item.kanji,reading,level:item.level});}
+    const BANK = {
+      choice: [
+        ['木の（えだ）に鳥がいる。','枝',['枝','技','校','枚']],['（きせつ）が変わる。','季節',['季節','汽節','季説','記節']],
+        ['（しぜん）を大切にする。','自然',['自然','自燃','時然','事前']],['（けっか）を知らせる。','結果',['結果','結課','決果','血果']],
+        ['（かんさつ）日記を書く。','観察',['観察','感察','観祭','関察']],['学校の（こうてい）で遊ぶ。','校庭',['校庭','校定','交庭','公庭']],
+        ['（あんぜん）に気をつける。','安全',['安全','安前','案全','暗全']],['（せいこう）をよろこぶ。','成功',['成功','成工','正功','生功']],
+        ['（しゅうかん）を身につける。','習慣',['習慣','週慣','習観','集慣']],['（たいよう）がのぼる。','太陽',['太陽','大陽','太洋','大洋']],
+        ['（どうぶつ）を観察する。','動物',['動物','同物','働物','道物']],['（はっぴょう）を聞く。','発表',['発表','発票','初表','発標']]
+      ],
+      opposite: [
+        ['安全','危険'],['開始','終了'],['成功','失敗'],['賛成','反対'],['増加','減少'],
+        ['前進','後退'],['上昇','下降'],['出発','到着'],['入口','出口'],['強い','弱い'],
+        ['明るい','暗い'],['高い','低い']
+      ],
+      radical: [
+        ['海','さんずい'],['湖','さんずい'],['橋','きへん'],['植','きへん'],['晴','ひへん'],
+        ['時','ひへん'],['語','ごんべん'],['記','ごんべん'],['持','てへん'],['投','てへん'],
+        ['駅','うまへん'],['飯','しょくへん'],['鉄','かねへん'],['銀','かねへん']
+      ],
+      okurigana: [
+        ['新（あたら）しい','新しい','あたら'],['温（あたた）かい','温かい','あたた'],
+        ['短（みじか）い','短い','みじか'],['深（ふか）い','深い','ふか'],
+        ['静（しず）か','静か','しず'],['明（あか）るい','明るい','あか'],
+        ['重（おも）い','重い','おも'],['軽（かる）い','軽い','かる'],
+        ['広（ひろ）い','広い','ひろ'],['速（はや）い','速い','はや']
+      ],
+      correct: [
+        ['学校の校ていで遊ぶ。','庭'],['図書かんで本を読む。','館'],['家ぞくで旅行する。','族'],
+        ['新しいき節が来る。','季'],['山のちょう上に立つ。','頂'],['海の近くに住む。','近'],
+        ['毎日れん習する。','練'],['空気がきれいな場所。','所'],['し然を守る。','自'],
+        ['友だちに手紙を送る。','送'],['安全をかく認する。','確'],['電車でい動する。','移']
+      ],
+      homophone: [
+        ['こう','学校の（こう）庭','校','（こう）通安全','交'],
+        ['せい','（せい）功する','成','（せい）しい答え','正'],
+        ['かん','図書（かん）','館','時（かん）を守る','間'],
+        ['し','（し）然を守る','自','（し）験を受ける','試'],
+        ['き','（き）節が変わる','季','（き）車に乗る','汽'],
+        ['しょう','（しょう）学校','小','（しょう）来の夢','将'],
+        ['どう','（どう）物園','動','（どう）路を歩く','道'],
+        ['たい','（たい）陽','太','（たい）切な本','大'],
+        ['かい','（かい）場に集まる','会','（かい）答を書く','解'],
+        ['こう','（こう）園で遊ぶ','公','（こう）事をする','工']
+      ],
+      compound: [
+        ['国□','語'],['学□','校'],['電□','車'],['図□','書'],['安□','全'],
+        ['自□','然'],['動□','物'],['時□','間'],['季□','節'],['海□','岸'],
+        ['校□','庭'],['文□','章']
+      ]
+    };
+    const SPECS = [
+      {id:'一',title:'漢字の読み',type:'reading',count:20,points:1},
+      {id:'二',title:'漢字の書き取り',type:'writing',count:10,points:2},
+      {id:'三',title:'正しい漢字',type:'choice',count:10,points:2},
+      {id:'四',title:'反対の意味の言葉',type:'opposite',count:5,points:2},
+      {id:'五',title:'部首',type:'radical',count:10,points:2},
+      {id:'六',title:'送り仮名',type:'okurigana',count:5,points:2},
+      {id:'七',title:'まちがい直し',type:'correct',count:7,points:2},
+      {id:'八',title:'同じ読みの漢字',type:'homophone',count:10,points:2},
+      {id:'九',title:'熟語の組み立て',type:'compound',count:8,points:2},
+      {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
+    ]; // 190 points: source sample's section types are represented, not its exact scoring grid.
+    const cleanReading = v=>String(v||'').trim().replace(/[ー－]/g,'ー');
+    function examCandidates(){
+      const pool=[],seen=new Set(),allowed=new Set(['10級','9級','8級','7級']);
+      for(const item of kanjiData){
+        if(!allowed.has(item.level)||!/^[\u3400-\u9fff]$/.test(item.kanji))continue;
+        for(const r of item.readings){
+          const reading=cleanReading(r['読み']);
+          if(!/^[ぁ-ゖァ-ヺー]{1,9}$/.test(reading))continue;
+          const key=item.kanji+'|'+reading;
+          if(!seen.has(key)){seen.add(key);pool.push({prompt:item.kanji,answer:reading,kanji:item.kanji,reading});}
         }
       }
-      return result;
+      return pool;
     }
-    function drawQuestions(pool, count, used, type) {
-      const available = pool.filter(q => !used.has(q.kanji));
-      shuffleArray(available);
-      if (available.length < count) throw new Error('Not enough unique Level 7 kanji with readings to create this paper.');
-      const selected = available.slice(0,count);
-      selected.forEach(q => used.add(q.kanji));
-      return selected.map(q => {
-        if (type !== 'choice') return {...q};
-        const other = [...new Set(pool.filter(p => p.kanji !== q.kanji).map(p => p.kanji))];
-        shuffleArray(other);
-        const choices = [q.kanji,...other.slice(0,3)];
-        shuffleArray(choices);
-        return {...q,choices};
-      });
+    function pick(pool,n,used){
+      const options=pool.filter(q=>!used.has(q.kanji||q.prompt));shuffleArray(options);
+      if(options.length<n)throw Error('Not enough validated kanji readings to generate this test.');
+      const selected=options.slice(0,n);selected.forEach(q=>used.add(q.kanji||q.prompt));return selected;
     }
-    function renderQuestion(q,i,type) {
-      let prompt = '';
-      if(type === 'reading') prompt = `<strong>${escapeHTML(q.kanji)}</strong>`;
-      else if(type === 'writing') prompt = `<strong>${escapeHTML(q.reading)}</strong>`;
-      else prompt = `${escapeHTML(q.reading)}<div class="choices">${q.choices.map((c,j)=>`${j+1}. ${escapeHTML(c)}`).join('　')}</div>`;
-      return `<li><span class="num">${i+1}.</span>${prompt}<span class="answer-space"></span></li>`;
+    function fixedQuestions(type,n){
+      const pool=BANK[type].map(row=>{
+        if(type==='choice')return {prompt:row[0],answer:row[1],choices:row[2]};
+        if(type==='homophone')return {prompt:row[1]+' ／ '+row[3],answer:row[2]+'・'+row[4]};
+        if(type==='okurigana')return {prompt:row[0],answer:row[1]};
+        return {prompt:row[0],answer:row[1]};
+      });shuffleArray(pool);return pool.slice(0,n);
     }
-    function createMock() {
-      try {
-        if (!kanjiData.length) throw new Error('Load the kanji datasets first.');
-        const pool = examCandidates();
-        const used = new Set();
-        const sections = EXAM_SECTIONS.map(spec=>({...spec,questions:drawQuestions(pool,spec.count,used,spec.type)}));
+    function questionHTML(q,i,type){
+      const choices=type==='choice'?`<span class="choices">${q.choices.map((v,j)=>`${'アイウエ'[j]} ${escapeHTML(v)}`).join('　')}</span>`:'';
+      const prompt=type==='writing'?q.reading:q.prompt;
+      return `<div class="exam-question"><span class="qnumber">${i+1}</span><span class="qprompt">${escapeHTML(prompt)}${choices}</span><span class="writebox"></span></div>`;
+    }
+    function sectionHTML(s){
+      return `<section class="vertical-section"><div class="section-title">${s.id}　${escapeHTML(s.title)} <small>（${s.count*s.points}点）</small></div><div class="section-instruction">${s.type==='reading'?'次の漢字の読みをひらがなで書きなさい。':s.type==='writing'?'次の読みを漢字で書きなさい。':'次の問題に答えなさい。'}（各${s.points}点）</div><div class="vertical-questions">${s.questions.map((q,i)=>questionHTML(q,i,s.type)).join('')}</div></section>`;
+    }
+    function createMock(){
+      try{
+        if(!kanjiData.length)throw Error('Load the GitHub datasets before generating a paper.');
+        const pool=examCandidates(),used=new Set();
+        const sections=SPECS.map(spec=>{
+          let questions;
+          if(spec.type==='reading')questions=pick(pool,spec.count,used);
+          else if(spec.type==='writing')questions=pick(pool,spec.count,used);
+          else questions=fixedQuestions(spec.type,spec.count);
+          return {...spec,questions};
+        });
         mockSerial++;
-        mockPaper.innerHTML = [0,1].map(page=>{
-          const part = sections.slice(page*5,page*5+5);
-          return `<article class="exam-page"><div class="exam-head"><div><h2>日本漢字能力検定　7級　模擬試験問題</h2><small>非公式・学習用オリジナル問題 / 第${mockSerial}回 / ${page+1}枚目（全2枚）</small></div><div class="exam-meta"><label>氏名 <span>　　　　　　　　　</span></label><label>得点 <span>　　　　/ 200</span></label></div></div><div class="exam-sections">${part.map(spec=>`<section class="exam-section"><h3>${spec.name}　${spec.type==='reading'?'漢字の読み':spec.type==='writing'?'漢字の書き取り':'正しい漢字を選ぶ'}　(${spec.count*spec.points}点)</h3><p>${spec.type==='reading'?'次の漢字の読みをひらがなで書きなさい。':spec.type==='writing'?'次の読みを漢字で書きなさい。':'読みが合う漢字を選び、番号を書きなさい。'}（各${spec.points}点）</p><ol class="exam-questions">${spec.questions.map((q,i)=>renderQuestion(q,i,spec.type)).join('')}</ol></section>`).join('')}</div></article>`;
+        mockPaper.innerHTML=[0,1].map(page=>{
+          const half=sections.slice(page*5,page*5+5);
+          return `<article class="exam-page japanese-paper"><div class="exam-side"><strong>7級</strong><span>日本漢字能力検定　模擬試験問題</span><small>非公式・学習用</small><small>第${mockSerial}回</small><small>${page+1}／2</small><label>氏名：＿＿＿＿＿＿＿＿</label></div><div class="vertical-sheet">${half.map(sectionHTML).join('')}</div></article>`;
         }).join('');
-        mockAnswers.innerHTML = `<h2>解答　/ Answer Key — 第${mockSerial}回</h2><p>学習用の自動生成問題です。読み方が複数ある漢字については、出題した読みを正答とします。</p><div class="key-grid">${sections.map(spec=>`<section><h3>${spec.name}　${spec.type==='reading'?'漢字の読み':spec.type==='writing'?'漢字の書き取り':'正しい漢字を選ぶ'}</h3><p>${spec.questions.map((q,i)=>`${i+1}. ${escapeHTML(spec.type==='reading'?q.reading:spec.type==='writing'?q.kanji:String(q.choices.indexOf(q.kanji)+1)+'（'+q.kanji+'）')}`).join('　 / 　')}</p></section>`).join('')}</div>`;
-        mockAnswers.hidden = true;
-        mockInfo.textContent = '110 questions · 200 points · 2 pages · Kanken 7級 cumulative (10–7級)';
-      } catch(err) { mockPaper.innerHTML = `<p role="alert" style="color:#b91c1c">${escapeHTML(err.message)}</p>`; mockInfo.textContent=''; }
+        mockAnswers.innerHTML=`<h2>解答用紙 / 第${mockSerial}回</h2><p>非公式のオリジナル練習問題。読み・書き取りは登録データに基づきます。その他の問題は内蔵の編集済み練習問題です。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
+        mockAnswers.hidden=true;
+        const total=sections.reduce((sum,s)=>sum+s.count*s.points,0);
+        mockInfo.textContent=`${sections.reduce((sum,s)=>sum+s.count,0)} questions · ${total} points · 10 sections · 2 A4 landscape pages · unofficial practice`;
+      }catch(err){mockPaper.innerHTML=`<p role="alert" style="color:#b91c1c">${escapeHTML(err.message)}</p>`;mockInfo.textContent='';}
     }
     mockButton.addEventListener('click',()=>{
       document.querySelector('header').hidden=true;
