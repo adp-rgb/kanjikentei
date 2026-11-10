@@ -206,6 +206,20 @@
 .mock-disclaimer{writing-mode:vertical-rl;font-size:7px;border:1px solid #aaa;padding:.6mm}
 @media screen{#mock-panel{overflow-x:auto}.japanese-paper{flex-shrink:0}#mock-paper{min-width:1080px}}
 @media print{html,body{margin:0!important;padding:0!important;background:white!important}header,#status,#kanji-container,.mock-toolbar{display:none!important}#mock-panel{display:block!important;overflow:visible!important}#mock-paper{display:block!important;min-width:0!important}.japanese-paper{width:283mm!important;height:196mm!important;break-after:page!important;page-break-after:always!important;border:0!important;box-shadow:none!important;margin:0!important;padding:2mm!important}.japanese-paper:last-child{break-after:auto!important;page-break-after:auto!important}#mock-answers[hidden]{display:none!important}#mock-answers:not([hidden]){break-before:page;page-break-before:always}}
+
+/* v3: compact answer cells adjacent to prompts, with no stretched vertical text. */
+.vertical-sheet,.vertical-sheet.page-two{grid-template-rows: 1fr 1fr 1fr!important}
+.exam-band{padding:1.5mm 0!important}
+.vertical-section{grid-template-columns:minmax(0,1fr) 7mm 7mm!important;gap:.35mm!important}
+.section-title{font-size:10px!important;line-height:1.1!important}
+.section-instruction{font-size:7.5px!important;line-height:1.15!important}
+.vertical-questions{align-items:stretch!important;overflow:visible!important}
+.exam-question{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:center!important;gap:1mm!important;padding:.5mm .25mm!important;overflow:visible!important}
+.qnumber{writing-mode:horizontal-tb!important;font-size:8px!important;line-height:1!important;min-height:3mm!important}
+.qprompt{display:block!important;flex:0 1 auto!important;max-height:37mm!important;min-height:0!important;overflow:hidden!important;word-break:normal!important;overflow-wrap:normal!important;font-size:9px!important;line-height:1.2!important}
+.writebox{display:block!important;flex:0 0 6mm!important;width:6mm!important;height:6mm!important;min-height:6mm!important;margin-top:1mm!important;border:1px solid #333!important}
+.exam-question .choices{font-size:7px!important}
+@media print{.japanese-paper{print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important}#mock-paper{gap:0!important}}
   </style>
 </head>
 <body>
@@ -473,7 +487,7 @@
     function questionHTML(q,i,type){
       const choices=type==='choice'?`<span class="choices">${q.choices.map((v,j)=>`${'アイウエ'[j]} ${escapeHTML(v)}`).join('　')}</span>`:'';
       const prompt=type==='writing'?q.reading:q.prompt;
-      return `<div class="exam-question"><span class="qnumber">${i+1}</span><span class="qprompt">${escapeHTML(prompt)}${choices}</span><span class="writebox"></span></div>`;
+      return `<div class="exam-question"><span class="qnumber">${i+1}</span><span class="writebox"></span><span class="qprompt">${escapeHTML(prompt)}${choices}</span></div>`;
     }
     function sectionHTML(s){
       return `<section class="vertical-section"><div class="section-title">${s.id}　${escapeHTML(s.title)} <small>（${s.count*s.points}点）</small></div><div class="section-instruction">${s.type==='reading'?'次の漢字の読みをひらがなで書きなさい。':s.type==='writing'?'次の読みを漢字で書きなさい。':'次の問題に答えなさい。'}（各${s.points}点）</div><div class="vertical-questions" style="--question-count:${s.questions.length}">${s.questions.map((q,i)=>questionHTML(q,i,s.type)).join('')}</div></section>`;
