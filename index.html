@@ -151,6 +151,7 @@
     @page{size:A4 landscape;margin:10mm}
     @media print{body{padding:0;background:#fff}header,#status,#kanji-container,.mock-toolbar{display:none!important}#mock-panel{display:block!important}.exam-page{max-width:none;width:100%;height:190mm;min-height:0;margin:0;padding:6mm;border:0;box-shadow:none;break-after:page}.exam-sections{grid-template-columns:repeat(5,minmax(0,1fr))}.exam-section{padding:6px}.exam-questions li{margin-bottom:5px;font-size:.77rem}.exam-section p{font-size:.68rem}#mock-answers{border:0;max-width:none;break-before:page}#mock-answers[hidden]{display:none!important}}
 
+    [hidden]{display:none!important}
     /* Vertical Japanese examination layout, right-to-left section flow. */
     .japanese-paper{display:flex;flex-direction:row-reverse;gap:8mm;overflow:hidden;height:190mm;min-height:0;padding:8mm!important}
     .exam-side{flex:0 0 25mm;display:flex;flex-direction:column;align-items:center;gap:5mm;border-left:2px solid #111;padding-left:3mm;font-family:"Yu Mincho","Hiragino Mincho ProN",serif}
@@ -397,9 +398,12 @@
       {id:'七',title:'まちがい直し',type:'correct',count:7,points:2},
       {id:'八',title:'同じ読みの漢字',type:'homophone',count:10,points:2},
       {id:'九',title:'熟語の組み立て',type:'compound',count:8,points:2},
-      {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
-    ]; // 190 points: source sample's section types are represented, not its exact scoring grid.
+      {id:'十',title:'漢字の書き取り',type:'writing',count:25,points:2}
+     ]; // 200 points total; unofficial practice layout.
     const cleanReading = v=>String(v||'').trim().replace(/[ー－]/g,'ー');
+    // Offline question fallback: mock generation works even if GitHub data is unavailable.
+    // These are manually curated common kanji/reading pairs, not an official exam bank.
+    const OFFLINE_PAIRS = `山:やま,川:かわ,田:た,人:ひと,日:ひ,月:つき,火:ひ,水:みず,木:き,金:かね,土:つち,空:そら,雨:あめ,花:はな,草:くさ,竹:たけ,林:はやし,森:もり,石:いし,糸:いと,貝:かい,犬:いぬ,虫:むし,鳥:とり,魚:さかな,馬:うま,牛:うし,耳:みみ,目:め,口:くち,手:て,足:あし,力:ちから,心:こころ,声:こえ,音:おと,色:いろ,赤:あか,青:あお,白:しろ,黒:くろ,上:うえ,下:した,中:なか,右:みぎ,左:ひだり,前:まえ,後:あと,東:ひがし,西:にし,南:みなみ,北:きた,大:おお,小:ちい,長:なが,高:たか,新:あたら,古:ふる,多:おお,少:すく,早:はや,近:ちか,遠:とお,広:ひろ,深:ふか,強:つよ,弱:よわ,明:あか,暗:くら,楽:たの,正:ただ,親:おや,友:とも,兄:あに,姉:あね,弟:おとうと,妹:いもうと,父:ちち,母:はは,家:いえ,村:むら,町:まち,国:くに,道:みち,海:うみ,池:いけ,谷:たに,原:はら,島:しま,星:ほし,雪:ゆき,風:かぜ,春:はる,夏:なつ,秋:あき,冬:ふゆ,朝:あさ,昼:ひる,夜:よる,今:いま,時:とき,年:とし,本:ほん,字:じ,文:ぶん,名:な,学校:がっこう`.split(',').map(pair=>{const [kanji,reading]=pair.split(':');return {prompt:kanji,answer:reading,kanji,reading};});
     function examCandidates(){
       const pool=[],seen=new Set(),allowed=new Set(['10級','9級','8級','7級']);
       for(const item of kanjiData){
@@ -410,6 +414,10 @@
           const key=item.kanji+'|'+reading;
           if(!seen.has(key)){seen.add(key);pool.push({prompt:item.kanji,answer:reading,kanji:item.kanji,reading});}
         }
+      }
+      // Ensure at least 65 unique prompts for the two writing and reading sections.
+      for (const q of OFFLINE_PAIRS) {
+        if (!seen.has(q.kanji+'|'+q.reading)) {seen.add(q.kanji+'|'+q.reading);pool.push(q);}
       }
       return pool;
     }
@@ -436,7 +444,7 @@
     }
     function createMock(){
       try{
-        if(!kanjiData.length)throw Error('Load the GitHub datasets before generating a paper.');
+        // The paper can be generated before (or without) a network connection.
         const pool=examCandidates(),used=new Set();
         const sections=SPECS.map(spec=>{
           let questions;
