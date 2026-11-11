@@ -214,7 +214,7 @@
   <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
   <main id="kanji-container" class="kanji-grid"></main>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
-    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper (refresh sections 3–10)</button><button id="print-btn">Print / Save PDF</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
+    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">Print / Save PDF</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
     <div id="mock-paper"></div><div id="mock-answers" hidden></div>
   </section>
 
@@ -522,7 +522,6 @@
       {id:'十',title:'漢字の書き取り',type:'writing-final',count:20,points:2}
     ];
     function sample(pool,n){const a=[...pool];shuffleArray(a);if(a.length<n)throw Error('Question bank too small: '+n);return a.slice(0,n)}
-    function rotateQuestions(items,step){const a=items.map(q=>Array.isArray(q)?[...q]:{...q});const k=((step%a.length)+a.length)%a.length;return a.slice(k).concat(a.slice(0,k));}
     function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
     function makeSections(){
       const sentences=sample(SENTENCE_BANK,50);
@@ -530,26 +529,26 @@
       return SPECS.map(spec=>{
         let questions;
         if(spec.type==='writing-final'){
-          questions=rotateQuestions(WRITING_10_BANK,mockSerial).map(row=>({prompt:row[0],target:row[1],answer:row[2]}));
+          questions=WRITING_10_BANK.map(row=>({prompt:row[0],target:row[1],answer:row[2]}));
         } else if(spec.type==='compound-pairs'){
-          questions=rotateQuestions(COMPOUND_PAIR_BANK,mockSerial).flatMap((g,idx)=>[
+          questions=COMPOUND_PAIR_BANK.flatMap((g,idx)=>[
             {group:idx,head:g.head,options:g.options,answer:g.answers[0],variant:0},
             {group:idx,head:g.head,options:g.options,answer:g.answers[1],variant:1}
           ]);
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
-          questions=[...rotateQuestions(STROKE_BANK.slice(0,5),mockSerial),...rotateQuestions(STROKE_BANK.slice(5),mockSerial)].map(q=>({...q,prompt:q.kanji}));
+          questions=STROKE_BANK.map(q=>({...q,prompt:q.kanji}));
         } else if(spec.type==='onyomi'){
-          questions=[...rotateQuestions(READING_TYPE_BANK.slice(0,5),mockSerial),...rotateQuestions(READING_TYPE_BANK.slice(5),mockSerial)].map(q=>({...q,prompt:q.kanji}));
+          questions=READING_TYPE_BANK.map(q=>({...q,prompt:q.kanji}));
         } else if(spec.type==='antonym-fill'){
-          questions=rotateQuestions(ANTONYM_FILL_BANK,mockSerial);
+          questions=ANTONYM_FILL_BANK.map(q=>({...q}));
         } else if(spec.type==='okuri-correction'){
-          questions=rotateQuestions(OKURI_CORRECTION_BANK,mockSerial);
+          questions=OKURI_CORRECTION_BANK.map(q=>({...q}));
         } else if(spec.type==='radical-fill'){
-          questions=['ア','イ','ウ'].flatMap(group=>rotateQuestions(RADICAL_FILL_BANK.filter(q=>q.group===group),mockSerial));
+          questions=RADICAL_FILL_BANK.map(q=>({...q}));
         } else {
-          questions=rotateQuestions(BANK[spec.type],mockSerial).slice(0,spec.count).map(row=>{
+          questions=sample(BANK[spec.type],spec.count).map(row=>{
             if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
             if(spec.type==='homophone')return {prompt:row[1]+'／'+row[3],answer:row[2]+'・'+row[4]};
             return {prompt:row[0],answer:row[1]};
@@ -885,7 +884,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · Sections 三–十 refreshed on each paper · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · Sections 八–十 aligned · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
