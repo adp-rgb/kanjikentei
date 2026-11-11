@@ -469,30 +469,36 @@
         // For narrow sections, concise context keeps each vertical column legible.
         // Choice questions keep the full sentence and mark its target katakana.
         if(s.type==='homophone')prompt=prompt.replace('／','・');
-        const maxChars=Math.max(7,Math.floor((height-(s.type==='choice'?124:80))/fs));
+        // Choice section: reserve a dedicated lower area for compact three-choice groups.
+        // All other sections retain their existing rendering.
+        const isChoice=s.type==='choice';
+        const choiceFont=9.1;
+        const choiceStart=top+145;
+        const availablePrompt=isChoice?choiceStart-(top+27)-7:height-80;
+        const maxChars=Math.max(7,Math.floor(availablePrompt/fs));
         if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
         out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
-        // Reading section: mark precisely the kanji word whose reading is requested.
-        // Japanese vertical text uses a thin rule immediately to the right of the target glyphs.
-        if((s.type==='reading'||s.type==='writing'||s.type==='choice') && q.target){
-          const chars=[...prompt], targetChars=[...q.target];
+        if((s.type==='reading'||s.type==='writing'||isChoice) && q.target){
           const start=prompt.indexOf(q.target);
           if(start>=0){
             const before=[...prompt.slice(0,start)].length;
             const markY=top+27+before*fs;
-            const markEnd=markY+targetChars.length*fs;
-            out+=line(x+fs*.72,markY+1,x+fs*.72,markEnd-1,'#111',1.15);
+            out+=line(x+fs*.72,markY+1,x+fs*.72,markY+[...q.target].length*fs-1,'#111',1.15);
           }
         }
-        // Section 三: three labeled candidate kanji beneath each full sentence.
-        if(s.type==='choice' && q.choices){
-          const choiceText=q.choices.map((c,j)=>'（'+['ア','イ','ウ'][j]+c+'）').join('');
-          out+=vt(x,bottom-112,choiceText,Math.min(9,fs),'text-anchor="start"');
+        if(isChoice && q.choices){
+          // Match the reference: three vertically written alternatives in a compact
+          // parenthesized group, right-to-left, with no answer square.
+          const lane=Math.min(14,spacing/4);
+          for(let j=0;j<3;j++){
+            const cx=x+lane*(1-j);
+            out+=vt(cx,choiceStart,'（'+['ア','イ','ウ'][j]+' '+q.choices[j]+'）',choiceFont);
+          }
+        } else {
+          const boxW=Math.min(17,Math.max(11,spacing-5));
+          const boxH=s.type==='reading'?25:18;
+          out+=rect(x-boxW/2,bottom-boxH-15,boxW,boxH);
         }
-        // Answer boxes remain attached to the same fixed x coordinate.
-        const boxW=Math.min(17,Math.max(11,spacing-5));
-        const boxH=s.type==='reading'?25:18;
-        out+=rect(x-boxW/2,bottom-boxH-15,boxW,boxH);
       }
       return out;
     }
