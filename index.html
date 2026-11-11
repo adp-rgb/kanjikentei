@@ -882,17 +882,17 @@
       [['ア','木','きへん'],['イ','土','つち'],['ウ','亻','にんべん']].forEach(([label,radical,reading],g)=>{
         const x=usableRight-(g+.5)*pitch;
         out+=ht(x,top+14,label,11,'text-anchor="middle"');
-        out+=vt(x+3,top+29,radical+'（'+reading+'）',12);
+        out+=vt(x+3,top+29,radical+'（'+reading+'）',10);
         const items=s.questions.map((q,i)=>({...q,n:i+1})).filter(q=>q.group===label);
-        const gap=Math.min(48,(bottom-top-90)/items.length);
+        const gap=(bottom-top-111)/Math.max(1,items.length-1);
         items.forEach((q,j)=>{
-          const y=top+88+j*gap;
+          const y=top+78+j*gap;
           // The answer square is inserted in the vertical word itself.
           out+=ht(x+17,y+15,String(q.n),9,'text-anchor="middle"');
           const before=q.before||'',after=q.after||'';
-          if(before)out+=vt(x,y-14,before,12);
+          if(before)out+=vt(x,y-18,before,10);
           out+=rect(x-12,y,24,24,'stroke="#555"');
-          if(after)out+=vt(x,y+27,after,12);
+          if(after)out+=vt(x,y+27,after,10);
         });
       });
       return out;
@@ -930,8 +930,8 @@
         const q=s.questions[g*2];
         const label=['一、','二、','三、','四、','五、'][g];
         // Separate vertically composed group heading, as in the original.
-        out+=vt(center+17,top+3,label+q.head,13);
-        const optX=center+1,optY=top+32,optW=20,optH=Math.min(153,bottom-top-48);
+        out+=vt(center+17,top+2,label+q.head,11);
+        const optX=center+1,optY=top+47,optW=20,optH=Math.min(137,bottom-top-64);
         out+=rect(optX,optY,optW,optH,'stroke="#555"');
         q.options.forEach((kanji,i)=>{
           const cy=optY+16+i*(optH-12)/5;
@@ -941,7 +941,7 @@
         // Each answer is a two-compartment rectangle: number + blank.
         // Two boxes per group, with right-to-left numbering 1–10.
         for(let j=0;j<2;j++){
-          const x=center-27,y=top+37+j*69,w=22,h=52;
+          const x=center-27,y=top+51+j*68,w=22,h=52;
           out+=rect(x,y,w,h,'stroke="#555"');
           out+=line(x,y+26,x+w,y+26,'#999',.65);
           out+=ht(x+w/2,y+18,String(g*2+j+1),11,'text-anchor="middle"');
@@ -959,7 +959,7 @@
       for(let i=0;i<8;i++){
         const q=s.questions[i],x=qRight-(i+.5)*pitch;
         const fs=Math.min(11.5,Math.max(8.2,(bottom-top-52)/[...q.prompt].length));
-        const y=top+29;
+        const y=top+32;
         out+=ht(x,top+14,String(i+1),9,'text-anchor="middle"');
         out+=vt(x,y,q.prompt,fs);
         const pos=q.prompt.indexOf(q.target);
@@ -977,7 +977,7 @@
       out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,
         {font:8.2,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-6,'（40） 2×20',8,'text-anchor="end"');
-      const qRight=right-88,qLeft=left+12;
+      const qRight=right-101,qLeft=left+16;
       const pitch=(qRight-qLeft)/20;
       const boxSize=21;
       for(let i=0;i<20;i++){
