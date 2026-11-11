@@ -195,6 +195,34 @@
   #mock-answers{display:none!important}
 }
 </style>
+<style>
+/* Renderer V5: HTML/CSS vertical layout, 11 sections / 200 points, official band layout */
+.pg{display:flex!important;gap:3mm;padding:8mm;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif;color:#111;overflow:hidden}
+.pg .main{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.5mm}
+.pg .band{flex:1;min-height:0;display:flex;flex-direction:row-reverse;gap:5mm;border-top:.35mm solid #111;padding-top:1.5mm;overflow:hidden}
+.pg .sec{writing-mode:vertical-rl;font-size:9pt;line-height:1.6;flex:none}
+.pg .vq{margin-left:2.2mm}
+.pg .no{text-combine-upright:all;margin-block-end:1.2mm;font-size:8pt}
+.pg .pr{border-top:.3mm solid #111;padding-top:1mm;margin-left:2.2mm}
+.pg .ins{font-size:7.5pt;font-weight:700;margin-left:3mm}
+.pg .ul{border-right:.3mm solid #111;padding-right:.2mm}.pg .k{font-weight:700}
+.pg .bx{display:inline-block;writing-mode:horizontal-tb;border:.3mm solid #111;min-width:5.5mm;height:5.5mm;line-height:5.2mm;text-align:center;font-size:7.5pt;vertical-align:middle}
+.pg .cr{display:inline-block;writing-mode:horizontal-tb;border:.3mm solid #111;border-radius:50%;width:5.5mm;height:5.5mm;line-height:5.2mm;text-align:center;font-size:8pt}
+.pg .big{font-size:18pt}.pg .sk{width:11mm;height:11mm;vertical-align:middle}.pg .ch{font-size:7.5pt}
+.pg .hint{border:.3mm solid #111;padding:1.2mm;font-size:8.5pt;margin-left:3mm}
+.pg .hd{width:30mm;flex:none;writing-mode:vertical-rl;font-size:8.5pt;line-height:1.7}
+.pg .hd>div{margin-left:2mm}
+.pg .lv{font-size:24pt;font-weight:700;border:.5mm solid #111;padding:1mm}
+.pg .tt{font-size:14pt;font-weight:700}
+.pg .nm{border:.3mm solid #111;height:42mm;padding:1mm}
+.pg .tab{background:#111;color:#fff;padding:1mm;font-size:8pt}
+.pg.ans{display:block!important}
+.ans h2{font-size:12pt;margin:0 0 2mm}
+.ans .as{display:flex;flex-wrap:wrap;gap:1mm 2mm;margin-bottom:1.5mm}
+.ans .as b{flex:0 0 100%;font-size:8.5pt}
+.ans .ab{display:flex;align-items:center;gap:1mm;font-size:8pt;width:26mm}
+.ans .ab i{flex:1;height:6mm;border:.3mm solid #111}
+</style>
 </head>
 <body>
 
@@ -511,15 +539,16 @@
     const SENTENCE_BANK = [["学校", "がっこう", "毎朝、学校へ行く。", "毎朝、がっこうへ行く。"], ["先生", "せんせい", "先生の話を聞く。", "せんせいの話を聞く。"], ["教室", "きょうしつ", "教室の窓を開ける。", "きょうしつの窓を開ける。"], ["図書館", "としょかん", "図書館で本を借りる。", "としょかんで本を借りる。"], ["友達", "ともだち", "友達と公園で遊ぶ。", "ともだちと公園で遊ぶ。"], ["家族", "かぞく", "家族で旅行に行く。", "かぞくで旅行に行く。"], ["安全", "あんぜん", "安全な道を歩く。", "あんぜんな道を歩く。"], ["自然", "しぜん", "自然を大切にする。", "しぜんを大切にする。"], ["季節", "きせつ", "季節の変化を感じる。", "きせつの変化を感じる。"], ["太陽", "たいよう", "太陽が東からのぼる。", "たいようが東からのぼる。"], ["海岸", "かいがん", "海岸をゆっくり歩く。", "かいがんをゆっくり歩く。"], ["山頂", "さんちょう", "山頂から町を見る。", "さんちょうから町を見る。"], ["電車", "でんしゃ", "電車で町へ向かう。", "でんしゃで町へ向かう。"], ["道路", "どうろ", "道路を横切らない。", "どうろを横切らない。"], ["信号", "しんごう", "信号が青に変わる。", "しんごうが青に変わる。"], ["運動", "うんどう", "朝に運動をする。", "朝にうんどうをする。"], ["試合", "しあい", "試合の結果を聞く。", "しあいの結果を聞く。"], ["野球", "やきゅう", "野球の練習をする。", "やきゅうの練習をする。"], ["練習", "れんしゅう", "毎日練習を続ける。", "毎日れんしゅうを続ける。"], ["宿題", "しゅくだい", "宿題を先に終える。", "しゅくだいを先に終える。"], ["文章", "ぶんしょう", "文章を声に出す。", "ぶんしょうを声に出す。"], ["漢字", "かんじ", "漢字をていねいに書く。", "かんじをていねいに書く。"], ["音楽", "おんがく", "音楽の時間が始まる。", "おんがくの時間が始まる。"], ["合唱", "がっしょう", "合唱の練習をする。", "がっしょうの練習をする。"], ["発表", "はっぴょう", "発表の準備をする。", "はっぴょうの準備をする。"], ["工場", "こうじょう", "工場を見学する。", "こうじょうを見学する。"], ["農家", "のうか", "農家の仕事を調べる。", "のうかの仕事を調べる。"], ["動物", "どうぶつ", "動物の世話をする。", "どうぶつの世話をする。"], ["植物", "しょくぶつ", "植物を大切に育てる。", "しょくぶつを大切に育てる。"], ["観察", "かんさつ", "星の動きを観察する。", "星の動きをかんさつする。"], ["記録", "きろく", "毎日の記録をつける。", "毎日のきろくをつける。"], ["説明", "せつめい", "先生が説明をする。", "先生がせつめいをする。"], ["質問", "しつもん", "分からないことを質問する。", "分からないことをしつもんする。"], ["回答", "かいとう", "質問に回答する。", "質問にかいとうする。"], ["計画", "けいかく", "旅行の計画を立てる。", "旅行のけいかくを立てる。"], ["目標", "もくひょう", "新しい目標を決める。", "新しいもくひょうを決める。"], ["成功", "せいこう", "努力して成功した。", "努力してせいこうした。"], ["努力", "どりょく", "努力を続ける。", "どりょくを続ける。"], ["希望", "きぼう", "将来の希望を話す。", "将来のきぼうを話す。"], ["未来", "みらい", "未来について考える。", "みらいについて考える。"], ["歴史", "れきし", "町の歴史を学ぶ。", "町のれきしを学ぶ。"], ["文化", "ぶんか", "日本の文化を学ぶ。", "日本のぶんかを学ぶ。"], ["世界", "せかい", "世界の国を調べる。", "せかいの国を調べる。"], ["地図", "ちず", "地図を広げて見る。", "ちずを広げて見る。"], ["交通", "こうつう", "交通のきまりを守る。", "こうつうのきまりを守る。"], ["約束", "やくそく", "友達との約束を守る。", "友達とのやくそくを守る。"], ["整理", "せいり", "机の中を整理する。", "机の中をせいりする。"], ["整列", "せいれつ", "校庭に整列する。", "校庭にせいれつする。"], ["集合", "しゅうごう", "校門に集合する。", "校門にしゅうごうする。"], ["出発", "しゅっぱつ", "朝早く出発する。", "朝早くしゅっぱつする。"], ["到着", "とうちゃく", "駅に到着した。", "駅にとうちゃくした。"], ["手紙", "てがみ", "友達に手紙を書く。", "友達にてがみを書く。"], ["返事", "へんじ", "返事を待っている。", "へんじを待っている。"], ["買物", "かいもの", "母と買物に行く。", "母とかいものに行く。"], ["料理", "りょうり", "家族で料理を作る。", "家族でりょうりを作る。"], ["食事", "しょくじ", "楽しく食事をする。", "楽しくしょくじをする。"], ["健康", "けんこう", "健康に気をつける。", "けんこうに気をつける。"], ["病院", "びょういん", "病院へ行く。", "びょういんへ行く。"], ["温度", "おんど", "水の温度をはかる。", "水のおんどをはかる。"], ["天気", "てんき", "明日の天気を調べる。", "明日のてんきを調べる。"]];
     const SPECS=[
       {id:'一',title:'漢字の読み',type:'reading',count:20,points:1},
-      {id:'二',title:'漢字の書き取り',type:'writing',count:10,points:2},
-      {id:'三',title:'正しい漢字',type:'choice',count:10,points:2},
+      {id:'二',title:'漢字の読み（組）',type:'reading-pairs',count:10,points:1},
+      {id:'三',title:'同音異字',type:'choice',count:10,points:2},
       {id:'四',title:'筆順・画数',type:'strokes',count:10,points:1},
       {id:'五',title:'音読み・訓読み',type:'onyomi',count:10,points:2},
       {id:'六',title:'対義語',type:'antonym-fill',count:5,points:2},
       {id:'七',title:'漢字と送りがな',type:'okuri-correction',count:7,points:2},
       {id:'八',title:'部首',type:'radical-fill',count:10,points:2},
-      {id:'九',title:'熟語の組み立て',type:'compound-pairs',count:10,points:2},
-      {id:'十',title:'漢字の書き取り',type:'writing-final',count:20,points:2}
+      {id:'九',title:'漢字の書き取り',type:'writing',count:8,points:2},
+      {id:'十',title:'熟語づくり',type:'compound-pairs',count:10,points:2},
+      {id:'十一',title:'漢字の書き取り',type:'writing-final',count:20,points:2}
     ];
     function sample(pool,n){const a=[...pool];shuffleArray(a);if(a.length<n)throw Error('Question bank too small: '+n);return a.slice(0,n)}
     function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
@@ -535,8 +564,8 @@
             {group:idx,head:g.head,options:g.options,answer:g.answers[0],variant:0},
             {group:idx,head:g.head,options:g.options,answer:g.answers[1],variant:1}
           ]);
-        } else if(spec.type==='reading'||spec.type==='writing'){
-          questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
+        } else if(spec.type==='reading'||spec.type==='reading-pairs'||spec.type==='writing'){
+          questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type!=='writing'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type!=='writing'?row[1]:row[0],target:spec.type!=='writing'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
           questions=STROKE_BANK.map(q=>({...q,prompt:q.kanji}));
         } else if(spec.type==='onyomi'){
@@ -549,7 +578,7 @@
           questions=RADICAL_FILL_BANK.map(q=>({...q}));
         } else {
           questions=sample(BANK[spec.type],spec.count).map(row=>{
-            if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
+            if(spec.type==='choice')return {prompt:row[0],answer:'アイウ'[row[2].indexOf(row[1])]+'（'+row[1]+'）',choices:row[2],target:row[3]};
             if(spec.type==='homophone')return {prompt:row[1]+'／'+row[3],answer:row[2]+'・'+row[4]};
             return {prompt:row[0],answer:row[1]};
           });
@@ -558,333 +587,69 @@
       });
     }
     const xmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
-    function rect(x,y,w,h,extra=''){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#333" stroke-width=".8" ${extra}/>`}
-    function line(x1,y1,x2,y2,stroke='#888',sw=1){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${sw}"/>`}
-    function vt(x,y,value,size=12,extra=''){return `<text x="${x}" y="${y}" writing-mode="vertical-rl" glyph-orientation-vertical="0" font-size="${size}" ${extra}>${xmlEscape(value)}</text>`}
-    function ht(x,y,value,size=12,extra=''){return `<text x="${x}" y="${y}" font-size="${size}" ${extra}>${xmlEscape(value)}</text>`}
-    // Facsimile-inspired two-row composition for Sections 四 and 五.
-    // The first five questions appear in the upper row (right-to-left),
-    // and questions 6–10 in the lower row, as in the supplied sample.
-    function twoRowSectionSVG(s,left,right,top,bottom){
-      let out='';
-      const titleX=right-13, instructionX=right-34;
-      const contentRight=right-65, contentLeft=left+9;
-      const cell=(contentRight-contentLeft)/5;
-      const mid=top+(bottom-top)*.51;
-      out+=line(right,top,right,bottom,'#777',1.3);
-      out+=vt(titleX,top+4,s.id+'　'+s.title,12,'font-weight="bold"');
-      const instruction=EXAM_INSTRUCTIONS[s.type];
-      out+=vt(instructionX,top+5,instruction,8.4);
-      out+=ht(right-9,bottom-6,`${s.count*s.points}点`,8,'text-anchor="end"');
-      out+=line(contentLeft,mid-9,contentRight+5,mid-9,'#777',.75);
-      for(let i=0;i<10;i++){
-        const q=s.questions[i];
-        const row=Math.floor(i/5), slot=i%5;
-        const x=contentRight-(slot+.5)*cell;
-        const y=row===0?top+19:mid+9;
-        out+=ht(x,y,String(i+1),9,'text-anchor="middle"');
-        if(s.type==='strokes'){
-          if(q.total){
-            out+=ht(x,y+40,q.kanji,25,'text-anchor="middle"');
-          } else {
-            // Exact stroke geometry is explicit, so the highlighted stroke
-            // is unambiguous and its answer key matches the displayed figure.
-            const px=x-14,py=y+19;
-            out+=`<g transform="translate(${px} ${py}) scale(0.6)" fill="none" stroke="#222" stroke-linecap="round" stroke-linejoin="round">`;
-            for(let j=0;j<q.paths.length;j++){
-              out+=`<path d="${q.paths[j]}" stroke-width="${j===q.mark?5:1.8}"/>`;
-            }
-            out+='</g>';
-          }
-        } else {
-          out+=ht(x,y+40,q.kanji,23,'text-anchor="middle"');
-          out+=vt(x+13,y+67,q.reading,8.2);
-        }
+    const AI='アイウエオ';
+    const RAD={'木':'き','土':'つちへん','亻':'にんべん','氵':'さんずい','扌':'てへん','言':'ごんべん','糸':'いとへん','金':'かねへん','日':'ひ','口':'くち','女':'おんなへん','火':'ひへん'};
+    const INS={
+      reading:'次の――線の漢字の読みをひらがなで答えなさい。',
+      'reading-pairs':'次の各組の――線の漢字の読みをひらがなで答えなさい。',
+      choice:'次の――線のカタカナに合う漢字をえらんで記号で答えなさい。',
+      strokes:'上の段は太い画が筆順の何画目か、下の段は総画数が何画か、算用数字で答えなさい。',
+      onyomi:'次の漢字の読みは、音読み（ア）か、訓読み（イ）か。記号で答えなさい。',
+      'antonym-fill':'後の□の中のひらがなを漢字になおして、意味が反対や対になることばを作りなさい。ひらがなは一度だけ使い、漢字一字で答えなさい。',
+      'okuri-correction':'次の――線のカタカナを○の中の漢字と送りがなで書きなさい。',
+      'radical-fill':'次の部首のなかまの漢字を、□にあてはまる漢字一字で答えなさい。',
+      writing:'次の――線のカタカナを漢字になおして答えなさい。',
+      'compound-pairs':'上の漢字と下のア〜オの漢字を組み合わせて二字の熟語を二つ作り、記号で答えなさい。',
+      'writing-final':'次の――線のカタカナを漢字になおして答えなさい。'
+    };
+    const E=escapeHTML;
+    const hl=(t,w,c)=>{const e=E(t),x=E(w||'');return x&&e.includes(x)?e.replace(x,`<span class="${c}">${x}</span>`):e};
+    const strokeSVG=q=>`<svg class="sk" viewBox="0 0 48 48">${q.paths.map((d,i)=>`<path d="${d}" fill="none" stroke="#111" stroke-width="${i===q.mark?6:2.2}" stroke-linecap="round"/>`).join('')}</svg>`;
+    function qHTML(s,q,n){
+      switch(s.type){
+        case 'reading': case 'reading-pairs': return hl(q.prompt,q.target,'ul');
+        case 'writing': case 'writing-final': return hl(q.prompt,q.target,'ul k');
+        case 'choice': return hl(q.prompt,q.target,'ul k')+`<span class="ch">（${q.choices.map((c,i)=>'アイウ'[i]+E(c)).join('　')}）</span>`;
+        case 'strokes': return q.paths?strokeSVG(q):`<span class="big">${E(q.kanji)}</span>`;
+        case 'onyomi': return `<span class="big">${E(q.kanji)}</span><span class="ch">（${E(q.reading)}）</span>`;
+        case 'antonym-fill': {const bx=`<span class="bx">${n}</span>`;return E(q.prompt)+'<span class="ch"> ― </span>'+(q.full.startsWith(q.answer)?bx+E(q.other):E(q.other)+bx)}
+        case 'okuri-correction': return `<span class="cr">${E(q.kanji)}</span>`+hl(q.prompt,q.target,'ul k');
       }
-      return out;
+      return '';
     }
-     // Section 六: five antonym-completion questions, as in the reference.
-     // Each pair is rendered in a fixed column with a blank in its correct
-     // position; the boxed hiragana bank is used exactly once per question.
-     function antonymSectionSVG(s,left,right,top,bottom){
-       let out='';
-       const h=bottom-top;
-       out+=line(right,top,right,bottom,'#777',1.3);
-       out+=vt(right-13,top+5,'（六）',12,'font-weight="bold"');
-       const instructions=[
-         '後の□の中のひらがなを漢字になおして、',
-         '意味が反対や対になることば（対義語）を書きなさい。',
-         '□の中のひらがなは一度だけ使い、',
-         '答えのらんに漢字一字を書きなさい。'
-       ];
-       instructions.forEach((t,i)=>out+=vt(right-31-i*11,top+6,t,8.1));
-       out+=ht(right-8,bottom-15,'（10）',9,'text-anchor="end"');
-       out+=ht(right-8,bottom-5,'2×5',7,'text-anchor="end"');
-       // Vertical hiragana bank, at the left edge of the question group.
-       const bankX=left+8;
-       out+=rect(bankX,top+13,23,h-26,'stroke="#666"');
-       out+=vt(bankX+16,top+25,'さく・せき・み・む・り',10);
-       // Worked example occupies a slim lane just left of the instructions.
-       const exampleX=right-82;
-       out+=vt(exampleX,top+13,'〈例〉',8);
-       out+=vt(exampleX,top+47,'室内',13);
-       out+=line(exampleX,top+94,exampleX,top+106,'#555',.8);
-       out+=vt(exampleX,top+113,'室外',13);
-       // The five independent columns read right to left.
-       const taskLeft=left+37, taskRight=right-99;
-       const cell=(taskRight-taskLeft)/5;
-       for(let i=0;i<5;i++){
-         const q=s.questions[i];
-         const x=taskRight-(i+.5)*cell;
-         out+=ht(x,top+22,String(i+1),9,'text-anchor="middle"');
-         out+=vt(x,top+43,q.prompt,14);
-         out+=line(x,top+91,x,top+105,'#555',.9);
-         // Show the answer slot within the actual opposite expression.
-         const prefix=q.full.slice(0,q.full.indexOf(q.answer));
-         const suffix=q.full.slice(q.full.indexOf(q.answer)+q.answer.length);
-         let y=top+117;
-         if(prefix){out+=vt(x,y,prefix,13);y+=Array.from(prefix).length*15+3;}
-         out+=rect(x-9,y,18,20);y+=23;
-         if(suffix)out+=vt(x,y,suffix,13);
-       }
-       return out;
-     }
-    // Section 七: seven original-style vertical prompts, with circled kanji
-    // and underlined katakana; the candidate supplies kanji plus okurigana.
-    function okuriCorrectionSVG(s,left,right,top,bottom){
-      // Fixed geometry is shared by browser preview and print/PDF.
-      // The sample has seven columns, numbered from right to left, with
-      // circled supplied kanji, underlined katakana and no answer boxes.
-      let out=line(right,top,right,bottom,'#777',1.3);
-      out+=vt(right-12,top+6,'（七）',12,'font-weight="bold"');
-      const instructionLines=[
-        '次の―線のカタカナを○の中の',
-        '漢字と送りがなを使って、',
-        '漢字と送りがなで答えのらんに書きなさい。'
-      ];
-      instructionLines.forEach((t,i)=>out+=vt(right-30-i*10,top+9,t,8.1));
-      out+=ht(right-6,bottom-16,'（14）',8.5,'text-anchor="end"');
-      out+=ht(right-6,bottom-6,'2×7',7.5,'text-anchor="end"');
-      // A narrow worked example is included beside the instruction lane.
-      const exampleX=right-66;
-      out+=vt(exampleX,top+8,'〈例〉',7.4);
-      out+=`<circle cx="${exampleX-3}" cy="${top+48}" r="7.5" fill="none" stroke="#555" stroke-width=".7"/>`;
-      out+=ht(exampleX-3,top+51,'正',9.4,'text-anchor="middle"');
-      out+=vt(exampleX,top+63,'タダシイ字を書く。',7.7);
-      out+=line(exampleX+5.5,top+63,exampleX+5.5,top+63+4*7.7,'#111',.85);
-      out+=rect(exampleX-13,top+150,19,27,'stroke="#666"');
-      out+=vt(exampleX,top+154,'正しい',8.5);
-      const contentRight=right-84, contentLeft=left+6;
-      const spacing=(contentRight-contentLeft)/7;
-      if(s.questions.length!==7)throw new Error('Section 七 must contain exactly seven questions.');
-      for(let i=0;i<7;i++){
-        const q=s.questions[i],x=contentRight-(i+.5)*spacing;
-        out+=ht(x,top+15,String(i+1),9,'text-anchor="middle"');
-        out+=`<circle cx="${x}" cy="${top+31}" r="9.2" fill="none" stroke="#555" stroke-width=".85"/>`;
-        out+=ht(x,top+35,q.kanji,12,'text-anchor="middle"');
-        const fs=8.8,y=top+46;
-        out+=vt(x,y,q.prompt,fs);
-        const targetIndex=q.prompt.indexOf(q.target);
-        if(targetIndex>=0){
-          const start=Array.from(q.prompt.slice(0,targetIndex)).length;
-          const length=Array.from(q.target).length;
-          out+=line(x+fs*.68,y+start*fs+.5,x+fs*.68,y+(start+length)*fs-.5,'#111',1.15);
-        }
-      }
-      return out;
-    }
-    // Sections 八–十: fixed coordinates based on the supplied sample paper.
-    // Vertical text is kept as SVG text, so preview and browser PDF use identical geometry.
-    function radicalFillSectionSVG(s,left,right,top,bottom){
-      let out=line(right,top,right,bottom,'#777',1.1);
-      out+=vt(right-11,top+5,'（八）',11,'font-weight="bold"');
-      out+=vt(right-29,top+5,'次の部首のなかまの漢字で□にあてはまる漢字一字を、答えのらんに書きなさい。',8.3);
-      out+=ht(right-5,bottom-14,'（20）',8,'text-anchor="end"');
-      out+=ht(right-5,bottom-4,'2×10',7,'text-anchor="end"');
-      const ex=right-66;
-      out+=vt(ex,top+8,'〈例〉',8);
-      out+=ht(ex-4,top+53,'亻',15,'text-anchor="middle"');
-      out+=vt(ex+4,top+67,'休・作',9);
-      const usableRight=right-90,usableLeft=left+12;
-      const pitch=(usableRight-usableLeft)/3;
-      const defs=[['ア','木'],['イ','土'],['ウ','亻']];
-      defs.forEach(([label,radical],g)=>{
-        const x=usableRight-(g+.5)*pitch;
-        out+=ht(x,top+14,label,11,'text-anchor="middle"');
-        out+=ht(x,top+36,radical,20,'text-anchor="middle"');
-        const items=s.questions.map((q,i)=>({...q,n:i+1})).filter(q=>q.group===label);
-        const gap=(bottom-top-75)/items.length;
-        items.forEach((q,j)=>{
-          const y=top+54+j*gap;
-          // One numbered square per word; surrounding characters stay outside it.
-          if(q.before)out+=ht(x-16,y+14,q.before,11,'text-anchor="end"');
-          out+=rect(x-12,y-4,24,25,'stroke="#666"');
-          out+=ht(x,y+14,String(q.n),12,'text-anchor="middle"');
-          if(q.after)out+=ht(x+16,y+14,q.after,11);
-        });
-      });
-      return out;
-    }
-    function compoundPairsSVG(s,left,right,top,bottom){
-      let out=line(right,top,right,bottom,'#777',1.1);
-      out+=vt(right-11,top+5,'（九）',11,'font-weight="bold"');
-      out+=vt(right-28,top+5,'次の漢字と下のア・イ・ウ・エ・オの漢字を組み合わせて二字の熟語を二つ作り、答えのらんに記号で書きなさい。',7.8);
-      out+=ht(right-5,bottom-14,'（20）',8,'text-anchor="end"');
-      out+=ht(right-5,bottom-4,'2×10',7,'text-anchor="end"');
-      const exampleX=right-68;
-      out+=vt(exampleX,top+8,'〈例〉',7.7);
-      out+=vt(exampleX,top+41,'校 → 学校・校庭',7.9);
-      const usableRight=right-105,usableLeft=left+10;
-      const pitch=(usableRight-usableLeft)/5;
-      for(let g=0;g<5;g++){
-        const x=usableRight-(g+.5)*pitch;
-        const q=s.questions[g*2];
-        out+=ht(x,top+13,['一','二','三','四','五'][g]+'、'+q.head,11,'text-anchor="middle"');
-        // The five options form a single tall vertical strip, right of two answer slots.
-        const optX=x+8,optY=top+27,optW=20,optH=Math.min(130,bottom-top-42);
-        out+=rect(optX,optY,optW,optH,'stroke="#777"');
-        q.options.forEach((kanji,i)=>{
-          out+=ht(optX+optW/2,optY+14+i*24,['ア','イ','ウ','エ','オ'][i],7.8,'text-anchor="middle"');
-          out+=ht(optX+optW/2,optY+24+i*24,kanji,10,'text-anchor="middle"');
-        });
-        const answerX=x-24;
-        for(let j=0;j<2;j++){
-          const y=top+39+j*53;
-          out+=rect(answerX-15,y,29,35,'stroke="#666"');
-          out+=ht(answerX,y+12,String(g*2+j+1),8,'text-anchor="middle"');
-          out+=ht(answerX,y+29,q.head,12,'text-anchor="middle"');
-        }
-      }
-      return out;
-    }
-    function finalWritingSVG(s,left,right,top,bottom){
-      let out=line(right,top,right,bottom,'#777',1.1);
-      out+=vt(right-12,top+5,'（十）漢字の書き取り',11,'font-weight="bold"');
-      out+=vt(right-30,top+5,'次の―線のカタカナに合う漢字を答えのらんに書きなさい。',8.1);
-      out+=ht(right-6,bottom-5,'（40） 2×20',7.8,'text-anchor="end"');
-      const qRight=right-58,qLeft=left+9,pitch=(qRight-qLeft)/20;
-      for(let i=0;i<20;i++){
-        const q=s.questions[i],x=qRight-(i+.5)*pitch;
-        const fs=8.7,y=top+27;
-        out+=ht(x,top+13,String(i+1),8,'text-anchor="middle"');
-        // Underline the katakana target along the right edge of vertical text.
-        out+=vt(x,y,q.prompt,fs);
-        const pos=q.prompt.indexOf(q.target);
-        if(pos>=0){
-          const before=Array.from(q.prompt.slice(0,pos)).length;
-          const length=Array.from(q.target).length;
-          out+=line(x+fs*.73,y+before*fs+.6,x+fs*.73,y+(before+length)*fs-.6,'#111',1.2);
-        }
-        const boxSize=17;
-        out+=rect(x-boxSize/2,bottom-35,boxSize,boxSize,'stroke="#555"');
-      }
-      return out;
-    }
-    // A section has an independent fixed region. No flex-wrap or auto-flow.
-    function sectionSVG(s,left,right,top,bottom){
-      if(s.type==='compound-pairs')return compoundPairsSVG(s,left,right,top,bottom);
-      if(s.type==='writing-final')return finalWritingSVG(s,left,right,top,bottom);
-      if(s.type==='strokes'||s.type==='onyomi')return twoRowSectionSVG(s,left,right,top,bottom);
-      if(s.type==='antonym-fill')return antonymSectionSVG(s,left,right,top,bottom);
-      if(s.type==='okuri-correction')return okuriCorrectionSVG(s,left,right,top,bottom);
-      if(s.type==='radical-fill')return radicalFillSectionSVG(s,left,right,top,bottom);
-      let out=''; const width=right-left, height=bottom-top;
-      const narrow=width<440;
-      const titleX=right-16, instructionX=right-38, qRight=right-(narrow?62:70),qLeft=left+9;
-      out+=line(right,top,right,bottom,'#777',1.3);
-      out+=vt(titleX,top+10,s.id+'　'+s.title,12,'font-weight="bold"');
-      out+=vt(instructionX,top+10,(EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),9);
-      out+=ht(right-13,bottom-8,`${s.count*s.points}点`,8,'text-anchor="end"');
-      const count=s.questions.length, spacing=(qRight-qLeft)/count;
-      for(let i=0;i<count;i++){
-        const q=s.questions[i]; const x=qRight-(i+.5)*spacing;
-        const small=spacing<29, fs=small?9.1:spacing<43?10.5:(s.type==='writing'&&height<220?10:12);
-        out+=ht(x,top+13,String(i+1),8,'text-anchor="middle"');
-        let prompt=q.prompt;
-        // For narrow sections, concise context keeps each vertical column legible.
-        // Choice questions keep the full sentence and mark its target katakana.
-        if(s.type==='homophone')prompt=prompt.replace('／','・');
-         const isChoice=s.type==='choice';
-         if(isChoice && q.choices){
-           // Section 三: the original examination places the three alternatives
-           // in a narrow vertical lane immediately LEFT of the sentence, not
-           // underneath it. Each answer label is part of the same lane.
-           const chars=[...prompt].length;
-           const promptSize=Math.min(10.3,Math.max(7.6,(height-46)/Math.max(chars,1)));
-           const sentenceX=x+spacing*.22;
-           const answerX=x-spacing*.26;
-           out+=vt(sentenceX,top+27,prompt,promptSize,'text-anchor="start"');
-           if(q.target){
-             const start=prompt.indexOf(q.target);
-             if(start>=0){
-               const before=[...prompt.slice(0,start)].length;
-               const markY=top+27+before*promptSize;
-               out+=line(sentenceX+promptSize*.69,markY+1,sentenceX+promptSize*.69,markY+[...q.target].length*promptSize-1,'#111',1.15);
-             }
-           }
-           // Three independent option positions; compact enough for this band.
-           const optionFont=9.4;
-           const optionY=[top+62,top+119,top+176];
-           for(let j=0;j<3;j++){
-             out+=vt(answerX,optionY[j],'（'+['ア','イ','ウ'][j]+' '+q.choices[j]+'）',optionFont);
-           }
-           continue;
-         }
-         const availablePrompt=height-80;
-         const maxChars=Math.max(7,Math.floor(availablePrompt/fs));
-         if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
-         out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
-         if((s.type==='reading'||s.type==='writing') && q.target){
-           const start=prompt.indexOf(q.target);
-           if(start>=0){
-             const before=[...prompt.slice(0,start)].length;
-             const markY=top+27+before*fs;
-             out+=line(x+fs*.72,markY+1,x+fs*.72,markY+[...q.target].length*fs-1,'#111',1.15);
-           }
-         }
-         {
-          const boxW=Math.min(17,Math.max(11,spacing-5));
-          const boxH=s.type==='reading'?25:18;
-          out+=rect(x-boxW/2,bottom-boxH-15,boxW,boxH);
-        }
-      }
-      return out;
-    }
-    function pageSVG(sections,page){
-      const W=1122,H=794, side=128, right=978, left=36;
-      let svg=`<svg class="exam-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="漢検7級模擬試験 ${page+1}ページ"><rect width="${W}" height="${H}" fill="white"/>`;
-      svg+=line(991,35,991,760,'#444',1.4);
-      svg+=rect(1022,37,58,40)+ht(1051,65,'7級',25,'text-anchor="middle" font-weight="bold"');
-      svg+=vt(1060,94,'日本漢字能力検定',19,'font-weight="bold"');
-      svg+=vt(1028,94,'模擬試験問題',16,'font-weight="bold"');
-      svg+=vt(1059,323,'2026年度・練習用',10);
-      svg+=vt(1028,323,`第${mockSerial}回　問題（${page+1}／2）`,11);
-      svg+=rect(1013,505,71,157)+vt(1066,513,'氏名',11)+line(1030,534,1030,649,'#888',.8);
-      svg+=vt(1056,680,'非公式・学習用',9);
-      if(page===0){
-        svg+=sectionSVG(sections[0],left,right,35,275)+line(left,287,right,287);
-        svg+=sectionSVG(sections[1],left,right,300,501)+line(left,513,right,513);
-        svg+=sectionSVG(sections[2],left+570,right,525,758);
-        svg+=sectionSVG(sections[3],left+310,left+570,525,758);
-        svg+=sectionSVG(sections[4],left,left+310,525,758);
+    function groupBy(qs,key){const gs=[];qs.forEach((q,i)=>{let g=gs.find(x=>x.k===q[key]);if(!g)gs.push(g={k:q[key],q,l:[]});g.l.push([q,i+1])});return gs}
+    function secHTML(s){
+      const pts=s.questions.length*s.points;
+      let b=`<div class="ins">（${s.id}）${INS[s.type]||''}<br>（${pts}点）</div>`;
+      const num=(i)=>`<span class="no">${i}</span>`;
+      if(s.type==='reading-pairs'){
+        for(let i=0;i<s.questions.length;i+=2)b+='<div class="pr">'+[0,1].map(k=>s.questions[i+k]?`<div class="vq">${num(i+k+1)}${qHTML(s,s.questions[i+k],i+k+1)}</div>`:'').join('')+'</div>';
+      }else if(s.type==='antonym-fill'){
+        b+=`<div class="hint">${s.questions.map(q=>q.hint).filter(Boolean).sort(()=>Math.random()-.5).map(E).join('・')}</div>`;
+        b+=s.questions.map((q,i)=>`<div class="vq">${qHTML(s,q,i+1)}</div>`).join('');
+      }else if(s.type==='radical-fill'){
+        b+=groupBy(s.questions,'group').map(g=>`<div class="vq"><b>${E(g.k)} ${E(g.q.radical)}${RAD[g.q.radical]?'（'+RAD[g.q.radical]+'）':''}</b>　${g.l.map(([q,n])=>`${E(q.before)}<span class="bx">${n}</span>${E(q.after)}`).join('　')}</div>`).join('');
+      }else if(s.type==='compound-pairs'){
+        b+=groupBy(s.questions,'group').map(g=>`<div class="vq"><b>${E(g.q.head)}</b>　${g.q.options.map((o,i)=>AI[i]+E(o)).join(' ')}　${g.l.map(([q,n])=>`<span class="bx">${n}</span>`).join('')}</div>`).join('');
       }else{
-        svg+=sectionSVG(sections[5],left+630,right,35,274);
-        svg+=sectionSVG(sections[6],left+310,left+630,35,274);
-        svg+=sectionSVG(sections[7],left,left+310,35,274);
-        svg+=line(left,288,right,288);
-        svg+=sectionSVG(sections[8],left,right,302,485);
-        svg+=line(left,500,right,500);
-        svg+=sectionSVG(sections[9],left,right,514,758);
+        b+=s.questions.map((q,i)=>`<div class="vq">${num(i+1)}${qHTML(s,q,i+1)}</div>`).join('');
       }
-      return svg+'</svg>';
+      return `<div class="sec">${b}</div>`;
+    }
+    function paperHTML(S){
+      const by=id=>S.find(s=>s.id===id),tot=S.reduce((t,s)=>t+s.questions.length*s.points,0);
+      const hd=no=>`<div class="hd"><div class="tab">問題【${no}まいめ】</div><div class="lv">7級</div><div class="tt">漢字検定　模擬試験</div><div>第${mockSerial}回・2026年度練習用<br>非公式・学習用　${tot}点満点</div><div class="nm">氏名</div></div>`;
+      const pg=(no,bands)=>`<article class="exam-canvas pg"><div class="main">${bands.map(bd=>`<div class="band">${bd.map(id=>secHTML(by(id))).join('')}</div>`).join('')}</div>${hd(no)}</article>`;
+      const ans=`<article class="exam-canvas pg ans"><h2>答案用紙　氏名（　　　　　　　　）　${tot}点満点</h2>${S.map(s=>`<div class="as"><b>（${s.id}）${s.title}</b>${s.questions.map((_,i)=>`<div class="ab">${i+1}<i></i></div>`).join('')}</div>`).join('')}</article>`;
+      return pg(1,[['一'],['二','三'],['四','五','六']])+pg(2,[['七','八'],['九','十'],['十一']])+ans;
     }
     function createMock(){
       try{
         const sections=makeSections();mockSerial++;
-        mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
+        mockPaper.innerHTML=paperHTML(sections);
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · Sections 八–十 aligned · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,x)=>n+x.questions.length,0)} questions · ${sections.reduce((n,x)=>n+x.questions.length*x.points,0)} points · ${sections.length} sections · 2 A4 landscape pages + answer sheet · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
