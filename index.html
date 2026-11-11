@@ -896,54 +896,63 @@
       return out;
     }
     function compoundPairsSVG(s,left,right,top,bottom){
+      // Section 九 only: the section title is deliberately unchanged.
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,{font:8,offset:31,pitch:10,columns:4,bottomReserve:28});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,
+        {font:8.2,offset:31,pitch:10.2,columns:4,bottomReserve:27});
       out+=ht(right-7,bottom-9,'（20） 2×10',8,'text-anchor="end"');
-      const exampleX=right-102;
-      out+=vt(exampleX,top+7,'〈例〉 校',9);
-      out+=vt(exampleX-18,top+7,'ア 学　イ 庭',9);
-      const usableRight=right-145,usableLeft=left+5;
+      const exampleX=right-111;
+      out+=vt(exampleX,top+9,'〈例〉',8.5);
+      out+=vt(exampleX-14,top+9,'校',11);
+      out+=vt(exampleX-29,top+9,'ア 門　イ 学　ウ 海',8.5);
+      const usableRight=right-165,usableLeft=left+16;
       const pitch=(usableRight-usableLeft)/5;
       for(let g=0;g<5;g++){
         const x=usableRight-(g+.5)*pitch;
         const q=s.questions[g*2];
-        out+=vt(x+25,top+9,['一、','二、','三、','四、','五、'][g]+q.head,12);
-        // The reference uses five kana-labelled candidates in one vertical strip.
-        const optX=x+1,optY=top+17,optW=23,optH=155;
-        out+=rect(optX,optY,optW,optH,'stroke="#777"');
+        // Fixed, separate heading above each choice strip, not inside it.
+        out+=ht(x+11,top+15,['一、','二、','三、','四、','五、'][g]+q.head,11,
+          'text-anchor="middle"');
+        const optW=24,optH=145,optX=x+3,optY=top+32;
+        out+=rect(optX,optY,optW,optH,'stroke="#666"');
         q.options.forEach((kanji,i)=>{
-          out+=ht(optX+optW/2,optY+12+i*29,['ア','イ','ウ','エ','オ'][i],8,'text-anchor="middle"');
-          out+=ht(optX+optW/2,optY+25+i*29,kanji,13,'text-anchor="middle"');
+          const cy=optY+15+i*28;
+          out+=ht(optX+5,cy,['ア','イ','ウ','エ','オ'][i],7.5);
+          out+=ht(optX+17,cy+1,kanji,11,'text-anchor="middle"');
         });
+        // Two numbered, blank answer squares, aligned alongside the options.
         for(let j=0;j<2;j++){
-          const y=top+38+j*79;
-          out+=rect(x-37,y,29,38,'stroke="#666"');
-          out+=ht(x-22.5,y+12,String(g*2+j+1),9,'text-anchor="middle"');
-          // Leave the answer area blank for the selected option symbol.
+          const y=top+49+j*78;
+          out+=rect(x-34,y,25,32,'stroke="#666"');
+          out+=ht(x-21.5,y+12,String(g*2+j+1),8,'text-anchor="middle"');
         }
       }
       return out;
     }
     function finalWritingSVG(s,left,right,top,bottom){
+      // Section 十 only: title text and title geometry remain untouched.
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（十）漢字の書き取り',12,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,{font:8.2,offset:31,pitch:10,columns:4,bottomReserve:28});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,
+        {font:8.2,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-6,'（40） 2×20',8,'text-anchor="end"');
-      const qRight=right-71,qLeft=left+7,pitch=(qRight-qLeft)/20;
+      const qRight=right-88,qLeft=left+12;
+      const pitch=(qRight-qLeft)/20;
+      const boxSize=21;
       for(let i=0;i<20;i++){
         const q=s.questions[i],x=qRight-(i+.5)*pitch;
-        const fs=10,y=top+29;
-        out+=ht(x,top+13,String(i+1),9,'text-anchor="middle"');
+        const fs=10.4,y=top+34;
+        out+=ht(x,top+16,String(i+1),8.6,'text-anchor="middle"');
         out+=vt(x,y,q.prompt,fs);
         const pos=q.prompt.indexOf(q.target);
         if(pos>=0){
           const before=Array.from(q.prompt.slice(0,pos)).length;
           const length=Array.from(q.target).length;
-          out+=line(x+fs*.72,y+before*fs+.6,x+fs*.72,y+(before+length)*fs-.6,'#111',1.2);
+          out+=line(x+fs*.73,y+before*fs+.6,x+fs*.73,
+            y+(before+length)*fs-.6,'#111',1.35);
         }
-        const boxSize=20;
-        out+=rect(x-boxSize/2,bottom-31,boxSize,boxSize,'stroke="#555"');
+        out+=rect(x-boxSize/2,bottom-34,boxSize,boxSize,'stroke="#555"');
       }
       return out;
     }
