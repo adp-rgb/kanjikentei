@@ -514,7 +514,7 @@
     ].map(([kanji,reading,answer])=>({kanji,reading,answer}));
     // Every antonym record explicitly identifies the blank position and reading.
     const EXTRA_ANTONYMS = [
-      {prompt:'安心',other:'配',answer:'心',full:'心配',hint:'しん'},
+      {prompt:'安心',other:'安',answer:'不',full:'不安',hint:'ふ'},
       {prompt:'前進',other:'退',answer:'後',full:'後退',hint:'こう'},
       {prompt:'増加',other:'少',answer:'減',full:'減少',hint:'げん'},
       {prompt:'上昇',other:'降',answer:'下',full:'下降',hint:'か'},
@@ -566,25 +566,19 @@
     const RADICAL_SAFE = [
       {group:'ア',radical:'木',before:'',after:'実',answer:'果'},
       {group:'ア',radical:'木',before:'',after:'林',answer:'森'},
-      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
-      {group:'ア',radical:'木',before:'',after:'陰',answer:'木'},
-      {group:'ア',radical:'木',before:'',after:'板',answer:'黒',invalid:true},
       {group:'ア',radical:'木',before:'',after:'造',answer:'構'},
-      {group:'ア',radical:'木',before:'',after:'物',answer:'果'},
+      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'校',answer:'学',invalid:true},
       {group:'イ',radical:'土',before:'',after:'図',answer:'地'},
       {group:'イ',radical:'土',before:'',after:'面',answer:'地'},
       {group:'イ',radical:'土',before:'',after:'所',answer:'場'},
       {group:'イ',radical:'土',before:'',after:'産',answer:'土'},
-      {group:'イ',radical:'土',before:'',after:'地',answer:'土'},
       {group:'イ',radical:'土',before:'',after:'球',answer:'地'},
-      {group:'イ',radical:'土',before:'',after:'域',answer:'地'},
       {group:'ウ',radical:'亻',before:'',after:'業',answer:'作'},
       {group:'ウ',radical:'亻',before:'',after:'事',answer:'仕'},
       {group:'ウ',radical:'亻',before:'',after:'間',answer:'仲'},
       {group:'ウ',radical:'亻',before:'',after:'用',answer:'使'},
       {group:'ウ',radical:'亻',before:'',after:'重',answer:'体'},
-      {group:'ウ',radical:'亻',before:'',after:'説',answer:'仮'},
-      {group:'ウ',radical:'亻',before:'',after:'頼',answer:'信'},
       {group:'ウ',radical:'亻',before:'',after:'命',answer:'任'}
     ].filter(q=>!q.invalid);
     // Both answers in each set have been checked against the five options.
@@ -670,7 +664,7 @@
         } else if(spec.type==='okuri-correction'){
           questions=choose([...OKURI_CORRECTION_BANK,...EXTRA_OKURI]);
         } else if(spec.type==='radical-fill'){
-          const pool=RADICAL_SAFE.filter(q=>!['木陰','果物','木材','木林','木造'].includes(q.answer+q.after) && !(q.answer==='木' && q.after==='材') && !['黒','仮','信'].includes(q.answer));
+          const pool=RADICAL_SAFE;
           questions=['ア','イ','ウ'].flatMap((group,i)=>{
             const groupPool=pool.filter(q=>q.group===group);
              const selected=rotatingSample(groupPool,i===2?4:3,'radical-'+group);
@@ -787,7 +781,7 @@
       const instructionLines=[
         '次の―線のカタカナを○の中の',
         '漢字と送りがなを使って、',
-        '漢字と送りがなで答えのらんに書きなさい。'
+        '答えのらんに書きなさい。'
       ];
       instructionLines.forEach((t,i)=>out+=vt(right-30-i*10,top+9,t,8.1));
       out+=ht(right-6,bottom-16,'（14）',8.5,'text-anchor="end"');
@@ -877,7 +871,7 @@
           const y=top+38+j*79;
           out+=rect(x-37,y,29,38,'stroke="#666"');
           out+=ht(x-22.5,y+12,String(g*2+j+1),9,'text-anchor="middle"');
-          out+=ht(x-22.5,y+30,q.head,14,'text-anchor="middle"');
+          // Leave the answer area blank for the selected option symbol.
         }
       }
       return out;
@@ -1024,7 +1018,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · reference-matched section placement · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
