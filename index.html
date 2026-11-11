@@ -497,6 +497,110 @@
       ['家族でリョウリを作る。','リョウリ','料理'],
       ['カイガンをゆっくり歩く。','カイガン','海岸']
     ];
+    // Expanded, reviewed pools for genuinely new papers. Each record is self-contained.
+    const EXTRA_TOTAL_STROKES = [
+      ['海',9],['校',10],['語',14],['紙',10],['星',9],['春',9],
+      ['秋',9],['夏',10],['雲',12],['雪',11],['家',10],['教',11],
+      ['読',14],['親',16],['新',13],['道',12],['線',15],['歌',14],
+      ['園',13],['電',13],['場',12],['数',13],['聞',14],['答',12]
+    ].map(([kanji,answer])=>({kanji,answer:String(answer),total:true}));
+    const EXTRA_READING_TYPES = [
+      ['海','うみ','イ'],['山','やま','イ'],['川','かわ','イ'],['花','はな','イ'],
+      ['空','そら','イ'],['雨','あめ','イ'],['森','もり','イ'],['星','ほし','イ'],
+      ['音','おと','イ'],['春','はる','イ'],['秋','あき','イ'],['夏','なつ','イ'],
+      ['校','こう','ア'],['学','がく','ア'],['電','でん','ア'],['国','こく','ア'],
+      ['読','どく','ア'],['書','しょ','ア'],['時','じ','ア'],['数','すう','ア'],
+      ['新','しん','ア'],['語','ご','ア'],['運','うん','ア'],['動','どう','ア']
+    ].map(([kanji,reading,answer])=>({kanji,reading,answer}));
+    const EXTRA_ANTONYMS = [
+      {prompt:'安心',full:'心配',answer:'配',hint:'はい'},
+      {prompt:'前進',full:'後退',answer:'後',hint:'こう'},
+      {prompt:'増加',full:'減少',answer:'減',hint:'げん'},
+      {prompt:'上昇',full:'下降',answer:'下',hint:'か'},
+      {prompt:'成功',full:'失敗',answer:'失',hint:'しつ'},
+      {prompt:'賛成',full:'反対',answer:'反',hint:'はん'},
+      {prompt:'出発',full:'到着',answer:'到',hint:'とう'},
+      {prompt:'開始',full:'終了',answer:'終',hint:'しゅう'},
+      {prompt:'入口',full:'出口',answer:'出',hint:'で'},
+      {prompt:'安全',full:'危険',answer:'危',hint:'き'}
+    ];
+    const EXTRA_OKURI = [
+      ['読','毎晩、本をヨム。','ヨム','読む'],
+      ['書','日記をカク。','カク','書く'],
+      ['走','公園をハシル。','ハシル','走る'],
+      ['歩','学校までアルク。','アルク','歩く'],
+      ['開','窓をアケル。','アケル','開ける'],
+      ['閉','ドアをシメル。','シメル','閉める'],
+      ['始','授業がハジマル。','ハジマル','始まる'],
+      ['終','仕事をオエル。','オエル','終える'],
+      ['考','答えをカンガエル。','カンガエル','考える'],
+      ['教','友達にオシエル。','オシエル','教える'],
+      ['調','天気をシラベル。','シラベル','調べる'],
+      ['集','広場にアツマル。','アツマル','集まる'],
+      ['送','手紙をオクル。','オクル','送る'],
+      ['守','約束をマモル。','マモル','守る']
+    ].map(([kanji,prompt,target,answer])=>({kanji,prompt,target,answer}));
+    const EXTRA_RADICAL = [
+      ['ア','木','','校','学'], // removed below: avoid misleading completions
+    ];
+    const RADICAL_VARIANTS = [
+      {group:'ア',radical:'木',before:'',after:'林',answer:'森'},
+      {group:'ア',radical:'木',before:'',after:'橋',answer:'桟'},
+      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'板',answer:'黒'},
+      {group:'イ',radical:'土',before:'',after:'図',answer:'地'},
+      {group:'イ',radical:'土',before:'',after:'面',answer:'地'},
+      {group:'イ',radical:'土',before:'',after:'所',answer:'場'},
+      {group:'イ',radical:'土',before:'',after:'内',answer:'境'},
+      {group:'ウ',radical:'亻',before:'',after:'業',answer:'作'},
+      {group:'ウ',radical:'亻',before:'',after:'事',answer:'仕'},
+      {group:'ウ',radical:'亻',before:'',after:'間',answer:'仲'},
+      {group:'ウ',radical:'亻',before:'',after:'頼',answer:'信'},
+      {group:'ウ',radical:'亻',before:'',after:'用',answer:'使'},
+      {group:'ウ',radical:'亻',before:'',after:'重',answer:'体'}
+    ];
+    // Use only natural, unambiguous compound completions.
+    const RADICAL_SAFE = [
+      {group:'ア',radical:'木',before:'',after:'実',answer:'果'},
+      {group:'ア',radical:'木',before:'',after:'立',answer:'独'},
+      {group:'ア',radical:'木',before:'',after:'陰',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'林',answer:'森'},
+      {group:'イ',radical:'土',before:'',after:'図',answer:'地'},
+      {group:'イ',radical:'土',before:'',after:'面',answer:'地'},
+      {group:'イ',radical:'土',before:'',after:'所',answer:'場'},
+      {group:'イ',radical:'土',before:'',after:'産',answer:'土'},
+      {group:'イ',radical:'土',before:'',after:'地',answer:'土'},
+      {group:'ウ',radical:'亻',before:'',after:'業',answer:'作'},
+      {group:'ウ',radical:'亻',before:'',after:'事',answer:'仕'},
+      {group:'ウ',radical:'亻',before:'',after:'間',answer:'仲'},
+      {group:'ウ',radical:'亻',before:'',after:'用',answer:'使'},
+      {group:'ウ',radical:'亻',before:'',after:'重',answer:'体'},
+      {group:'ウ',radical:'亻',before:'',after:'説',answer:'仮'}
+    ];
+    const EXTRA_COMPOUND_PAIRS = [
+      {head:'学',options:['校','火','生','道','金'],answers:['ア','ウ']},
+      {head:'電',options:['気','木','車','海','道'],answers:['ア','ウ']},
+      {head:'図',options:['書','話','工','画','海'],answers:['ア','エ']},
+      {head:'国',options:['語','木','会','雪','校'],answers:['ア','ウ']},
+      {head:'音',options:['楽','川','読','声','森'],answers:['ア','エ']},
+      {head:'海',options:['岸','林','水','道','木'],answers:['ア','ウ']},
+      {head:'時',options:['間','道','計','雪','山'],answers:['ア','ウ']},
+      {head:'自',options:['然','校','分','土','金'],answers:['ア','ウ']},
+      {head:'文',options:['章','木','化','雪','道'],answers:['ア','ウ']},
+      {head:'安',options:['全','土','心','雨','火'],answers:['ア','ウ']},
+      {head:'運',options:['動','木','転','雪','水'],answers:['ア','ウ']},
+      {head:'新',options:['聞','木','年','山','川'],answers:['ア','ウ']}
+    ];
+    const recentPapers=[];
+    function rotatingSample(pool,n,key){
+      if(pool.length<n)throw Error('Question bank too small for '+key);
+      const previous=new Set(recentPapers.length?recentPapers[recentPapers.length-1][key]||[]:[]);
+      const fresh=pool.filter(q=>!previous.has(JSON.stringify(q)));
+      const used=pool.filter(q=>previous.has(JSON.stringify(q)));
+      shuffleArray(fresh);shuffleArray(used);
+      return fresh.concat(used).slice(0,n);
+    }
     const EXAM_INSTRUCTIONS = {
       reading:'次の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
       writing:'次の―線のカタカナに合う漢字を答えのらんに書きなさい。',
@@ -525,37 +629,44 @@
     function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
     function makeSections(){
       const sentences=sample(SENTENCE_BANK,50);
-      let cursor=0;
-      return SPECS.map(spec=>{
+      const paperHistory={};let cursor=0;
+      const sections=SPECS.map(spec=>{
         let questions;
+        const choose=(pool,n=spec.count)=>{
+          const chosen=rotatingSample(pool,n,spec.type);
+          paperHistory[spec.type]=chosen.map(q=>JSON.stringify(q));return chosen;
+        };
         if(spec.type==='writing-final'){
-          questions=WRITING_10_BANK.map(row=>({prompt:row[0],target:row[1],answer:row[2]}));
+          const extra=SENTENCE_BANK.map(row=>({prompt:row[3].replace(row[1],toKatakana(row[1])),target:toKatakana(row[1]),answer:row[0]}));
+          const original=WRITING_10_BANK.map(row=>({prompt:row[0],target:row[1],answer:row[2]}));
+          const unique=[...new Map([...original,...extra].map(q=>[q.answer,q])).values()];
+          questions=choose(unique);
         } else if(spec.type==='compound-pairs'){
-          questions=COMPOUND_PAIR_BANK.flatMap((g,idx)=>[
-            {group:idx,head:g.head,options:g.options,answer:g.answers[0],variant:0},
-            {group:idx,head:g.head,options:g.options,answer:g.answers[1],variant:1}
-          ]);
+          const groups=choose([...COMPOUND_PAIR_BANK,...EXTRA_COMPOUND_PAIRS],5);
+          questions=groups.flatMap((g,idx)=>[0,1].map(variant=>({group:idx,head:g.head,options:g.options,answer:g.answers[variant],variant})));
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
-          questions=STROKE_BANK.map(q=>({...q,prompt:q.kanji}));
+          questions=[...choose(STROKE_BANK.filter(q=>!q.total),5),...choose([...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES],5)];
         } else if(spec.type==='onyomi'){
-          questions=READING_TYPE_BANK.map(q=>({...q,prompt:q.kanji}));
+          questions=choose([...READING_TYPE_BANK,...EXTRA_READING_TYPES]);
         } else if(spec.type==='antonym-fill'){
-          questions=ANTONYM_FILL_BANK.map(q=>({...q}));
+          questions=choose([...ANTONYM_FILL_BANK,...EXTRA_ANTONYMS]);
         } else if(spec.type==='okuri-correction'){
-          questions=OKURI_CORRECTION_BANK.map(q=>({...q}));
+          questions=choose([...OKURI_CORRECTION_BANK,...EXTRA_OKURI]);
         } else if(spec.type==='radical-fill'){
-          questions=RADICAL_FILL_BANK.map(q=>({...q}));
-        } else {
-          questions=sample(BANK[spec.type],spec.count).map(row=>{
-            if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
-            if(spec.type==='homophone')return {prompt:row[1]+'／'+row[3],answer:row[2]+'・'+row[4]};
-            return {prompt:row[0],answer:row[1]};
+          const pool=[...RADICAL_FILL_BANK.filter(q=>!['末','城','低'].includes(q.answer)),...RADICAL_SAFE.filter(q=>!['独','黒'].includes(q.answer))];
+          questions=['ア','イ','ウ'].flatMap((group,i)=>{
+            const selected=rotatingSample(pool.filter(q=>q.group===group),i===2?4:3,'radical-'+group);
+            paperHistory['radical-'+group]=selected.map(q=>JSON.stringify(q));return selected;
           });
+        } else {
+          questions=choose(BANK[spec.type]).map(row=>({prompt:row[0],answer:row[1],choices:row[2],target:row[3]}));
         }
         return {...spec,questions};
       });
+      recentPapers.push(paperHistory);if(recentPapers.length>2)recentPapers.shift();
+      return sections;
     }
     const xmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
     function rect(x,y,w,h,extra=''){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#333" stroke-width=".8" ${extra}/>`}
@@ -623,7 +734,7 @@
        // Vertical hiragana bank, at the left edge of the question group.
        const bankX=left+8;
        out+=rect(bankX,top+13,23,h-26,'stroke="#666"');
-       out+=vt(bankX+16,top+25,'さく・せき・み・む・り',10);
+       out+=vt(bankX+16,top+25,s.questions.map(q=>q.hint).join('・'),9);
        // Worked example occupies a slim lane just left of the instructions.
        const exampleX=right-82;
        out+=vt(exampleX,top+13,'〈例〉',8);
