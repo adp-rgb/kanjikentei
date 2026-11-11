@@ -670,9 +670,10 @@
         } else if(spec.type==='okuri-correction'){
           questions=choose([...OKURI_CORRECTION_BANK,...EXTRA_OKURI]);
         } else if(spec.type==='radical-fill'){
-          const pool=RADICAL_SAFE;
+          const pool=RADICAL_SAFE.filter(q=>!['木陰','果物','木材','木林','木造'].includes(q.answer+q.after) && !(q.answer==='木' && q.after==='材'));
           questions=['ア','イ','ウ'].flatMap((group,i)=>{
-            const selected=rotatingSample(pool.filter(q=>q.group===group),i===2?4:3,'radical-'+group);
+            const groupPool=pool.filter(q=>q.group===group);
+             const selected=rotatingSample(groupPool,i===2?4:3,'radical-'+group);
             paperHistory['radical-'+group]=selected.map(q=>JSON.stringify(q));return selected;
           });
         } else {
@@ -987,20 +988,24 @@
       svg+=vt(1028,323,`第${mockSerial}回　問題（${page+1}／2）`,11);
       svg+=rect(1013,505,71,157)+vt(1066,513,'氏名',11)+line(1030,534,1030,649,'#888',.8);
       svg+=vt(1056,680,'非公式・学習用',9);
+      // Reference PDF: page 1 = 一 / 二・三 / 四・五・六.
+      // Page 2 = 七・八 / 九 / 十. Regions never auto-wrap.
       if(page===0){
-        svg+=sectionSVG(sections[0],left,right,35,275)+line(left,287,right,287);
-        svg+=sectionSVG(sections[1],left,right,300,501)+line(left,513,right,513);
-        svg+=sectionSVG(sections[2],left+570,right,525,758);
-        svg+=sectionSVG(sections[3],left+310,left+570,525,758);
-        svg+=sectionSVG(sections[4],left,left+310,525,758);
+        svg+=sectionSVG(sections[0],left,right,35,278);
+        svg+=line(left,289,right,289);
+        svg+=sectionSVG(sections[1],left+450,right,301,505);
+        svg+=sectionSVG(sections[2],left,left+450,301,505);
+        svg+=line(left,516,right,516);
+        svg+=sectionSVG(sections[3],left+625,right,527,758);
+        svg+=sectionSVG(sections[4],left+340,left+625,527,758);
+        svg+=sectionSVG(sections[5],left,left+340,527,758);
       }else{
-        svg+=sectionSVG(sections[5],left+630,right,35,274);
-        svg+=sectionSVG(sections[6],left+310,left+630,35,274);
-        svg+=sectionSVG(sections[7],left,left+310,35,274);
-        svg+=line(left,288,right,288);
-        svg+=sectionSVG(sections[8],left,right,302,485);
-        svg+=line(left,500,right,500);
-        svg+=sectionSVG(sections[9],left,right,514,758);
+        svg+=sectionSVG(sections[6],left+480,right,35,273);
+        svg+=sectionSVG(sections[7],left,left+480,35,273);
+        svg+=line(left,287,right,287);
+        svg+=sectionSVG(sections[8],left,right,301,502);
+        svg+=line(left,514,right,514);
+        svg+=sectionSVG(sections[9],left,right,526,758);
       }
       return svg+'</svg>';
     }
@@ -1022,7 +1027,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · question banks revised · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · reference-matched section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
