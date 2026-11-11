@@ -433,6 +433,26 @@
       {kanji:'旗',reading:'はた',answer:'イ'}, {kanji:'失',reading:'しつ',answer:'ア'},
       {kanji:'的',reading:'てき',answer:'ア'}, {kanji:'孫',reading:'まご',answer:'イ'}
     ];
+    // Section 六: original sample's five antonym-completion tasks.
+    // Each answer is selected exactly once from the boxed hiragana word list.
+    const ANTONYM_FILL_BANK = [
+      {prompt:'不便',other:'便',answer:'利',full:'便利',hint:'り'},
+      {prompt:'起立',other:'着',answer:'席',full:'着席',hint:'せき'},
+      {prompt:'有料',other:'料',answer:'無',full:'無料',hint:'む'},
+      {prompt:'欠ける',other:'ちる',answer:'満',full:'満ちる',hint:'み'},
+      {prompt:'来年',other:'年',answer:'昨',full:'昨年',hint:'さく'}
+    ];
+    const EXAM_INSTRUCTIONS = {
+      reading:'次の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
+      writing:'次の―線のカタカナに合う漢字を答えのらんに書きなさい。',
+      choice:'次の―線のカタカナに合う漢字をえらんで答えのらんに記号で書きなさい。',
+      strokes:'次の漢字の太い画のところは筆順の何画目か、下の漢字の総画数はいくつか、数字で答えなさい。',
+      onyomi:'次の漢字の読みは、音読み（ア）ですか、訓読み（イ）ですか。記号で答えなさい。',
+      'antonym-fill':'後の□の中のひらがなを漢字になおして、意味が反対や対になることば（対義語）を書きなさい。□の中のひらがなは一度だけ使い、答えのらんに漢字一字を書きなさい。',
+      correct:'次の文のまちがっている漢字を正しい漢字になおしなさい。',
+      homophone:'次の文に合う、同じ読みの漢字を書きなさい。',
+      compound:'次の熟語の□に入る漢字を書きなさい。'
+    };
     const SENTENCE_BANK = [["学校", "がっこう", "毎朝、学校へ行く。", "毎朝、がっこうへ行く。"], ["先生", "せんせい", "先生の話を聞く。", "せんせいの話を聞く。"], ["教室", "きょうしつ", "教室の窓を開ける。", "きょうしつの窓を開ける。"], ["図書館", "としょかん", "図書館で本を借りる。", "としょかんで本を借りる。"], ["友達", "ともだち", "友達と公園で遊ぶ。", "ともだちと公園で遊ぶ。"], ["家族", "かぞく", "家族で旅行に行く。", "かぞくで旅行に行く。"], ["安全", "あんぜん", "安全な道を歩く。", "あんぜんな道を歩く。"], ["自然", "しぜん", "自然を大切にする。", "しぜんを大切にする。"], ["季節", "きせつ", "季節の変化を感じる。", "きせつの変化を感じる。"], ["太陽", "たいよう", "太陽が東からのぼる。", "たいようが東からのぼる。"], ["海岸", "かいがん", "海岸をゆっくり歩く。", "かいがんをゆっくり歩く。"], ["山頂", "さんちょう", "山頂から町を見る。", "さんちょうから町を見る。"], ["電車", "でんしゃ", "電車で町へ向かう。", "でんしゃで町へ向かう。"], ["道路", "どうろ", "道路を横切らない。", "どうろを横切らない。"], ["信号", "しんごう", "信号が青に変わる。", "しんごうが青に変わる。"], ["運動", "うんどう", "朝に運動をする。", "朝にうんどうをする。"], ["試合", "しあい", "試合の結果を聞く。", "しあいの結果を聞く。"], ["野球", "やきゅう", "野球の練習をする。", "やきゅうの練習をする。"], ["練習", "れんしゅう", "毎日練習を続ける。", "毎日れんしゅうを続ける。"], ["宿題", "しゅくだい", "宿題を先に終える。", "しゅくだいを先に終える。"], ["文章", "ぶんしょう", "文章を声に出す。", "ぶんしょうを声に出す。"], ["漢字", "かんじ", "漢字をていねいに書く。", "かんじをていねいに書く。"], ["音楽", "おんがく", "音楽の時間が始まる。", "おんがくの時間が始まる。"], ["合唱", "がっしょう", "合唱の練習をする。", "がっしょうの練習をする。"], ["発表", "はっぴょう", "発表の準備をする。", "はっぴょうの準備をする。"], ["工場", "こうじょう", "工場を見学する。", "こうじょうを見学する。"], ["農家", "のうか", "農家の仕事を調べる。", "のうかの仕事を調べる。"], ["動物", "どうぶつ", "動物の世話をする。", "どうぶつの世話をする。"], ["植物", "しょくぶつ", "植物を大切に育てる。", "しょくぶつを大切に育てる。"], ["観察", "かんさつ", "星の動きを観察する。", "星の動きをかんさつする。"], ["記録", "きろく", "毎日の記録をつける。", "毎日のきろくをつける。"], ["説明", "せつめい", "先生が説明をする。", "先生がせつめいをする。"], ["質問", "しつもん", "分からないことを質問する。", "分からないことをしつもんする。"], ["回答", "かいとう", "質問に回答する。", "質問にかいとうする。"], ["計画", "けいかく", "旅行の計画を立てる。", "旅行のけいかくを立てる。"], ["目標", "もくひょう", "新しい目標を決める。", "新しいもくひょうを決める。"], ["成功", "せいこう", "努力して成功した。", "努力してせいこうした。"], ["努力", "どりょく", "努力を続ける。", "どりょくを続ける。"], ["希望", "きぼう", "将来の希望を話す。", "将来のきぼうを話す。"], ["未来", "みらい", "未来について考える。", "みらいについて考える。"], ["歴史", "れきし", "町の歴史を学ぶ。", "町のれきしを学ぶ。"], ["文化", "ぶんか", "日本の文化を学ぶ。", "日本のぶんかを学ぶ。"], ["世界", "せかい", "世界の国を調べる。", "せかいの国を調べる。"], ["地図", "ちず", "地図を広げて見る。", "ちずを広げて見る。"], ["交通", "こうつう", "交通のきまりを守る。", "こうつうのきまりを守る。"], ["約束", "やくそく", "友達との約束を守る。", "友達とのやくそくを守る。"], ["整理", "せいり", "机の中を整理する。", "机の中をせいりする。"], ["整列", "せいれつ", "校庭に整列する。", "校庭にせいれつする。"], ["集合", "しゅうごう", "校門に集合する。", "校門にしゅうごうする。"], ["出発", "しゅっぱつ", "朝早く出発する。", "朝早くしゅっぱつする。"], ["到着", "とうちゃく", "駅に到着した。", "駅にとうちゃくした。"], ["手紙", "てがみ", "友達に手紙を書く。", "友達にてがみを書く。"], ["返事", "へんじ", "返事を待っている。", "へんじを待っている。"], ["買物", "かいもの", "母と買物に行く。", "母とかいものに行く。"], ["料理", "りょうり", "家族で料理を作る。", "家族でりょうりを作る。"], ["食事", "しょくじ", "楽しく食事をする。", "楽しくしょくじをする。"], ["健康", "けんこう", "健康に気をつける。", "けんこうに気をつける。"], ["病院", "びょういん", "病院へ行く。", "びょういんへ行く。"], ["温度", "おんど", "水の温度をはかる。", "水のおんどをはかる。"], ["天気", "てんき", "明日の天気を調べる。", "明日のてんきを調べる。"]];
     const SPECS=[
       {id:'一',title:'漢字の読み',type:'reading',count:20,points:1},
@@ -440,8 +460,8 @@
       {id:'三',title:'正しい漢字',type:'choice',count:10,points:2},
       {id:'四',title:'筆順・画数',type:'strokes',count:10,points:1},
       {id:'五',title:'音読み・訓読み',type:'onyomi',count:10,points:2},
-      {id:'六',title:'送り仮名',type:'okurigana',count:10,points:2},
-      {id:'七',title:'まちがい直し',type:'correct',count:7,points:2},
+      {id:'六',title:'対義語',type:'antonym-fill',count:5,points:2},
+      {id:'七',title:'まちがい直し',type:'correct',count:12,points:2},
       {id:'八',title:'同じ読みの漢字',type:'homophone',count:10,points:2},
       {id:'九',title:'熟語の組み立て',type:'compound',count:8,points:2},
       {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
@@ -459,6 +479,8 @@
           questions=STROKE_BANK.map(q=>({...q,prompt:q.kanji}));
         } else if(spec.type==='onyomi'){
           questions=READING_TYPE_BANK.map(q=>({...q,prompt:q.kanji}));
+        } else if(spec.type==='antonym-fill'){
+          questions=ANTONYM_FILL_BANK.map(q=>({...q}));
         } else {
           questions=sample(BANK[spec.type],spec.count).map(row=>{
             if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
@@ -485,9 +507,7 @@
       const mid=top+(bottom-top)*.51;
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+4,s.id+'　'+s.title,12,'font-weight="bold"');
-      const instruction=s.type==='strokes'
-        ?'上の太い画は何画目か、下は総画数を数字で答えなさい。'
-        :'次の漢字の読みは音読み（ア）か訓読み（イ）か答えなさい。';
+      const instruction=EXAM_INSTRUCTIONS[s.type];
       out+=vt(instructionX,top+5,instruction,8.4);
       out+=ht(right-9,bottom-6,`${s.count*s.points}点`,8,'text-anchor="end"');
       out+=line(contentLeft,mid-9,contentRight+5,mid-9,'#777',.75);
@@ -517,15 +537,43 @@
       }
       return out;
     }
+    // Fixed-coordinate Section 六. Five vertical tasks, each with one boxed
+    // kanji blank, a single-use hiragana bank, and sample-style instructions.
+    function antonymSectionSVG(s,left,right,top,bottom){
+      let out='';
+      const h=bottom-top;
+      out+=line(right,top,right,bottom,'#777',1.3);
+      out+=vt(right-14,top+7,'六　対義語',13,'font-weight="bold"');
+      out+=vt(right-37,top+7,'後の□の中のひらがなを漢字になおして、意味が反対や対になることば（対義語）を書きなさい。',8.3);
+      out+=vt(right-52,top+7,'□の中のひらがなは一度だけ使い、答えのらんに漢字一字を書きなさい。',8.3);
+      out+=ht(right-12,bottom-8,'（10）',9,'text-anchor="end"');
+      out+=ht(right-12,bottom+1,'2×5',7,'text-anchor="end"');
+      const bankX=left+14;
+      out+=rect(bankX,top+11,24,h-24,'stroke="#666"');
+      out+=vt(bankX+17,top+19,'さく・せき・み・む・り',9.5);
+      const taskLeft=left+46, taskRight=right-78;
+      const cell=(taskRight-taskLeft)/5;
+      for(let i=0;i<5;i++){
+        const q=s.questions[i];
+        const x=taskRight-(i+.5)*cell;
+        out+=ht(x,top+23,String(i+1),9,'text-anchor="middle"');
+        out+=vt(x,top+48,q.prompt,17);
+        out+=line(x,top+97,x,top+112,'#555',1);
+        out+=rect(x-9,top+119,18,21);
+        out+=vt(x,top+145,q.other,15);
+      }
+      return out;
+    }
     // A section has an independent fixed region. No flex-wrap or auto-flow.
     function sectionSVG(s,left,right,top,bottom){
       if(s.type==='strokes'||s.type==='onyomi')return twoRowSectionSVG(s,left,right,top,bottom);
+      if(s.type==='antonym-fill')return antonymSectionSVG(s,left,right,top,bottom);
       let out=''; const width=right-left, height=bottom-top;
       const narrow=width<440;
       const titleX=right-16, instructionX=right-38, qRight=right-(narrow?62:70),qLeft=left+9;
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+10,s.id+'　'+s.title,12,'font-weight="bold"');
-      out+=vt(instructionX,top+10,(s.type==='reading'?'次の漢字の読みを書きなさい。':s.type==='writing'?'次の読みを漢字で書きなさい。':'次の問いに答えなさい。'),9);
+      out+=vt(instructionX,top+10,(EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),9);
       out+=ht(right-13,bottom-8,`${s.count*s.points}点`,8,'text-anchor="end"');
       const count=s.questions.length, spacing=(qRight-qLeft)/count;
       for(let i=0;i<count;i++){
