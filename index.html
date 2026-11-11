@@ -646,7 +646,8 @@
       'okuri-correction':'次の―線のカタカナを○の中の漢字と送りがなで答えのらんに書きなさい。',
       'radical-fill':'次の部首のなかまの漢字で□にあてはまる漢字一字を、答えのらんに書きなさい。',
       'compound-pairs':'次の漢字と下のア・イ・ウ・エ・オの漢字を組み合わせて二字の熟語を二つ作り、答えのらんに記号で書きなさい。',
-      'writing-final':'次の―線のカタカナを漢字になおして答えのらんに書きなさい。'
+      'writing-final':'次の―線のカタカナを漢字になおして答えのらんに書きなさい。',
+       'writing-eight':'次の―線のカタカナを漢字になおして答えのらんに書きなさい。'
     };
     const SENTENCE_BANK = [["学校", "がっこう", "毎朝、学校へ行く。", "毎朝、がっこうへ行く。"], ["先生", "せんせい", "先生の話を聞く。", "せんせいの話を聞く。"], ["教室", "きょうしつ", "教室の窓を開ける。", "きょうしつの窓を開ける。"], ["図書館", "としょかん", "図書館で本を借りる。", "としょかんで本を借りる。"], ["友達", "ともだち", "友達と公園で遊ぶ。", "ともだちと公園で遊ぶ。"], ["家族", "かぞく", "家族で旅行に行く。", "かぞくで旅行に行く。"], ["安全", "あんぜん", "安全な道を歩く。", "あんぜんな道を歩く。"], ["自然", "しぜん", "自然を大切にする。", "しぜんを大切にする。"], ["季節", "きせつ", "季節の変化を感じる。", "きせつの変化を感じる。"], ["太陽", "たいよう", "太陽が東からのぼる。", "たいようが東からのぼる。"], ["海岸", "かいがん", "海岸をゆっくり歩く。", "かいがんをゆっくり歩く。"], ["山頂", "さんちょう", "山頂から町を見る。", "さんちょうから町を見る。"], ["電車", "でんしゃ", "電車で町へ向かう。", "でんしゃで町へ向かう。"], ["道路", "どうろ", "道路を横切らない。", "どうろを横切らない。"], ["信号", "しんごう", "信号が青に変わる。", "しんごうが青に変わる。"], ["運動", "うんどう", "朝に運動をする。", "朝にうんどうをする。"], ["試合", "しあい", "試合の結果を聞く。", "しあいの結果を聞く。"], ["野球", "やきゅう", "野球の練習をする。", "やきゅうの練習をする。"], ["練習", "れんしゅう", "毎日練習を続ける。", "毎日れんしゅうを続ける。"], ["宿題", "しゅくだい", "宿題を先に終える。", "しゅくだいを先に終える。"], ["文章", "ぶんしょう", "文章を声に出す。", "ぶんしょうを声に出す。"], ["漢字", "かんじ", "漢字をていねいに書く。", "かんじをていねいに書く。"], ["音楽", "おんがく", "音楽の時間が始まる。", "おんがくの時間が始まる。"], ["合唱", "がっしょう", "合唱の練習をする。", "がっしょうの練習をする。"], ["発表", "はっぴょう", "発表の準備をする。", "はっぴょうの準備をする。"], ["工場", "こうじょう", "工場を見学する。", "こうじょうを見学する。"], ["農家", "のうか", "農家の仕事を調べる。", "のうかの仕事を調べる。"], ["動物", "どうぶつ", "動物の世話をする。", "どうぶつの世話をする。"], ["植物", "しょくぶつ", "植物を大切に育てる。", "しょくぶつを大切に育てる。"], ["観察", "かんさつ", "星の動きを観察する。", "星の動きをかんさつする。"], ["記録", "きろく", "毎日の記録をつける。", "毎日のきろくをつける。"], ["説明", "せつめい", "先生が説明をする。", "先生がせつめいをする。"], ["質問", "しつもん", "分からないことを質問する。", "分からないことをしつもんする。"], ["回答", "かいとう", "質問に回答する。", "質問にかいとうする。"], ["計画", "けいかく", "旅行の計画を立てる。", "旅行のけいかくを立てる。"], ["目標", "もくひょう", "新しい目標を決める。", "新しいもくひょうを決める。"], ["成功", "せいこう", "努力して成功した。", "努力してせいこうした。"], ["努力", "どりょく", "努力を続ける。", "どりょくを続ける。"], ["希望", "きぼう", "将来の希望を話す。", "将来のきぼうを話す。"], ["未来", "みらい", "未来について考える。", "みらいについて考える。"], ["歴史", "れきし", "町の歴史を学ぶ。", "町のれきしを学ぶ。"], ["文化", "ぶんか", "日本の文化を学ぶ。", "日本のぶんかを学ぶ。"], ["世界", "せかい", "世界の国を調べる。", "せかいの国を調べる。"], ["地図", "ちず", "地図を広げて見る。", "ちずを広げて見る。"], ["交通", "こうつう", "交通のきまりを守る。", "こうつうのきまりを守る。"], ["約束", "やくそく", "友達との約束を守る。", "友達とのやくそくを守る。"], ["整理", "せいり", "机の中を整理する。", "机の中をせいりする。"], ["整列", "せいれつ", "校庭に整列する。", "校庭にせいれつする。"], ["集合", "しゅうごう", "校門に集合する。", "校門にしゅうごうする。"], ["出発", "しゅっぱつ", "朝早く出発する。", "朝早くしゅっぱつする。"], ["到着", "とうちゃく", "駅に到着した。", "駅にとうちゃくした。"], ["手紙", "てがみ", "友達に手紙を書く。", "友達にてがみを書く。"], ["返事", "へんじ", "返事を待っている。", "へんじを待っている。"], ["買物", "かいもの", "母と買物に行く。", "母とかいものに行く。"], ["料理", "りょうり", "家族で料理を作る。", "家族でりょうりを作る。"], ["食事", "しょくじ", "楽しく食事をする。", "楽しくしょくじをする。"], ["健康", "けんこう", "健康に気をつける。", "けんこうに気をつける。"], ["病院", "びょういん", "病院へ行く。", "びょういんへ行く。"], ["温度", "おんど", "水の温度をはかる。", "水のおんどをはかる。"], ["天気", "てんき", "明日の天気を調べる。", "明日のてんきを調べる。"]];
     const SPECS=[
@@ -658,8 +659,9 @@
       {id:'六',title:'対義語',type:'antonym-fill',count:5,points:2},
       {id:'七',title:'漢字と送りがな',type:'okuri-correction',count:7,points:2},
       {id:'八',title:'部首',type:'radical-fill',count:10,points:2},
-      {id:'九',title:'熟語の組み立て',type:'compound-pairs',count:10,points:2},
-      {id:'十',title:'漢字の書き取り',type:'writing-final',count:20,points:2}
+      {id:'九',title:'漢字の書き取り',type:'writing-eight',count:8,points:2},
+      {id:'十',title:'熟語の組み立て',type:'compound-pairs',count:10,points:2},
+      {id:'十一',title:'漢字の書き取り',type:'writing-final',count:20,points:2}
     ];
     function sample(pool,n){const a=[...pool];shuffleArray(a);if(a.length<n)throw Error('Question bank too small: '+n);return a.slice(0,n)}
     function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
@@ -672,7 +674,7 @@
           const chosen=rotatingSample(pool,n,spec.type);
           paperHistory[spec.type]=chosen.map(q=>JSON.stringify(q));return chosen;
         };
-        if(spec.type==='writing-final'){
+        if(spec.type==='writing-final'||spec.type==='writing-eight'){
           const extra=SENTENCE_BANK.map(row=>({prompt:row[3].replace(row[1],toKatakana(row[1])),target:toKatakana(row[1]),answer:row[0]}));
           const original=WRITING_10_BANK.map(row=>({prompt:row[0],target:row[1],answer:row[2]}));
           const unique=[...new Map([...original,...extra].map(q=>[q.answer,q])).values()];
@@ -896,17 +898,16 @@
       return out;
     }
     function compoundPairsSVG(s,left,right,top,bottom){
-      // Question 九: match the original five right-to-left compound groups.
-      // The section title is locked and is not changed.
+      // Question 十: five right-to-left compound groups.
       let out=line(right,top,right,bottom,'#777',1.1);
-      out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
+      out+=vt(right-12,top+5,'（十）',13,'font-weight="bold"');
       out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,
         {font:8.2,offset:31,pitch:10.2,columns:4,bottomReserve:27});
       out+=ht(right-7,bottom-9,'（20） 2×10',8,'text-anchor="end"');
 
       // Original-style worked example: one head character, vertical options,
       // and two stacked split number/answer cells.
-      const exampleX=right-118;
+      const exampleX=right-96;
       out+=vt(exampleX,top+8,'〈例〉',8.5);
       out+=vt(exampleX-16,top+8,'校',12);
       const exOptX=exampleX-38,exY=top+29;
@@ -922,7 +923,7 @@
         out+=ht(xx+12.5,yy+37,pair[1],10,'text-anchor="middle"');
       });
 
-      const usableRight=right-205, usableLeft=left+12;
+      const usableRight=right-171, usableLeft=left+6;
       const pitch=(usableRight-usableLeft)/5;
       for(let g=0;g<5;g++){
         const center=usableRight-(g+.5)*pitch;
@@ -930,28 +931,49 @@
         const label=['一、','二、','三、','四、','五、'][g];
         // Separate vertically composed group heading, as in the original.
         out+=vt(center+17,top+3,label+q.head,13);
-        const optX=center+1,optY=top+35,optW=24,optH=153;
+        const optX=center+1,optY=top+32,optW=20,optH=Math.min(153,bottom-top-48);
         out+=rect(optX,optY,optW,optH,'stroke="#555"');
         q.options.forEach((kanji,i)=>{
-          const cy=optY+18+i*29;
+          const cy=optY+16+i*(optH-12)/5;
           out+=ht(optX+3,cy,['ア','イ','ウ','エ','オ'][i],8.5);
           out+=ht(optX+17,cy,kanji,12,'text-anchor="middle"');
         });
         // Each answer is a two-compartment rectangle: number + blank.
         // Two boxes per group, with right-to-left numbering 1–10.
         for(let j=0;j<2;j++){
-          const x=center-32,y=top+43+j*72,w=27,h=56;
+          const x=center-27,y=top+37+j*69,w=22,h=52;
           out+=rect(x,y,w,h,'stroke="#555"');
-          out+=line(x,y+28,x+w,y+28,'#999',.65);
-          out+=ht(x+w/2,y+19,String(g*2+j+1),12,'text-anchor="middle"');
+          out+=line(x,y+26,x+w,y+26,'#999',.65);
+          out+=ht(x+w/2,y+18,String(g*2+j+1),11,'text-anchor="middle"');
+        }
+      }
+      return out;
+    }
+    function eightWritingSVG(s,left,right,top,bottom){
+      let out=line(right,top,right,bottom,'#777',1.1);
+      out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
+      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-eight'],right,top,bottom,
+        {font:8.1,offset:30,pitch:9.8,columns:3,bottomReserve:24});
+      out+=ht(right-7,bottom-8,'（16） 2×8',8,'text-anchor="end"');
+      const qRight=right-100,qLeft=left+12,pitch=(qRight-qLeft)/8;
+      for(let i=0;i<8;i++){
+        const q=s.questions[i],x=qRight-(i+.5)*pitch;
+        const fs=Math.min(11.5,Math.max(8.2,(bottom-top-52)/[...q.prompt].length));
+        const y=top+29;
+        out+=ht(x,top+14,String(i+1),9,'text-anchor="middle"');
+        out+=vt(x,y,q.prompt,fs);
+        const pos=q.prompt.indexOf(q.target);
+        if(pos>=0){
+          const before=[...q.prompt.slice(0,pos)].length,len=[...q.target].length;
+          out+=line(x+fs*.72,y+before*fs+.4,x+fs*.72,y+(before+len)*fs-.4,'#111',1.2);
         }
       }
       return out;
     }
     function finalWritingSVG(s,left,right,top,bottom){
-      // Section 十 only: title text and title geometry remain untouched.
+      // Section 十一: twenty writing prompts in original right-to-left order.
       let out=line(right,top,right,bottom,'#777',1.1);
-      out+=vt(right-12,top+5,'（十）漢字の書き取り',12,'font-weight="bold"');
+      out+=vt(right-12,top+5,'（十一）漢字の書き取り',12,'font-weight="bold"');
       out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,
         {font:8.2,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-6,'（40） 2×20',8,'text-anchor="end"');
@@ -960,7 +982,7 @@
       const boxSize=21;
       for(let i=0;i<20;i++){
         const q=s.questions[i],x=qRight-(i+.5)*pitch;
-        const fs=10.4,y=top+34;
+        const fs=Math.min(10.4,Math.max(7.5,(bottom-top-70)/[...q.prompt].length)),y=top+34;
         out+=ht(x,top+16,String(i+1),8.6,'text-anchor="middle"');
         out+=vt(x,y,q.prompt,fs);
         const pos=q.prompt.indexOf(q.target);
@@ -978,6 +1000,7 @@
     function sectionSVG(s,left,right,top,bottom){
       if(s.type==='compound-pairs')return compoundPairsSVG(s,left,right,top,bottom);
       if(s.type==='writing-final')return finalWritingSVG(s,left,right,top,bottom);
+      if(s.type==='writing-eight')return eightWritingSVG(s,left,right,top,bottom);
       if(s.type==='strokes'||s.type==='onyomi')return twoRowSectionSVG(s,left,right,top,bottom);
       if(s.type==='antonym-fill')return antonymSectionSVG(s,left,right,top,bottom);
       if(s.type==='okuri-correction')return okuriCorrectionSVG(s,left,right,top,bottom);
@@ -1056,7 +1079,7 @@
       svg+=rect(1013,505,71,157)+vt(1066,513,'氏名',11)+line(1030,534,1030,649,'#888',.8);
       svg+=vt(1056,680,'非公式・学習用',9);
       // Reference PDF: page 1 = 一 / 二・三 / 四・五・六.
-      // Page 2 = 七・八 / 九 / 十. Regions never auto-wrap.
+      // Page 2 = 七・八 / 九・十 / 十一. Regions never auto-wrap.
       if(page===0){
         svg+=sectionSVG(sections[0],left,right,35,278);
         svg+=line(left,289,right,289);
@@ -1070,14 +1093,15 @@
         svg+=sectionSVG(sections[6],left+480,right,35,273);
         svg+=sectionSVG(sections[7],left,left+480,35,273);
         svg+=line(left,287,right,287);
-        svg+=sectionSVG(sections[8],left,right,301,502);
+        svg+=sectionSVG(sections[8],left+470,right,301,502);
+        svg+=sectionSVG(sections[9],left,left+470,301,502);
         svg+=line(left,514,right,514);
-        svg+=sectionSVG(sections[9],left,right,526,758);
+        svg+=sectionSVG(sections[10],left,right,526,758);
       }
       return svg+'</svg>';
     }
     function validateMock(sections){
-      if(sections.length!==10)throw Error('Expected ten exam sections');
+      if(sections.length!==11)throw Error('Expected eleven exam sections');
       for(const section of sections){
         if(section.questions.length!==section.count)throw Error('Incorrect question count in '+section.id);
         if(section.type==='strokes'){
@@ -1100,7 +1124,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
