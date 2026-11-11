@@ -442,6 +442,15 @@
       {prompt:'欠ける',other:'ちる',answer:'満',full:'満ちる',hint:'み'},
       {prompt:'来年',other:'年',answer:'昨',full:'昨年',hint:'さく'}
     ];
+    const OKURI_CORRECTION_BANK = [
+      {kanji:'借',prompt:'図書館で植物の本をカリル。',target:'カリル',answer:'借りる'},
+      {kanji:'最',prompt:'モットモよい方法を考える。',target:'モットモ',answer:'最も'},
+      {kanji:'連',prompt:'遠くに高い山がツラナル。',target:'ツラナル',answer:'連なる'},
+      {kanji:'建',prompt:'おじは来年、家をタテルそうだ。',target:'タテル',answer:'建てる'},
+      {kanji:'清',prompt:'谷川のキヨイ流れに手をひたす。',target:'キヨイ',answer:'清い'},
+      {kanji:'包',prompt:'弁当箱をハンカチでツツム。',target:'ツツム',answer:'包む'},
+      {kanji:'覚',prompt:'母の起こす声で目がサメル。',target:'サメル',answer:'覚める'}
+    ];
     const EXAM_INSTRUCTIONS = {
       reading:'次の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
       writing:'次の―線のカタカナに合う漢字を答えのらんに書きなさい。',
@@ -461,7 +470,7 @@
       {id:'四',title:'筆順・画数',type:'strokes',count:10,points:1},
       {id:'五',title:'音読み・訓読み',type:'onyomi',count:10,points:2},
       {id:'六',title:'対義語',type:'antonym-fill',count:5,points:2},
-      {id:'七',title:'まちがい直し',type:'correct',count:12,points:2},
+      {id:'七',title:'漢字と送りがな',type:'okuri-correction',count:7,points:2},
       {id:'八',title:'同じ読みの漢字',type:'homophone',count:10,points:2},
       {id:'九',title:'熟語の組み立て',type:'compound',count:8,points:2},
       {id:'十',title:'漢字の書き取り',type:'writing',count:20,points:2}
@@ -481,6 +490,8 @@
           questions=READING_TYPE_BANK.map(q=>({...q,prompt:q.kanji}));
         } else if(spec.type==='antonym-fill'){
           questions=ANTONYM_FILL_BANK.map(q=>({...q}));
+        } else if(spec.type==='okuri-correction'){
+          questions=OKURI_CORRECTION_BANK.map(q=>({...q}));
         } else {
           questions=sample(BANK[spec.type],spec.count).map(row=>{
             if(spec.type==='choice')return {prompt:row[0],answer:row[1],choices:row[2],target:row[3]};
@@ -583,10 +594,32 @@
        }
        return out;
      }
+    // Section 七: seven original-style vertical prompts, with circled kanji
+    // and underlined katakana; the candidate supplies kanji plus okurigana.
+    function okuriCorrectionSVG(s,left,right,top,bottom){
+      let out=line(right,top,right,bottom,'#777',1.3);
+      out+=vt(right-12,top+7,'七',13,'font-weight="bold"');
+      out+=vt(right-32,top+8,'次の―線のカタカナを、○の中の漢字と送りがなを使って、漢字と送りがなで答えなさい。',8.3);
+      out+=ht(right-7,bottom-7,'（14） 2×7',8,'text-anchor="end"');
+      const contentRight=right-64,contentLeft=left+7;
+      const spacing=(contentRight-contentLeft)/7;
+      for(let i=0;i<7;i++){
+        const q=s.questions[i],x=contentRight-(i+.5)*spacing;
+        out+=ht(x,top+16,String(i+1),9,'text-anchor="middle"');
+        out+=`<circle cx="${x}" cy="${top+32}" r="10.2" fill="none" stroke="#555" stroke-width=".8"/>`;
+        out+=ht(x,top+36,q.kanji,13,'text-anchor="middle"');
+        const fs=9.2,y=top+49;
+        out+=vt(x,y,q.prompt,fs);
+        const start=Array.from(q.prompt.slice(0,q.prompt.indexOf(q.target))).length;
+        out+=line(x+fs*.68,y+start*fs+1,x+fs*.68,y+(start+Array.from(q.target).length)*fs-1,'#111',1.2);
+      }
+      return out;
+    }
     // A section has an independent fixed region. No flex-wrap or auto-flow.
     function sectionSVG(s,left,right,top,bottom){
       if(s.type==='strokes'||s.type==='onyomi')return twoRowSectionSVG(s,left,right,top,bottom);
       if(s.type==='antonym-fill')return antonymSectionSVG(s,left,right,top,bottom);
+      if(s.type==='okuri-correction')return okuriCorrectionSVG(s,left,right,top,bottom);
       let out=''; const width=right-left, height=bottom-top;
       const narrow=width<440;
       const titleX=right-16, instructionX=right-38, qRight=right-(narrow?62:70),qLeft=left+9;
