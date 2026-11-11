@@ -633,15 +633,16 @@
     }
     // Fixed instructions are independent of regenerated questions.
     // Wording follows the supplied Level 7 reference's task definitions.
+    // Fixed reference-style instruction copy. Keep this separate from the random banks.
     const EXAM_INSTRUCTIONS = {
       reading:'次の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
-      writing:'次の―線のカタカナに合う漢字をえらんで答えのらんに記号で書きなさい。',
+      writing:'次の各組の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
       choice:'次の―線のカタカナに合う漢字をえらんで答えのらんに記号で書きなさい。',
-      strokes:'次の上の漢字の太い画のところは筆順の何画目か、下の漢字の総画数は何画か、算用数字で答えなさい。',
-      onyomi:'次の漢字の読みは音読み（ア）ですか、訓読み（イ）ですか。記号で答えなさい。',
+      strokes:'次の上の漢字の太い画のところは筆順の何画目か、下の漢字の総画数は何画か、算用数字（１、２、３…）で答えなさい。',
+      onyomi:'次の漢字の読みは、音読み（ア）ですか、訓読み（イ）ですか。記号で答えなさい。',
       'antonym-fill':'後の□の中のひらがなを漢字になおして、意味が反対や対になることば（対義語）を書きなさい。□の中のひらがなは一度だけ使い、答えのらんに漢字一字を書きなさい。',
       'okuri-correction':'次の―線のカタカナを○の中の漢字と送りがなを使って答えのらんに書きなさい。',
-      'radical-fill':'次の部首のなかまの漢字で□にあてはまる漢字一字を答えのらんに書きなさい。',
+      'radical-fill':'次の部首のなかまの漢字で□にあてはまる漢字一字を、答えのらんに書きなさい。',
       'compound-pairs':'上の漢字と下の□の中の漢字を組み合わせて二字の熟語を二つ作り、答えのらんに記号で書きなさい。',
       'writing-final':'次の―線のカタカナを漢字になおして答えのらんに書きなさい。'
     };
@@ -710,16 +711,26 @@
     function ht(x,y,value,size=12,extra=''){return `<text x="${x}" y="${y}" font-size="${size}" ${extra}>${xmlEscape(value)}</text>`}
     // Render an instruction in dedicated vertical columns. Unlike a single
     // vertical <text>, it cannot run into the score at the bottom of a section.
+    // Right-anchored, fixed-width instruction lanes; Japanese text reads top-to-bottom
+    // and right-to-left. Each section has its own lane budget, so text never spills
+    // across the question area or into the printed score.
     function instructionSVG(text,right,top,bottom,opts={}){
-      const font=opts.font||8.2, pitch=opts.pitch||10.2;
-      const x=right-(opts.offset||31), y=top+(opts.topPad||8);
-      const available=Math.max(45,bottom-y-(opts.bottomReserve||29));
-      const charsPerColumn=Math.max(5,Math.floor(available/(font*1.12)));
+      const x=right-(opts.offset??32), y=top+(opts.topPad??8);
+      const reserve=opts.bottomReserve??29;
+      const available=Math.max(40,bottom-y-reserve);
+      const pitch=opts.pitch??10.1;
+      const maxColumns=opts.columns??3;
+      let font=opts.font??8.2;
       const chars=Array.from(text);
+      // Fit within the same number of instruction lanes on every generated paper.
+      font=Math.min(font, available*maxColumns/(chars.length*1.07));
+      font=Math.max(6.3,font);
+      const perColumn=Math.max(1,Math.floor(available/(font*1.08)));
       let out='';
-      for(let i=0;i<chars.length;i+=charsPerColumn){
-        const segment=chars.slice(i,i+charsPerColumn).join('');
-        out+=vt(x-Math.floor(i/charsPerColumn)*pitch,y,segment,font);
+      for(let i=0;i<chars.length;i+=perColumn){
+        const column=Math.floor(i/perColumn);
+        if(column>=maxColumns)break;
+        out+=vt(x-column*pitch,y,chars.slice(i,i+perColumn).join(''),font);
       }
       return out;
     }
@@ -736,7 +747,7 @@
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+4,s.id+'　'+s.title,12,'font-weight="bold"');
       const instruction=EXAM_INSTRUCTIONS[s.type];
-      out+=instructionSVG(instruction,right,top,bottom,{font:8.2,offset:32,bottomReserve:29});
+      out+=instructionSVG(instruction,right,top,bottom,{font:8.2,offset:31,pitch:10,columns:3,bottomReserve:29});
       out+=ht(right-9,bottom-6,`${s.count*s.points}点`,8,'text-anchor="end"');
       out+=line(contentLeft,mid-9,contentRight+5,mid-9,'#777',.75);
       for(let i=0;i<10;i++){
@@ -773,7 +784,7 @@
        const h=bottom-top;
        out+=line(right,top,right,bottom,'#777',1.3);
        out+=vt(right-13,top+5,'（六）',12,'font-weight="bold"');
-       out+=instructionSVG(EXAM_INSTRUCTIONS['antonym-fill'],right,top,bottom,{font:7.8,offset:30,pitch:9.2,bottomReserve:29});
+       out+=instructionSVG(EXAM_INSTRUCTIONS['antonym-fill'],right,top,bottom,{font:7.7,offset:29,pitch:9.1,columns:4,bottomReserve:29});
        out+=ht(right-8,bottom-15,'（10）',9,'text-anchor="end"');
        out+=ht(right-8,bottom-5,'2×5',7,'text-anchor="end"');
        // Vertical hiragana bank, at the left edge of the question group.
@@ -813,7 +824,7 @@
       // circled supplied kanji, underlined katakana and no answer boxes.
       let out=line(right,top,right,bottom,'#777',1.3);
       out+=vt(right-12,top+6,'（七）',12,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['okuri-correction'],right,top,bottom,{font:8,offset:30,bottomReserve:30});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['okuri-correction'],right,top,bottom,{font:8,offset:29,pitch:9.6,columns:3,bottomReserve:30});
       out+=ht(right-6,bottom-16,'（14）',8.5,'text-anchor="end"');
       out+=ht(right-6,bottom-6,'2×7',7.5,'text-anchor="end"');
       // A narrow worked example is included beside the instruction lane.
@@ -850,7 +861,7 @@
     function radicalFillSectionSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+6,'（八）',13,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['radical-fill'],right,top,bottom,{font:8.2,offset:32});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['radical-fill'],right,top,bottom,{font:8.2,offset:31,pitch:10,columns:3,bottomReserve:25});
       out+=ht(right-7,bottom-12,'（20） 2×10',8,'text-anchor="end"');
       const exampleX=right-95;
       out+=vt(exampleX,top+8,'〈例〉',9);
@@ -879,7 +890,7 @@
     function compoundPairsSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,{font:8.1,offset:32});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,{font:8.1,offset:31,pitch:10,columns:3,bottomReserve:25});
       out+=ht(right-7,bottom-9,'（20） 2×10',8,'text-anchor="end"');
       const exampleX=right-102;
       out+=vt(exampleX,top+7,'〈例〉 校',9);
@@ -909,7 +920,7 @@
     function finalWritingSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（十）漢字の書き取り',12,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,{font:8.5,offset:32});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,{font:8.5,offset:31,pitch:10,columns:3,bottomReserve:25});
       out+=ht(right-7,bottom-6,'（40） 2×20',8,'text-anchor="end"');
       const qRight=right-71,qLeft=left+7,pitch=(qRight-qLeft)/20;
       for(let i=0;i<20;i++){
@@ -941,7 +952,7 @@
       const titleX=right-16, instructionX=right-38, qRight=right-(narrow?62:70),qLeft=left+9;
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+10,s.id+'　'+s.title,12,'font-weight="bold"');
-      out+=instructionSVG((EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),right,top,bottom,{font:8.5,offset:36,topPad:9,bottomReserve:25});
+      out+=instructionSVG((EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),right,top,bottom,{font:8.5,offset:34,pitch:10.2,columns:3,topPad:9,bottomReserve:25});
       out+=ht(right-13,bottom-8,`${s.count*s.points}点`,8,'text-anchor="end"');
       const count=s.questions.length, spacing=(qRight-qLeft)/count;
       for(let i=0;i<count;i++){
