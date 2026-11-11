@@ -469,32 +469,45 @@
         // For narrow sections, concise context keeps each vertical column legible.
         // Choice questions keep the full sentence and mark its target katakana.
         if(s.type==='homophone')prompt=prompt.replace('／','・');
-        // Choice section: reserve a dedicated lower area for compact three-choice groups.
-        // All other sections retain their existing rendering.
-        const isChoice=s.type==='choice';
-        const choiceFont=9.1;
-        const choiceStart=top+145;
-        const availablePrompt=isChoice?choiceStart-(top+27)-7:height-80;
-        const maxChars=Math.max(7,Math.floor(availablePrompt/fs));
-        if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
-        out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
-        if((s.type==='reading'||s.type==='writing'||isChoice) && q.target){
-          const start=prompt.indexOf(q.target);
-          if(start>=0){
-            const before=[...prompt.slice(0,start)].length;
-            const markY=top+27+before*fs;
-            out+=line(x+fs*.72,markY+1,x+fs*.72,markY+[...q.target].length*fs-1,'#111',1.15);
-          }
-        }
-        if(isChoice && q.choices){
-          // Match the reference: three vertically written alternatives in a compact
-          // parenthesized group, right-to-left, with no answer square.
-          const lane=Math.min(14,spacing/4);
-          for(let j=0;j<3;j++){
-            const cx=x+lane*(1-j);
-            out+=vt(cx,choiceStart,'（'+['ア','イ','ウ'][j]+' '+q.choices[j]+'）',choiceFont);
-          }
-        } else {
+         const isChoice=s.type==='choice';
+         if(isChoice && q.choices){
+           // Section 三: the original examination places the three alternatives
+           // in a narrow vertical lane immediately LEFT of the sentence, not
+           // underneath it. Each answer label is part of the same lane.
+           const chars=[...prompt].length;
+           const promptSize=Math.min(10.3,Math.max(7.6,(height-46)/Math.max(chars,1)));
+           const sentenceX=x+spacing*.22;
+           const answerX=x-spacing*.26;
+           out+=vt(sentenceX,top+27,prompt,promptSize,'text-anchor="start"');
+           if(q.target){
+             const start=prompt.indexOf(q.target);
+             if(start>=0){
+               const before=[...prompt.slice(0,start)].length;
+               const markY=top+27+before*promptSize;
+               out+=line(sentenceX+promptSize*.69,markY+1,sentenceX+promptSize*.69,markY+[...q.target].length*promptSize-1,'#111',1.15);
+             }
+           }
+           // Three independent option positions; compact enough for this band.
+           const optionFont=9.4;
+           const optionY=[top+62,top+119,top+176];
+           for(let j=0;j<3;j++){
+             out+=vt(answerX,optionY[j],'（'+['ア','イ','ウ'][j]+' '+q.choices[j]+'）',optionFont);
+           }
+           continue;
+         }
+         const availablePrompt=height-80;
+         const maxChars=Math.max(7,Math.floor(availablePrompt/fs));
+         if([...prompt].length>maxChars && s.type!=='writing')prompt=[...prompt].slice(0,maxChars-1).join('')+'…';
+         out+=vt(x,top+27,prompt,fs,'text-anchor="start"');
+         if((s.type==='reading'||s.type==='writing') && q.target){
+           const start=prompt.indexOf(q.target);
+           if(start>=0){
+             const before=[...prompt.slice(0,start)].length;
+             const markY=top+27+before*fs;
+             out+=line(x+fs*.72,markY+1,x+fs*.72,markY+[...q.target].length*fs-1,'#111',1.15);
+           }
+         }
+         {
           const boxW=Math.min(17,Math.max(11,spacing-5));
           const boxH=s.type==='reading'?25:18;
           out+=rect(x-boxW/2,bottom-boxH-15,boxW,boxH);
