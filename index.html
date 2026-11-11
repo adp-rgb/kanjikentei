@@ -512,17 +512,18 @@
       ['読','どく','ア'],['書','しょ','ア'],['時','じ','ア'],['数','すう','ア'],
       ['新','しん','ア'],['語','ご','ア'],['運','うん','ア'],['動','どう','ア']
     ].map(([kanji,reading,answer])=>({kanji,reading,answer}));
+    // Every antonym record explicitly identifies the blank position and reading.
     const EXTRA_ANTONYMS = [
-      {prompt:'安心',full:'心配',answer:'配',hint:'はい'},
-      {prompt:'前進',full:'後退',answer:'後',hint:'こう'},
-      {prompt:'増加',full:'減少',answer:'減',hint:'げん'},
-      {prompt:'上昇',full:'下降',answer:'下',hint:'か'},
-      {prompt:'成功',full:'失敗',answer:'失',hint:'しつ'},
-      {prompt:'賛成',full:'反対',answer:'反',hint:'はん'},
-      {prompt:'出発',full:'到着',answer:'到',hint:'とう'},
-      {prompt:'開始',full:'終了',answer:'終',hint:'しゅう'},
-      {prompt:'入口',full:'出口',answer:'出',hint:'で'},
-      {prompt:'安全',full:'危険',answer:'危',hint:'き'}
+      {prompt:'安心',other:'配',answer:'心',full:'心配',hint:'しん'},
+      {prompt:'前進',other:'退',answer:'後',full:'後退',hint:'こう'},
+      {prompt:'増加',other:'少',answer:'減',full:'減少',hint:'げん'},
+      {prompt:'上昇',other:'降',answer:'下',full:'下降',hint:'か'},
+      {prompt:'成功',other:'敗',answer:'失',full:'失敗',hint:'しつ'},
+      {prompt:'賛成',other:'対',answer:'反',full:'反対',hint:'はん'},
+      {prompt:'出発',other:'着',answer:'到',full:'到着',hint:'とう'},
+      {prompt:'開始',other:'了',answer:'終',full:'終了',hint:'しゅう'},
+      {prompt:'入口',other:'口',answer:'出',full:'出口',hint:'で'},
+      {prompt:'安全',other:'険',answer:'危',full:'危険',hint:'き'}
     ];
     const EXTRA_OKURI = [
       ['読','毎晩、本をヨム。','ヨム','読む'],
@@ -560,24 +561,33 @@
       {group:'ウ',radical:'亻',before:'',after:'重',answer:'体'}
     ];
     // Use only natural, unambiguous compound completions.
+    // Curated examples: each completion forms a familiar word and the answer
+    // actually belongs to the indicated radical family.
     const RADICAL_SAFE = [
       {group:'ア',radical:'木',before:'',after:'実',answer:'果'},
-      {group:'ア',radical:'木',before:'',after:'立',answer:'独'},
-      {group:'ア',radical:'木',before:'',after:'陰',answer:'木'},
-      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
       {group:'ア',radical:'木',before:'',after:'林',answer:'森'},
+      {group:'ア',radical:'木',before:'',after:'材',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'陰',answer:'木'},
+      {group:'ア',radical:'木',before:'',after:'板',answer:'黒',invalid:true},
+      {group:'ア',radical:'木',before:'',after:'造',answer:'構'},
+      {group:'ア',radical:'木',before:'',after:'物',answer:'果'},
       {group:'イ',radical:'土',before:'',after:'図',answer:'地'},
       {group:'イ',radical:'土',before:'',after:'面',answer:'地'},
       {group:'イ',radical:'土',before:'',after:'所',answer:'場'},
       {group:'イ',radical:'土',before:'',after:'産',answer:'土'},
       {group:'イ',radical:'土',before:'',after:'地',answer:'土'},
+      {group:'イ',radical:'土',before:'',after:'球',answer:'地'},
+      {group:'イ',radical:'土',before:'',after:'域',answer:'地'},
       {group:'ウ',radical:'亻',before:'',after:'業',answer:'作'},
       {group:'ウ',radical:'亻',before:'',after:'事',answer:'仕'},
       {group:'ウ',radical:'亻',before:'',after:'間',answer:'仲'},
       {group:'ウ',radical:'亻',before:'',after:'用',answer:'使'},
       {group:'ウ',radical:'亻',before:'',after:'重',answer:'体'},
-      {group:'ウ',radical:'亻',before:'',after:'説',answer:'仮'}
-    ];
+      {group:'ウ',radical:'亻',before:'',after:'説',answer:'仮'},
+      {group:'ウ',radical:'亻',before:'',after:'頼',answer:'信'},
+      {group:'ウ',radical:'亻',before:'',after:'命',answer:'任'}
+    ].filter(q=>!q.invalid);
+    // Both answers in each set have been checked against the five options.
     const EXTRA_COMPOUND_PAIRS = [
       {head:'学',options:['校','火','生','道','金'],answers:['ア','ウ']},
       {head:'電',options:['気','木','車','海','道'],answers:['ア','ウ']},
@@ -590,7 +600,12 @@
       {head:'文',options:['章','木','化','雪','道'],answers:['ア','ウ']},
       {head:'安',options:['全','土','心','雨','火'],answers:['ア','ウ']},
       {head:'運',options:['動','木','転','雪','水'],answers:['ア','ウ']},
-      {head:'新',options:['聞','木','年','山','川'],answers:['ア','ウ']}
+      {head:'新',options:['聞','木','年','山','川'],answers:['ア','ウ']},
+      {head:'灯',options:['台','山','街','校','空'],answers:['ア','ウ']},
+      {head:'節',options:['目','山','約','校','空'],answers:['ア','ウ']},
+      {head:'固',options:['定','山','体','校','空'],answers:['ア','ウ']},
+      {head:'順',options:['序','山','番','校','空'],answers:['ア','ウ']},
+      {head:'愛',options:['情','山','読','校','空'],answers:['ア','ウ']}
     ];
     const recentPapers=[];
     function rotatingSample(pool,n,key){
@@ -642,7 +657,7 @@
           const unique=[...new Map([...original,...extra].map(q=>[q.answer,q])).values()];
           questions=choose(unique);
         } else if(spec.type==='compound-pairs'){
-          const groups=choose([...COMPOUND_PAIR_BANK,...EXTRA_COMPOUND_PAIRS],5);
+          const groups=choose(EXTRA_COMPOUND_PAIRS,5);
           questions=groups.flatMap((g,idx)=>[0,1].map(variant=>({group:idx,head:g.head,options:g.options,answer:g.answers[variant],variant})));
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
@@ -655,7 +670,7 @@
         } else if(spec.type==='okuri-correction'){
           questions=choose([...OKURI_CORRECTION_BANK,...EXTRA_OKURI]);
         } else if(spec.type==='radical-fill'){
-          const pool=[...RADICAL_FILL_BANK.filter(q=>!['末','城','低'].includes(q.answer)),...RADICAL_SAFE.filter(q=>!['独','黒'].includes(q.answer))];
+          const pool=RADICAL_SAFE;
           questions=['ア','イ','ウ'].flatMap((group,i)=>{
             const selected=rotatingSample(pool.filter(q=>q.group===group),i===2?4:3,'radical-'+group);
             paperHistory['radical-'+group]=selected.map(q=>JSON.stringify(q));return selected;
@@ -989,13 +1004,25 @@
       }
       return svg+'</svg>';
     }
+    function validateMock(sections){
+      if(sections.length!==10)throw Error('Expected ten exam sections');
+      for(const section of sections){
+        if(section.questions.length!==section.count)throw Error('Incorrect question count in '+section.id);
+        for(const q of section.questions){
+          if(q.answer===undefined||q.answer===null||String(q.answer).length===0)throw Error('Missing answer in '+section.id);
+          if(section.type==='compound-pairs' && !['ア','イ','ウ','エ','オ'].includes(q.answer))throw Error('Invalid choice key');
+          if(section.type==='antonym-fill' && (!q.full.includes(q.answer)||!q.hint))throw Error('Invalid antonym');
+          if(section.type==='radical-fill' && !['ア','イ','ウ'].includes(q.group))throw Error('Invalid radical group');
+        }
+      }
+    }
     function createMock(){
       try{
-        const sections=makeSections();mockSerial++;
+        const sections=makeSections();validateMock(sections);mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · Sections 八–十 aligned · unofficial practice`;
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · question banks revised · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
