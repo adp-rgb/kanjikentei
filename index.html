@@ -426,6 +426,27 @@
       {kanji:'変',answer:'9',total:true}, {kanji:'給',answer:'12',total:true},
       {kanji:'官',answer:'8',total:true}
     ];
+    // Additional verified, individually drawn stroke-order figures.  Each
+    // path is one stroke, in writing order; mark is a zero-based stroke index.
+    // This makes the first half of Question 四 regenerate as well as the second.
+    const EXTRA_STROKE_FIGURES = [
+      {kanji:'一',paths:['M 4 24 L 44 24']},
+      {kanji:'二',paths:['M 11 14 L 37 14','M 5 38 L 43 38']},
+      {kanji:'三',paths:['M 12 9 L 36 9','M 9 24 L 39 24','M 4 42 L 44 42']},
+      {kanji:'工',paths:['M 9 8 L 39 8','M 24 8 L 24 42','M 4 42 L 44 42']},
+      {kanji:'口',paths:['M 9 8 L 9 42','M 9 9 L 39 9 L 39 42','M 9 42 L 39 42']},
+      {kanji:'山',paths:['M 24 4 L 24 42','M 9 18 L 9 42 L 39 42','M 39 18 L 39 42']},
+      {kanji:'川',paths:['M 9 7 L 9 34 L 5 42','M 24 8 L 24 39','M 40 5 L 40 44']},
+      {kanji:'小',paths:['M 24 4 L 24 43','M 13 19 L 5 38','M 35 19 L 43 38']},
+      {kanji:'人',paths:['M 25 5 L 21 25 L 6 43','M 24 12 L 43 43']},
+      {kanji:'大',paths:['M 5 19 L 43 19','M 25 4 L 23 26 L 6 44','M 25 23 L 43 44']}
+    ];
+    const STROKE_FIGURE_POOL = [
+      ...STROKE_BANK.filter(q=>!q.total),
+      ...EXTRA_STROKE_FIGURES.flatMap(q=>q.paths.map((_,mark)=>({
+        kanji:q.kanji,paths:q.paths,mark,answer:String(mark+1)
+      })))
+    ];
     const READING_TYPE_BANK = [
       {kanji:'帯',reading:'おび',answer:'イ'}, {kanji:'照',reading:'しょう',answer:'ア'},
       {kanji:'富',reading:'とみ',answer:'イ'}, {kanji:'芸',reading:'げい',answer:'ア'},
@@ -626,7 +647,7 @@
       {id:'一',title:'漢字の読み',type:'reading',count:20,points:1},
       {id:'二',title:'漢字の書き取り',type:'writing',count:10,points:2},
       {id:'三',title:'正しい漢字',type:'choice',count:10,points:2},
-      {id:'四',title:'筆順・画数',type:'strokes',count:10,points:1},
+      {id:'四',title:'筆順と画数',type:'strokes',count:10,points:1},
       {id:'五',title:'音読み・訓読み',type:'onyomi',count:10,points:2},
       {id:'六',title:'対義語',type:'antonym-fill',count:5,points:2},
       {id:'七',title:'漢字と送りがな',type:'okuri-correction',count:7,points:2},
@@ -656,7 +677,8 @@
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
-          questions=[...choose(STROKE_BANK.filter(q=>!q.total),5),...choose([...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES],5)];
+          const figurePool=[...new Map(sample(STROKE_FIGURE_POOL,STROKE_FIGURE_POOL.length).map(q=>[q.kanji,q])).values()];
+          questions=[...choose(figurePool,5),...choose([...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES],5)];
         } else if(spec.type==='onyomi'){
           questions=choose([...READING_TYPE_BANK,...EXTRA_READING_TYPES]);
         } else if(spec.type==='antonym-fill'){
@@ -1004,6 +1026,11 @@
       if(sections.length!==10)throw Error('Expected ten exam sections');
       for(const section of sections){
         if(section.questions.length!==section.count)throw Error('Incorrect question count in '+section.id);
+        if(section.type==='strokes'){
+          if(section.questions.slice(0,5).some(q=>q.total||!q.paths||q.mark<0||q.mark>=q.paths.length||String(q.mark+1)!==q.answer))throw Error('Invalid highlighted stroke in Question 四');
+          if(section.questions.slice(5).some(q=>!q.total||!/^\d+$/.test(q.answer)))throw Error('Invalid total stroke count in Question 四');
+          if(new Set(section.questions.slice(0,5).map(q=>q.kanji)).size!==5)throw Error('Repeated kanji in Question 四');
+        }
         for(const q of section.questions){
           if(q.answer===undefined||q.answer===null||String(q.answer).length===0)throw Error('Missing answer in '+section.id);
           if(section.type==='compound-pairs' && !['ア','イ','ウ','エ','オ'].includes(q.answer))throw Error('Invalid choice key');
