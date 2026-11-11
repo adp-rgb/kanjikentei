@@ -634,16 +634,18 @@
     // Fixed instructions are independent of regenerated questions.
     // Wording follows the supplied Level 7 reference's task definitions.
     // Fixed reference-style instruction copy. Keep this separate from the random banks.
+    // Reference-style instruction wording. Manual line breaks indicate vertical columns,
+    // ordered from the RIGHTMOST column toward the LEFT.
     const EXAM_INSTRUCTIONS = {
       reading:'次の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
-      writing:'次の各組の―線の漢字の読みをひらがなで答えのらんに書きなさい。',
+      writing:'次の―線のカタカナを漢字になおして答えのらんに書きなさい。',
       choice:'次の―線のカタカナに合う漢字をえらんで答えのらんに記号で書きなさい。',
-      strokes:'次の上の漢字の太い画のところは筆順の何画目か、下の漢字の総画数は何画か、算用数字（１、２、３…）で答えなさい。',
+      strokes:'次の上の漢字の太い画のところは、筆順の何画目か、下の漢字の総画数は何画か、算用数字（１、２、３…）で答えなさい。',
       onyomi:'次の漢字の読みは、音読み（ア）ですか、訓読み（イ）ですか。記号で答えなさい。',
       'antonym-fill':'後の□の中のひらがなを漢字になおして、意味が反対や対になることば（対義語）を書きなさい。□の中のひらがなは一度だけ使い、答えのらんに漢字一字を書きなさい。',
-      'okuri-correction':'次の―線のカタカナを○の中の漢字と送りがなを使って答えのらんに書きなさい。',
+      'okuri-correction':'次の―線のカタカナを○の中の漢字と送りがなで答えのらんに書きなさい。',
       'radical-fill':'次の部首のなかまの漢字で□にあてはまる漢字一字を、答えのらんに書きなさい。',
-      'compound-pairs':'上の漢字と下の□の中の漢字を組み合わせて二字の熟語を二つ作り、答えのらんに記号で書きなさい。',
+      'compound-pairs':'次の漢字と下のア・イ・ウ・エ・オの漢字を組み合わせて二字の熟語を二つ作り、答えのらんに記号で書きなさい。',
       'writing-final':'次の―線のカタカナを漢字になおして答えのらんに書きなさい。'
     };
     const SENTENCE_BANK = [["学校", "がっこう", "毎朝、学校へ行く。", "毎朝、がっこうへ行く。"], ["先生", "せんせい", "先生の話を聞く。", "せんせいの話を聞く。"], ["教室", "きょうしつ", "教室の窓を開ける。", "きょうしつの窓を開ける。"], ["図書館", "としょかん", "図書館で本を借りる。", "としょかんで本を借りる。"], ["友達", "ともだち", "友達と公園で遊ぶ。", "ともだちと公園で遊ぶ。"], ["家族", "かぞく", "家族で旅行に行く。", "かぞくで旅行に行く。"], ["安全", "あんぜん", "安全な道を歩く。", "あんぜんな道を歩く。"], ["自然", "しぜん", "自然を大切にする。", "しぜんを大切にする。"], ["季節", "きせつ", "季節の変化を感じる。", "きせつの変化を感じる。"], ["太陽", "たいよう", "太陽が東からのぼる。", "たいようが東からのぼる。"], ["海岸", "かいがん", "海岸をゆっくり歩く。", "かいがんをゆっくり歩く。"], ["山頂", "さんちょう", "山頂から町を見る。", "さんちょうから町を見る。"], ["電車", "でんしゃ", "電車で町へ向かう。", "でんしゃで町へ向かう。"], ["道路", "どうろ", "道路を横切らない。", "どうろを横切らない。"], ["信号", "しんごう", "信号が青に変わる。", "しんごうが青に変わる。"], ["運動", "うんどう", "朝に運動をする。", "朝にうんどうをする。"], ["試合", "しあい", "試合の結果を聞く。", "しあいの結果を聞く。"], ["野球", "やきゅう", "野球の練習をする。", "やきゅうの練習をする。"], ["練習", "れんしゅう", "毎日練習を続ける。", "毎日れんしゅうを続ける。"], ["宿題", "しゅくだい", "宿題を先に終える。", "しゅくだいを先に終える。"], ["文章", "ぶんしょう", "文章を声に出す。", "ぶんしょうを声に出す。"], ["漢字", "かんじ", "漢字をていねいに書く。", "かんじをていねいに書く。"], ["音楽", "おんがく", "音楽の時間が始まる。", "おんがくの時間が始まる。"], ["合唱", "がっしょう", "合唱の練習をする。", "がっしょうの練習をする。"], ["発表", "はっぴょう", "発表の準備をする。", "はっぴょうの準備をする。"], ["工場", "こうじょう", "工場を見学する。", "こうじょうを見学する。"], ["農家", "のうか", "農家の仕事を調べる。", "のうかの仕事を調べる。"], ["動物", "どうぶつ", "動物の世話をする。", "どうぶつの世話をする。"], ["植物", "しょくぶつ", "植物を大切に育てる。", "しょくぶつを大切に育てる。"], ["観察", "かんさつ", "星の動きを観察する。", "星の動きをかんさつする。"], ["記録", "きろく", "毎日の記録をつける。", "毎日のきろくをつける。"], ["説明", "せつめい", "先生が説明をする。", "先生がせつめいをする。"], ["質問", "しつもん", "分からないことを質問する。", "分からないことをしつもんする。"], ["回答", "かいとう", "質問に回答する。", "質問にかいとうする。"], ["計画", "けいかく", "旅行の計画を立てる。", "旅行のけいかくを立てる。"], ["目標", "もくひょう", "新しい目標を決める。", "新しいもくひょうを決める。"], ["成功", "せいこう", "努力して成功した。", "努力してせいこうした。"], ["努力", "どりょく", "努力を続ける。", "どりょくを続ける。"], ["希望", "きぼう", "将来の希望を話す。", "将来のきぼうを話す。"], ["未来", "みらい", "未来について考える。", "みらいについて考える。"], ["歴史", "れきし", "町の歴史を学ぶ。", "町のれきしを学ぶ。"], ["文化", "ぶんか", "日本の文化を学ぶ。", "日本のぶんかを学ぶ。"], ["世界", "せかい", "世界の国を調べる。", "せかいの国を調べる。"], ["地図", "ちず", "地図を広げて見る。", "ちずを広げて見る。"], ["交通", "こうつう", "交通のきまりを守る。", "こうつうのきまりを守る。"], ["約束", "やくそく", "友達との約束を守る。", "友達とのやくそくを守る。"], ["整理", "せいり", "机の中を整理する。", "机の中をせいりする。"], ["整列", "せいれつ", "校庭に整列する。", "校庭にせいれつする。"], ["集合", "しゅうごう", "校門に集合する。", "校門にしゅうごうする。"], ["出発", "しゅっぱつ", "朝早く出発する。", "朝早くしゅっぱつする。"], ["到着", "とうちゃく", "駅に到着した。", "駅にとうちゃくした。"], ["手紙", "てがみ", "友達に手紙を書く。", "友達にてがみを書く。"], ["返事", "へんじ", "返事を待っている。", "へんじを待っている。"], ["買物", "かいもの", "母と買物に行く。", "母とかいものに行く。"], ["料理", "りょうり", "家族で料理を作る。", "家族でりょうりを作る。"], ["食事", "しょくじ", "楽しく食事をする。", "楽しくしょくじをする。"], ["健康", "けんこう", "健康に気をつける。", "けんこうに気をつける。"], ["病院", "びょういん", "病院へ行く。", "びょういんへ行く。"], ["温度", "おんど", "水の温度をはかる。", "水のおんどをはかる。"], ["天気", "てんき", "明日の天気を調べる。", "明日のてんきを調べる。"]];
@@ -715,22 +717,28 @@
     // and right-to-left. Each section has its own lane budget, so text never spills
     // across the question area or into the printed score.
     function instructionSVG(text,right,top,bottom,opts={}){
-      const x=right-(opts.offset??32), y=top+(opts.topPad??8);
-      const reserve=opts.bottomReserve??29;
-      const available=Math.max(40,bottom-y-reserve);
-      const pitch=opts.pitch??10.1;
+      // Geometry is shared by screen and PDF because both use this SVG.
+      // Each vertical line is explicitly placed; no browser-dependent wrapping.
+      const y=top+(opts.topPad??8);
+      const reserve=opts.bottomReserve??28;
+      const available=Math.max(24,bottom-y-reserve);
       const maxColumns=opts.columns??3;
-      let font=opts.font??8.2;
-      const chars=Array.from(text);
-      // Fit within the same number of instruction lanes on every generated paper.
-      font=Math.min(font, available*maxColumns/(chars.length*1.07));
-      font=Math.max(6.3,font);
-      const perColumn=Math.max(1,Math.floor(available/(font*1.08)));
+      const pitch=opts.pitch??10.2;
+      const x=right-(opts.offset??32);
+      const characters=Array.from(text);
+      const maxFont=opts.font??8.2;
+      const minFont=5.8;
+      // Include glyph advance in the height budget and never silently drop text.
+      const font=Math.max(minFont,Math.min(maxFont,available*maxColumns/(characters.length*1.13)));
+      const capacity=Math.max(1,Math.floor(available/(font*1.13)));
+      const needed=Math.ceil(characters.length/capacity);
+      const actualColumns=Math.min(maxColumns,needed);
+      // Balanced columns avoid one very long line followed by a tiny last line.
+      const perColumn=Math.ceil(characters.length/actualColumns);
       let out='';
-      for(let i=0;i<chars.length;i+=perColumn){
-        const column=Math.floor(i/perColumn);
-        if(column>=maxColumns)break;
-        out+=vt(x-column*pitch,y,chars.slice(i,i+perColumn).join(''),font);
+      for(let c=0;c<actualColumns;c++){
+        const content=characters.slice(c*perColumn,(c+1)*perColumn).join('');
+        out+=vt(x-c*pitch,y,content,font);
       }
       return out;
     }
@@ -747,7 +755,7 @@
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+4,s.id+'　'+s.title,12,'font-weight="bold"');
       const instruction=EXAM_INSTRUCTIONS[s.type];
-      out+=instructionSVG(instruction,right,top,bottom,{font:8.2,offset:31,pitch:10,columns:3,bottomReserve:29});
+      out+=instructionSVG(instruction,right,top,bottom,{font:8.1,offset:31,pitch:10.2,columns:4,bottomReserve:30});
       out+=ht(right-9,bottom-6,`${s.count*s.points}点`,8,'text-anchor="end"');
       out+=line(contentLeft,mid-9,contentRight+5,mid-9,'#777',.75);
       for(let i=0;i<10;i++){
@@ -784,7 +792,7 @@
        const h=bottom-top;
        out+=line(right,top,right,bottom,'#777',1.3);
        out+=vt(right-13,top+5,'（六）',12,'font-weight="bold"');
-       out+=instructionSVG(EXAM_INSTRUCTIONS['antonym-fill'],right,top,bottom,{font:7.7,offset:29,pitch:9.1,columns:4,bottomReserve:29});
+       out+=instructionSVG(EXAM_INSTRUCTIONS['antonym-fill'],right,top,bottom,{font:7.6,offset:29,pitch:9.1,columns:5,bottomReserve:30});
        out+=ht(right-8,bottom-15,'（10）',9,'text-anchor="end"');
        out+=ht(right-8,bottom-5,'2×5',7,'text-anchor="end"');
        // Vertical hiragana bank, at the left edge of the question group.
@@ -824,7 +832,7 @@
       // circled supplied kanji, underlined katakana and no answer boxes.
       let out=line(right,top,right,bottom,'#777',1.3);
       out+=vt(right-12,top+6,'（七）',12,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['okuri-correction'],right,top,bottom,{font:8,offset:29,pitch:9.6,columns:3,bottomReserve:30});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['okuri-correction'],right,top,bottom,{font:7.8,offset:29,pitch:9.5,columns:4,bottomReserve:30});
       out+=ht(right-6,bottom-16,'（14）',8.5,'text-anchor="end"');
       out+=ht(right-6,bottom-6,'2×7',7.5,'text-anchor="end"');
       // A narrow worked example is included beside the instruction lane.
@@ -861,7 +869,7 @@
     function radicalFillSectionSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+6,'（八）',13,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['radical-fill'],right,top,bottom,{font:8.2,offset:31,pitch:10,columns:3,bottomReserve:25});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['radical-fill'],right,top,bottom,{font:8.1,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-12,'（20） 2×10',8,'text-anchor="end"');
       const exampleX=right-95;
       out+=vt(exampleX,top+8,'〈例〉',9);
@@ -890,7 +898,7 @@
     function compoundPairsSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,{font:8.1,offset:31,pitch:10,columns:3,bottomReserve:25});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,{font:8,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-9,'（20） 2×10',8,'text-anchor="end"');
       const exampleX=right-102;
       out+=vt(exampleX,top+7,'〈例〉 校',9);
@@ -920,7 +928,7 @@
     function finalWritingSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（十）漢字の書き取り',12,'font-weight="bold"');
-      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,{font:8.5,offset:31,pitch:10,columns:3,bottomReserve:25});
+      out+=instructionSVG(EXAM_INSTRUCTIONS['writing-final'],right,top,bottom,{font:8.2,offset:31,pitch:10,columns:4,bottomReserve:28});
       out+=ht(right-7,bottom-6,'（40） 2×20',8,'text-anchor="end"');
       const qRight=right-71,qLeft=left+7,pitch=(qRight-qLeft)/20;
       for(let i=0;i<20;i++){
@@ -952,7 +960,7 @@
       const titleX=right-16, instructionX=right-38, qRight=right-(narrow?62:70),qLeft=left+9;
       out+=line(right,top,right,bottom,'#777',1.3);
       out+=vt(titleX,top+10,s.id+'　'+s.title,12,'font-weight="bold"');
-      out+=instructionSVG((EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),right,top,bottom,{font:8.5,offset:34,pitch:10.2,columns:3,topPad:9,bottomReserve:25});
+      out+=instructionSVG((EXAM_INSTRUCTIONS[s.type]||'次の問いに答えなさい。'),right,top,bottom,{font:8.3,offset:34,pitch:10.2,columns:4,topPad:9,bottomReserve:29});
       out+=ht(right-13,bottom-8,`${s.count*s.points}点`,8,'text-anchor="end"');
       const count=s.questions.length, spacing=(qRight-qLeft)/count;
       for(let i=0;i<count;i++){
