@@ -537,33 +537,52 @@
       }
       return out;
     }
-    // Fixed-coordinate Section 六. Five vertical tasks, each with one boxed
-    // kanji blank, a single-use hiragana bank, and sample-style instructions.
-    function antonymSectionSVG(s,left,right,top,bottom){
-      let out='';
-      const h=bottom-top;
-      out+=line(right,top,right,bottom,'#777',1.3);
-      out+=vt(right-14,top+7,'六　対義語',13,'font-weight="bold"');
-      out+=vt(right-37,top+7,'後の□の中のひらがなを漢字になおして、意味が反対や対になることば（対義語）を書きなさい。',8.3);
-      out+=vt(right-52,top+7,'□の中のひらがなは一度だけ使い、答えのらんに漢字一字を書きなさい。',8.3);
-      out+=ht(right-12,bottom-8,'（10）',9,'text-anchor="end"');
-      out+=ht(right-12,bottom+1,'2×5',7,'text-anchor="end"');
-      const bankX=left+14;
-      out+=rect(bankX,top+11,24,h-24,'stroke="#666"');
-      out+=vt(bankX+17,top+19,'さく・せき・み・む・り',9.5);
-      const taskLeft=left+46, taskRight=right-78;
-      const cell=(taskRight-taskLeft)/5;
-      for(let i=0;i<5;i++){
-        const q=s.questions[i];
-        const x=taskRight-(i+.5)*cell;
-        out+=ht(x,top+23,String(i+1),9,'text-anchor="middle"');
-        out+=vt(x,top+48,q.prompt,17);
-        out+=line(x,top+97,x,top+112,'#555',1);
-        out+=rect(x-9,top+119,18,21);
-        out+=vt(x,top+145,q.other,15);
-      }
-      return out;
-    }
+     // Section 六: five antonym-completion questions, as in the reference.
+     // Each pair is rendered in a fixed column with a blank in its correct
+     // position; the boxed hiragana bank is used exactly once per question.
+     function antonymSectionSVG(s,left,right,top,bottom){
+       let out='';
+       const h=bottom-top;
+       out+=line(right,top,right,bottom,'#777',1.3);
+       out+=vt(right-13,top+5,'（六）',12,'font-weight="bold"');
+       const instructions=[
+         '後の□の中のひらがなを漢字になおして、',
+         '意味が反対や対になることば（対義語）を書きなさい。',
+         '□の中のひらがなは一度だけ使い、',
+         '答えのらんに漢字一字を書きなさい。'
+       ];
+       instructions.forEach((t,i)=>out+=vt(right-31-i*11,top+6,t,8.1));
+       out+=ht(right-8,bottom-15,'（10）',9,'text-anchor="end"');
+       out+=ht(right-8,bottom-5,'2×5',7,'text-anchor="end"');
+       // Vertical hiragana bank, at the left edge of the question group.
+       const bankX=left+8;
+       out+=rect(bankX,top+13,23,h-26,'stroke="#666"');
+       out+=vt(bankX+16,top+25,'さく・せき・み・む・り',10);
+       // Worked example occupies a slim lane just left of the instructions.
+       const exampleX=right-82;
+       out+=vt(exampleX,top+13,'〈例〉',8);
+       out+=vt(exampleX,top+47,'室内',13);
+       out+=line(exampleX,top+94,exampleX,top+106,'#555',.8);
+       out+=vt(exampleX,top+113,'室外',13);
+       // The five independent columns read right to left.
+       const taskLeft=left+37, taskRight=right-99;
+       const cell=(taskRight-taskLeft)/5;
+       for(let i=0;i<5;i++){
+         const q=s.questions[i];
+         const x=taskRight-(i+.5)*cell;
+         out+=ht(x,top+22,String(i+1),9,'text-anchor="middle"');
+         out+=vt(x,top+43,q.prompt,14);
+         out+=line(x,top+91,x,top+105,'#555',.9);
+         // Show the answer slot within the actual opposite expression.
+         const prefix=q.full.slice(0,q.full.indexOf(q.answer));
+         const suffix=q.full.slice(q.full.indexOf(q.answer)+q.answer.length);
+         let y=top+117;
+         if(prefix){out+=vt(x,y,prefix,13);y+=Array.from(prefix).length*15+3;}
+         out+=rect(x-9,y,18,20);y+=23;
+         if(suffix)out+=vt(x,y,suffix,13);
+       }
+       return out;
+     }
     // A section has an independent fixed region. No flex-wrap or auto-flow.
     function sectionSVG(s,left,right,top,bottom){
       if(s.type==='strokes'||s.type==='onyomi')return twoRowSectionSVG(s,left,right,top,bottom);
@@ -664,7 +683,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent='110 questions · 200 points · 10 sections · 2 A4 landscape pages · unofficial practice';
+        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 10 sections · 2 A4 landscape pages · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
