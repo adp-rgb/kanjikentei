@@ -896,36 +896,54 @@
       return out;
     }
     function compoundPairsSVG(s,left,right,top,bottom){
-      // Section 九 only: the section title is deliberately unchanged.
+      // Question 九: match the original five right-to-left compound groups.
+      // The section title is locked and is not changed.
       let out=line(right,top,right,bottom,'#777',1.1);
       out+=vt(right-12,top+5,'（九）',13,'font-weight="bold"');
       out+=instructionSVG(EXAM_INSTRUCTIONS['compound-pairs'],right,top,bottom,
         {font:8.2,offset:31,pitch:10.2,columns:4,bottomReserve:27});
       out+=ht(right-7,bottom-9,'（20） 2×10',8,'text-anchor="end"');
-      const exampleX=right-111;
-      out+=vt(exampleX,top+9,'〈例〉',8.5);
-      out+=vt(exampleX-14,top+9,'校',11);
-      out+=vt(exampleX-29,top+9,'ア 門　イ 学　ウ 海',8.5);
-      const usableRight=right-165,usableLeft=left+16;
+
+      // Original-style worked example: one head character, vertical options,
+      // and two stacked split number/answer cells.
+      const exampleX=right-118;
+      out+=vt(exampleX,top+8,'〈例〉',8.5);
+      out+=vt(exampleX-16,top+8,'校',12);
+      const exOptX=exampleX-38,exY=top+29;
+      out+=rect(exOptX,exY,21,142,'stroke="#555"');
+      ['ア 門','イ 学','ウ 海','エ 体','オ 読'].forEach((v,i)=>{
+        out+=ht(exOptX+3,exY+15+i*27,v,8.4);
+      });
+      [['イ','校'],['校','ア']].forEach((pair,j)=>{
+        const xx=exOptX-34,yy=top+51+j*58;
+        out+=rect(xx,yy,25,44,'stroke="#555"');
+        out+=line(xx,yy+22,xx+25,yy+22,'#999',.7);
+        out+=ht(xx+12.5,yy+16,pair[0],10,'text-anchor="middle"');
+        out+=ht(xx+12.5,yy+37,pair[1],10,'text-anchor="middle"');
+      });
+
+      const usableRight=right-205, usableLeft=left+12;
       const pitch=(usableRight-usableLeft)/5;
       for(let g=0;g<5;g++){
-        const x=usableRight-(g+.5)*pitch;
+        const center=usableRight-(g+.5)*pitch;
         const q=s.questions[g*2];
-        // Fixed, separate heading above each choice strip, not inside it.
-        out+=ht(x+11,top+15,['一、','二、','三、','四、','五、'][g]+q.head,11,
-          'text-anchor="middle"');
-        const optW=24,optH=145,optX=x+3,optY=top+32;
-        out+=rect(optX,optY,optW,optH,'stroke="#666"');
+        const label=['一、','二、','三、','四、','五、'][g];
+        // Separate vertically composed group heading, as in the original.
+        out+=vt(center+17,top+3,label+q.head,13);
+        const optX=center+1,optY=top+35,optW=24,optH=153;
+        out+=rect(optX,optY,optW,optH,'stroke="#555"');
         q.options.forEach((kanji,i)=>{
-          const cy=optY+15+i*28;
-          out+=ht(optX+5,cy,['ア','イ','ウ','エ','オ'][i],7.5);
-          out+=ht(optX+17,cy+1,kanji,11,'text-anchor="middle"');
+          const cy=optY+18+i*29;
+          out+=ht(optX+3,cy,['ア','イ','ウ','エ','オ'][i],8.5);
+          out+=ht(optX+17,cy,kanji,12,'text-anchor="middle"');
         });
-        // Two numbered, blank answer squares, aligned alongside the options.
+        // Each answer is a two-compartment rectangle: number + blank.
+        // Two boxes per group, with right-to-left numbering 1–10.
         for(let j=0;j<2;j++){
-          const y=top+49+j*78;
-          out+=rect(x-34,y,25,32,'stroke="#666"');
-          out+=ht(x-21.5,y+12,String(g*2+j+1),8,'text-anchor="middle"');
+          const x=center-32,y=top+43+j*72,w=27,h=56;
+          out+=rect(x,y,w,h,'stroke="#555"');
+          out+=line(x,y+28,x+w,y+28,'#999',.65);
+          out+=ht(x+w/2,y+19,String(g*2+j+1),12,'text-anchor="middle"');
         }
       }
       return out;
