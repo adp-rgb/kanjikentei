@@ -195,8 +195,7 @@
   #mock-answers{display:none!important}
 }
 
-/* Screen-only four-page portrait viewer. Each page is an unchanged SVG crop.
-   The original landscape SVGs remain the sole source for print and PDF. */
+/* Native vertical portrait viewer, independent of the PC landscape renderer. */
 #mobile-screen-paper{display:none}
 .mobile-screen-sheet{background:#fff;aspect-ratio:561 / 794;width:100%;overflow:hidden;box-shadow:0 2px 9px #0002;border:1px solid #d8dee8;position:relative}
 .mobile-screen-sheet svg{display:block;width:100%;height:100%;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif}
@@ -269,8 +268,8 @@ button,select,input{touch-action:manipulation}
     <div id="syllabus-grid" class="kanji-grid" style="grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px"></div>
   </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
-    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Mobile PDF (4 pages)</button><button id="mobile-view-btn" type="button" aria-pressed="false">Landscape view</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
-    <p id="mobile-exam-tip">Read the exam as four portrait pages below. Tap <strong>Landscape view</strong> to see the original two-page layout. The PDF buttons are separate from this screen view.</p><div id="mobile-screen-paper" aria-label="Mobile-friendly portrait exam preview"></div><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
+    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Download Vertical PDF</button><button id="mobile-view-btn" type="button" aria-pressed="false">Landscape view</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
+    <p id="mobile-exam-tip">Read the exam in a native vertical Japanese portrait layout below. Tap <strong>Landscape view</strong> to see the original two-page PC layout. The PDF buttons are separate from this screen view.</p><div id="mobile-screen-paper" aria-label="Mobile-friendly portrait exam preview"></div><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
   </section>
 
   <script>
@@ -1485,31 +1484,70 @@ button,select,input{touch-action:manipulation}
       }
       return svg+'</svg>';
     }
-    // Render the same four right-to-left A4 portrait crops used by Mobile PDF.
-    // No section is reflowed or reconstructed, preserving SVG examination geometry.
-    function renderMobileScreenPaper(){
-      const target=document.getElementById('mobile-screen-paper');
-      const pages=[...mockPaper.querySelectorAll('.exam-canvas svg')];
-      if(pages.length!==2){target.replaceChildren();return;}
-      const fragment=document.createDocumentFragment();
-      for(let page=0;page<2;page++){
-        for(const [half,x] of [['right',561],['left',0]]){
-          const wrapper=document.createElement('section');
-          const heading=document.createElement('p');
-          heading.className='mobile-sheet-label';
-          heading.textContent=`Page ${page*2+(half==='right'?1:2)} of 4`;
-          const sheet=document.createElement('div');
-          sheet.className='mobile-screen-sheet';
-          const svg=pages[page].cloneNode(true);
-          svg.setAttribute('viewBox',`${x} 0 561 794`);
-          svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-          svg.setAttribute('role','img');
-          svg.setAttribute('aria-label',`Exam page ${page+1}, ${half} half`);
-          sheet.appendChild(svg);
-          wrapper.append(heading,sheet);
-          fragment.appendChild(wrapper);
+    // Native portrait-only renderer. The desktop pageSVG/sectionSVG functions
+    // and their A4 landscape print path remain unchanged.
+    let portraitExamPages=[];
+    function portraitWritingSection(s, questions, firstNumber, left, right, top, bottom){
+      let out=line(right,top,right,bottom,'#777',1.2);
+      out+=vt(right-15,top+12,s.id+'　'+s.title,15,'font-weight="bold"');
+      out+=instructionSVG(EXAM_INSTRUCTIONS[s.type],right,top,bottom,
+        {font:10,offset:40,pitch:12,columns:3,bottomReserve:42});
+      out+=ht(right-8,bottom-9,`${questions.length*s.points}点`,10,'text-anchor="end"');
+      const qRight=right-125,qLeft=left+15, pitch=(qRight-qLeft)/questions.length;
+      questions.forEach((q,i)=>{
+        const x=qRight-(i+.5)*pitch,y=top+60;
+        const fs=Math.min(15,Math.max(11,(bottom-top-145)/Math.max(1,[...q.prompt].length)));
+        out+=ht(x,top+31,String(firstNumber+i),11,'text-anchor="middle"');
+        out+=vt(x,y,q.prompt,fs);
+        const pos=q.prompt.indexOf(q.target);
+        if(pos>=0){
+          const before=[...q.prompt.slice(0,pos)].length, len=[...q.target].length;
+          out+=line(x+fs*.73,y+before*fs+.7,x+fs*.73,y+(before+len)*fs-.7,'#111',1.5);
         }
-      }
+        out+=rect(x-15,bottom-62,30,34,'stroke="#555" stroke-width="1"');
+      });
+      return out;
+    }
+    function buildPortraitExamPages(sections){
+      const layouts=[];
+      sections.forEach((section)=>{
+        if(section.type==='reading'||section.type==='writing-final'){
+          for(let offset=0;offset<section.questions.length;offset+=10)
+            layouts.push({section,questions:section.questions.slice(offset,offset+10),offset});
+        }else layouts.push({section,questions:section.questions,offset:0});
+      });
+      const total=layouts.length;
+      return layouts.map(({section,questions,offset},index)=>{
+        const W=595,H=842,L=25,R=570,T=79,B=796;
+        let svg=`<svg class="exam-svg portrait-native-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="漢検7級 縦書き問題 第${index+1}ページ"><rect width="595" height="842" fill="white"/>`;
+        svg+=ht(35,36,'漢字検定7級　模擬試験問題',18,'font-weight="bold"');
+        svg+=ht(35,55,`第${mockSerial}回　非公式・学習用`,10);
+        svg+=ht(560,37,`${index+1} / ${total}`,11,'text-anchor="end"');
+        svg+=line(25,67,570,67,'#777',1);
+        if(section.type==='reading'||section.type==='writing-final'){
+          svg+=portraitWritingSection(section,questions,offset+1,L,R,T,B);
+        }else{
+          svg+=sectionSVG(section,L,R,T,B);
+        }
+        svg+=ht(30,821,`漢検7級　${section.id} ${section.title}`,9);
+        return svg+'</svg>';
+      });
+    }
+    function renderMobileScreenPaper(sections){
+      const target=document.getElementById('mobile-screen-paper');
+      portraitExamPages=buildPortraitExamPages(sections);
+      const fragment=document.createDocumentFragment();
+      portraitExamPages.forEach((markup,index)=>{
+        const wrapper=document.createElement('section');
+        const heading=document.createElement('p');
+        heading.className='mobile-sheet-label';
+        heading.textContent=`Page ${index+1} of ${portraitExamPages.length}`;
+        const sheet=document.createElement('div');
+        sheet.className='mobile-screen-sheet';
+        sheet.innerHTML=markup;
+        wrapper.append(heading,sheet);
+        fragment.appendChild(wrapper);
+      });
       target.replaceChildren(fragment);
     }
     function validateMock(sections){
@@ -1543,7 +1581,7 @@ button,select,input{touch-action:manipulation}
       try{
         const sections=makeSections();validateMock(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
-        renderMobileScreenPaper();
+        renderMobileScreenPaper(sections);
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図はKanjiVG（2026年7月14日版、CC BY-SA 3.0）の資料を使用しています。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
         mockInfo.textContent=`Level 7 practice · 202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · embedded KanjiVG stroke-order figures: ${strokeDiagramByKanji.size}/202 (source-based; not independently hand-reviewed) · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
@@ -1612,96 +1650,56 @@ button,select,input{touch-action:manipulation}
       </style></head><body><div class="printbar"><button onclick="window.print()">Print / Save PDF (4 pages)</button><small>Choose A4, Portrait, 100% scale, no margins and turn off headers/footers.</small></div>${sheets.join('')}</body></html>`;
     }
     document.getElementById('print-btn').addEventListener('click',()=>window.print());
-    // Download a genuine four-page portrait PDF, independent of the phone's
-    // print-dialog orientation and pagination settings. SVG -> high-resolution
-    // JPEG -> minimal standards-compliant PDF (no external dependencies).
+    // Native A4 portrait PDF: each section is rendered on its own portrait SVG
+    // (long 20-question sections are split into two 10-question pages).
+    // The original desktop two-page landscape renderer is never modified.
     async function downloadMobilePdf(){
-      const sourcePages=[...mockPaper.querySelectorAll('.exam-canvas svg')];
-      if(sourcePages.length!==2)throw Error('Generate the mock exam first.');
-      const encoder=new TextEncoder();
-      const chunks=[];let byteLength=0;
-      function append(data){
-        const bytes=typeof data==='string'?encoder.encode(data):data;
-        chunks.push(bytes);byteLength+=bytes.length;
-      }
-      const offsets=[0];let nextObject=1;
-      function addObject(content){
-        const id=nextObject++;
-        offsets[id]=byteLength;
-        append(`${id} 0 obj\n`);
-        append(content);
-        append('\nendobj\n');
-        return id;
-      }
-      function jpegBytes(dataUrl){
-        const raw=atob(dataUrl.split(',')[1]);
-        const out=new Uint8Array(raw.length);
-        for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
-        return out;
-      }
-      async function renderHalf(source,x){
-        const svg=source.cloneNode(true);
-        svg.setAttribute('viewBox',`${x} 0 561 794`);
-        svg.setAttribute('width','561');svg.setAttribute('height','794');
-        svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
-        const markup=new XMLSerializer().serializeToString(svg);
+      if(!portraitExamPages.length)throw Error('Generate the mock exam first.');
+      const encoder=new TextEncoder(),chunks=[];let byteLength=0;
+      function append(data){const bytes=typeof data==='string'?encoder.encode(data):data;chunks.push(bytes);byteLength+=bytes.length;}
+      const offsets=[0];let nextObject=3;
+      function addObject(content){const id=nextObject++;offsets[id]=byteLength;append(`${id} 0 obj\n${content}\nendobj\n`);return id;}
+      function jpegBytes(dataUrl){const raw=atob(dataUrl.split(',')[1]);return Uint8Array.from(raw,c=>c.charCodeAt(0));}
+      async function renderPortrait(markup){
         const url=URL.createObjectURL(new Blob([markup],{type:'image/svg+xml;charset=utf-8'}));
         try{
           const img=new Image();
-          await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Unable to render exam SVG'));img.src=url;});
-          const scale=4; // ~270 dpi at A4 size
-          const canvas=document.createElement('canvas');
-          canvas.width=561*scale;canvas.height=794*scale;
-          const ctx=canvas.getContext('2d',{alpha:false});
-          if(!ctx)throw Error('Canvas is unavailable');
+          await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Unable to render portrait SVG'));img.src=url;});
+          const scale=3,canvas=document.createElement('canvas');
+          canvas.width=595*scale;canvas.height=842*scale;
+          const ctx=canvas.getContext('2d',{alpha:false});if(!ctx)throw Error('Canvas is unavailable');
           ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
           ctx.drawImage(img,0,0,canvas.width,canvas.height);
-          return jpegBytes(canvas.toDataURL('image/jpeg',0.94));
+          return jpegBytes(canvas.toDataURL('image/jpeg',.94));
         }finally{URL.revokeObjectURL(url);}
       }
-      append('%PDF-1.4\n');
-      const catalogId=1,pagesId=2;
-      // Reserve catalog and page-tree object IDs; add after all page streams.
-      nextObject=3;
-      const pageIds=[];
-      for(let page=0;page<2;page++){
-        for(const x of [561,0]){
-          const jpg=await renderHalf(sourcePages[page],x);
-          const imageId=nextObject++;
-          offsets[imageId]=byteLength;
-          append(`${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width 2244 /Height 3176 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
-          append(jpg);append('\nendstream\nendobj\n');
-          const content='q 595.276 0 0 841.89 0 0 cm /Im0 Do Q\n';
-          const contentId=nextObject++;
-          offsets[contentId]=byteLength;
-          append(`${contentId} 0 obj\n<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream\nendobj\n`);
-          const pageId=addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595.276 841.89] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);
-          pageIds.push(pageId);
-        }
+      append('%PDF-1.4\n');const pageIds=[];
+      for(const markup of portraitExamPages){
+        const jpg=await renderPortrait(markup);
+        const imageId=nextObject++;offsets[imageId]=byteLength;
+        append(`${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width 1785 /Height 2526 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
+        append(jpg);append('\nendstream\nendobj\n');
+        const content='q 595.276 0 0 841.89 0 0 cm /Im0 Do Q\n';
+        const contentId=nextObject++;offsets[contentId]=byteLength;
+        append(`${contentId} 0 obj\n<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream\nendobj\n`);
+        pageIds.push(addObject(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.276 841.89] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`));
       }
-      offsets[pagesId]=byteLength;
-      append(`${pagesId} 0 obj\n<< /Type /Pages /Count 4 /Kids [${pageIds.map(id=>`${id} 0 R`).join(' ')}] >>\nendobj\n`);
-      offsets[catalogId]=byteLength;
-      append(`${catalogId} 0 obj\n<< /Type /Catalog /Pages ${pagesId} 0 R >>\nendobj\n`);
-      const xrefOffset=byteLength;
-      append(`xref\n0 ${nextObject}\n0000000000 65535 f \n`);
+      offsets[2]=byteLength;append(`2 0 obj\n<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map(id=>`${id} 0 R`).join(' ')}] >>\nendobj\n`);
+      offsets[1]=byteLength;append('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+      const xrefOffset=byteLength;append(`xref\n0 ${nextObject}\n0000000000 65535 f \n`);
       for(let id=1;id<nextObject;id++)append(`${String(offsets[id]).padStart(10,'0')} 00000 n \n`);
-      append(`trailer\n<< /Size ${nextObject} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
-      const blob=new Blob(chunks,{type:'application/pdf'});
-      const url=URL.createObjectURL(blob);
-      const link=document.createElement('a');link.href=url;
-      link.download='Kanken_Level7_Mobile_4_Pages.pdf';
-      document.body.appendChild(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),60000);
+      append(`trailer\n<< /Size ${nextObject} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+      const url=URL.createObjectURL(new Blob(chunks,{type:'application/pdf'}));
+      const link=document.createElement('a');link.href=url;link.download='Kanken_Level7_Native_Vertical_Exam.pdf';
+      document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
     }
-    document.getElementById('mobile-pdf-btn').textContent='Download Mobile PDF (4 pages)';
+    document.getElementById('mobile-pdf-btn').textContent='Download Vertical PDF';
     document.getElementById('mobile-pdf-btn').addEventListener('click',async()=>{
-      const btn=document.getElementById('mobile-pdf-btn');
-      if(btn.disabled)return;
-      btn.disabled=true;btn.textContent='Creating 4-page PDF…';
+      const btn=document.getElementById('mobile-pdf-btn');if(btn.disabled)return;
+      btn.disabled=true;btn.textContent='Creating vertical PDF…';
       try{await downloadMobilePdf();}
-      catch(err){console.error(err);alert('Mobile PDF could not be created: '+err.message);}
-      finally{btn.disabled=false;btn.textContent='Download Mobile PDF (4 pages)';}
+      catch(err){console.error(err);alert('Vertical PDF could not be created: '+err.message);}
+      finally{btn.disabled=false;btn.textContent='Download Vertical PDF';}
     });
     document.getElementById('mobile-view-btn').addEventListener('click',()=>{
       const landscape=mockPanel.classList.toggle('landscape-screen');
