@@ -1612,14 +1612,96 @@ button,select,input{touch-action:manipulation}
       </style></head><body><div class="printbar"><button onclick="window.print()">Print / Save PDF (4 pages)</button><small>Choose A4, Portrait, 100% scale, no margins and turn off headers/footers.</small></div>${sheets.join('')}</body></html>`;
     }
     document.getElementById('print-btn').addEventListener('click',()=>window.print());
-    document.getElementById('mobile-pdf-btn').addEventListener('click',()=>{
-      const html=mobilePrintDocument();
-      if(!html){alert('Generate a mock exam before saving the mobile PDF.');return;}
-      // Open directly from the tap gesture to avoid popup blockers on iOS.
-      const printWindow=window.open('','_blank');
-      if(!printWindow){alert('Allow pop-ups for this website, then try Mobile PDF again.');return;}
-      printWindow.document.open();printWindow.document.write(html);printWindow.document.close();
-      // A visible Print button is reliable on iOS; do not auto-print before fonts load.
+    // Download a genuine four-page portrait PDF, independent of the phone's
+    // print-dialog orientation and pagination settings. SVG -> high-resolution
+    // JPEG -> minimal standards-compliant PDF (no external dependencies).
+    async function downloadMobilePdf(){
+      const sourcePages=[...mockPaper.querySelectorAll('.exam-canvas svg')];
+      if(sourcePages.length!==2)throw Error('Generate the mock exam first.');
+      const encoder=new TextEncoder();
+      const chunks=[];let byteLength=0;
+      function append(data){
+        const bytes=typeof data==='string'?encoder.encode(data):data;
+        chunks.push(bytes);byteLength+=bytes.length;
+      }
+      const offsets=[0];let nextObject=1;
+      function addObject(content){
+        const id=nextObject++;
+        offsets[id]=byteLength;
+        append(`${id} 0 obj\n`);
+        append(content);
+        append('\nendobj\n');
+        return id;
+      }
+      function jpegBytes(dataUrl){
+        const raw=atob(dataUrl.split(',')[1]);
+        const out=new Uint8Array(raw.length);
+        for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+        return out;
+      }
+      async function renderHalf(source,x){
+        const svg=source.cloneNode(true);
+        svg.setAttribute('viewBox',`${x} 0 561 794`);
+        svg.setAttribute('width','561');svg.setAttribute('height','794');
+        svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+        const markup=new XMLSerializer().serializeToString(svg);
+        const url=URL.createObjectURL(new Blob([markup],{type:'image/svg+xml;charset=utf-8'}));
+        try{
+          const img=new Image();
+          await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Unable to render exam SVG'));img.src=url;});
+          const scale=4; // ~270 dpi at A4 size
+          const canvas=document.createElement('canvas');
+          canvas.width=561*scale;canvas.height=794*scale;
+          const ctx=canvas.getContext('2d',{alpha:false});
+          if(!ctx)throw Error('Canvas is unavailable');
+          ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+          ctx.drawImage(img,0,0,canvas.width,canvas.height);
+          return jpegBytes(canvas.toDataURL('image/jpeg',0.94));
+        }finally{URL.revokeObjectURL(url);}
+      }
+      append('%PDF-1.4\n');
+      const catalogId=1,pagesId=2;
+      // Reserve catalog and page-tree object IDs; add after all page streams.
+      nextObject=3;
+      const pageIds=[];
+      for(let page=0;page<2;page++){
+        for(const x of [561,0]){
+          const jpg=await renderHalf(sourcePages[page],x);
+          const imageId=nextObject++;
+          offsets[imageId]=byteLength;
+          append(`${imageId} 0 obj\n<< /Type /XObject /Subtype /Image /Width 2244 /Height 3176 /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
+          append(jpg);append('\nendstream\nendobj\n');
+          const content='q 595.276 0 0 841.89 0 0 cm /Im0 Do Q\n';
+          const contentId=nextObject++;
+          offsets[contentId]=byteLength;
+          append(`${contentId} 0 obj\n<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream\nendobj\n`);
+          const pageId=addObject(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 595.276 841.89] /Resources << /XObject << /Im0 ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>`);
+          pageIds.push(pageId);
+        }
+      }
+      offsets[pagesId]=byteLength;
+      append(`${pagesId} 0 obj\n<< /Type /Pages /Count 4 /Kids [${pageIds.map(id=>`${id} 0 R`).join(' ')}] >>\nendobj\n`);
+      offsets[catalogId]=byteLength;
+      append(`${catalogId} 0 obj\n<< /Type /Catalog /Pages ${pagesId} 0 R >>\nendobj\n`);
+      const xrefOffset=byteLength;
+      append(`xref\n0 ${nextObject}\n0000000000 65535 f \n`);
+      for(let id=1;id<nextObject;id++)append(`${String(offsets[id]).padStart(10,'0')} 00000 n \n`);
+      append(`trailer\n<< /Size ${nextObject} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+      const blob=new Blob(chunks,{type:'application/pdf'});
+      const url=URL.createObjectURL(blob);
+      const link=document.createElement('a');link.href=url;
+      link.download='Kanken_Level7_Mobile_4_Pages.pdf';
+      document.body.appendChild(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }
+    document.getElementById('mobile-pdf-btn').textContent='Download Mobile PDF (4 pages)';
+    document.getElementById('mobile-pdf-btn').addEventListener('click',async()=>{
+      const btn=document.getElementById('mobile-pdf-btn');
+      if(btn.disabled)return;
+      btn.disabled=true;btn.textContent='Creating 4-page PDF…';
+      try{await downloadMobilePdf();}
+      catch(err){console.error(err);alert('Mobile PDF could not be created: '+err.message);}
+      finally{btn.disabled=false;btn.textContent='Download Mobile PDF (4 pages)';}
     });
     document.getElementById('mobile-view-btn').addEventListener('click',()=>{
       const landscape=mockPanel.classList.toggle('landscape-screen');
