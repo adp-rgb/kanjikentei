@@ -872,62 +872,67 @@
     // shared A4 SVG coordinate system used by preview and printed PDF.
     // Sections 八 and 十 intentionally use compact horizontal question rows.
     // They are isolated from the remaining nine section renderers.
+    // Dedicated horizontal facsimile adaptations.  All elements use absolute
+    // SVG coordinates; screen preview and print therefore share the same layout.
     function radicalFillSectionSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
+      const laneLeft=right-132, laneRight=right-29;
       out+=vt(right-12,top+5,'（八）',13,'font-weight="bold"');
-      const laneLeft=right-135,laneRight=right-30;
-      out+=ht(laneRight,top+23,'部首のなかま',10,'text-anchor="end" font-weight="bold"');
-      out+=ht(laneRight,top+41,'□に漢字一字を書く。',8,'text-anchor="end"');
-      out+=ht(laneRight,top+65,'例：亻（にんべん）',8,'text-anchor="end"');
-      out+=ht(laneRight,top+82,'休・作',9,'text-anchor="end"');
+      out+=ht(laneRight,top+25,'部首のなかま',10,'text-anchor="end" font-weight="bold"');
+      out+=ht(laneRight,top+43,'□に漢字一字を書く。',8.5,'text-anchor="end"');
+      out+=ht(laneRight,top+67,'〈例〉亻（にんべん）',8,'text-anchor="end"');
+      out+=ht(laneRight,top+84,'休・作',10,'text-anchor="end"');
       out+=ht(laneRight,bottom-10,'（20）2×10',8,'text-anchor="end"');
-      out+=line(laneLeft,top+8,laneLeft,bottom-8,'#bbb',.6);
-      const x0=left+7,x1=laneLeft-7,colW=(x1-x0)/3;
+      out+=line(laneLeft,top+9,laneLeft,bottom-9,'#aaa',.65);
+      const x0=left+8,x1=laneLeft-9,colW=(x1-x0)/3;
       const groups=[['ア','木','きへん'],['イ','土','つち'],['ウ','亻','にんべん']];
       groups.forEach(([label,radical,reading],g)=>{
-        const gx=x1-(g+1)*colW;
+        const gx=x1-(g+1)*colW, center=gx+colW/2;
         const items=s.questions.map((q,i)=>({...q,n:i+1})).filter(q=>q.group===label);
-        out+=ht(gx+colW/2,top+20,`${label} ${radical}（${reading}）`,8.5,'text-anchor="middle"');
-        const rowTop=top+34,rowH=(bottom-top-53)/4;
+        out+=ht(center,top+22,`${label}　${radical}（${reading}）`,9.2,'text-anchor="middle"');
+        out+=line(gx+7,top+29,gx+colW-7,top+29,'#ddd',.6);
+        const rowTop=top+35,rowH=(bottom-top-49)/4;
         items.forEach((q,j)=>{
           const cy=rowTop+(j+.5)*rowH;
-          const bx=gx+34,by=cy-11;
-          out+=ht(gx+7,cy+4,String(q.n)+'.',9);
-          if(q.before)out+=ht(bx-4,cy+4,q.before,10,'text-anchor="end"');
-          out+=rect(bx,by,22,22,'stroke="#555"');
-          if(q.after)out+=ht(bx+28,cy+4,q.after,11);
+          const boxX=gx+Math.max(30,colW*.38),boxY=cy-11;
+          out+=ht(gx+10,cy+4,String(q.n)+'.',9.5);
+          if(q.before)out+=ht(boxX-5,cy+4,q.before,11,'text-anchor="end"');
+          out+=rect(boxX,boxY,22,22,'stroke="#555" stroke-width=".9"');
+          if(q.after)out+=ht(boxX+28,cy+4,q.after,11);
         });
       });
       return out;
     }
     function compoundPairsSVG(s,left,right,top,bottom){
       let out=line(right,top,right,bottom,'#777',1.1);
+      const laneLeft=right-132,laneRight=right-28;
       out+=vt(right-12,top+5,'（十）',13,'font-weight="bold"');
-      const laneLeft=right-140,laneRight=right-29;
-      out+=ht(laneRight,top+22,'熟語の組み立て',10,'text-anchor="end" font-weight="bold"');
-      out+=ht(laneRight,top+40,'漢字を組み合わせて',8,'text-anchor="end"');
-      out+=ht(laneRight,top+55,'二字の熟語を二つ作る。',8,'text-anchor="end"');
-      out+=ht(laneRight,top+70,'記号で答えなさい。',8,'text-anchor="end"');
-      out+=ht(laneRight,top+92,'例：校 ＋ 学／門',8,'text-anchor="end"');
+      out+=ht(laneRight,top+23,'熟語の組み立て',10,'text-anchor="end" font-weight="bold"');
+      out+=ht(laneRight,top+42,'漢字を組み合わせて',8,'text-anchor="end"');
+      out+=ht(laneRight,top+57,'二字の熟語を二つ作る。',8,'text-anchor="end"');
+      out+=ht(laneRight,top+72,'記号で答えなさい。',8,'text-anchor="end"');
+      out+=ht(laneRight,top+96,'〈例〉校＋学／門',8.5,'text-anchor="end"');
       out+=ht(laneRight,bottom-10,'（20）2×10',8,'text-anchor="end"');
-      out+=line(laneLeft,top+8,laneLeft,bottom-8,'#bbb',.6);
-      const x0=left+5,x1=laneLeft-7,areaW=x1-x0;
-      const rowH=(bottom-top-15)/5;
+      out+=line(laneLeft,top+9,laneLeft,bottom-9,'#aaa',.65);
+      const x0=left+7,x1=laneLeft-8,areaW=x1-x0;
+      const answerW=54, headW=55;
+      const choicesLeft=x0+headW,choicesRight=x1-answerW-4;
+      const step=(choicesRight-choicesLeft)/5;
+      const rowH=(bottom-top-12)/5;
       for(let g=0;g<5;g++){
-        const q=s.questions[g*2],y=top+5+g*rowH;
-        if(g)out+=line(x0,y-2,x1,y-2,'#ddd',.55);
-        out+=ht(x0+2,y+19,`${['一','二','三','四','五'][g]}、${q.head}`,10,'font-weight="bold"');
-        const optionsStart=x0+65,step=29;
+        const q=s.questions[g*2],y=top+6+g*rowH;
+        if(g)out+=line(x0,y-3,x1,y-3,'#ddd',.6);
+        out+=ht(x0+3,y+21,`${['一','二','三','四','五'][g]}、${q.head}`,10.8,'font-weight="bold"');
         q.options.forEach((word,i)=>{
-          const ox=optionsStart+i*step;
-          out+=ht(ox,y+11,'アイウエオ'[i],7.5,'text-anchor="middle"');
-          out+=ht(ox,y+25,word,10,'text-anchor="middle"');
+          const ox=choicesLeft+(i+.5)*step;
+          out+=ht(ox,y+12,'アイウエオ'[i],8.3,'text-anchor="middle"');
+          out+=ht(ox,y+27,word,11,'text-anchor="middle"');
         });
-        const ansStart=x1-61;
+        const ansX=x1-answerW+2;
         for(let j=0;j<2;j++){
-          const bx=ansStart+j*30;
-          out+=ht(bx+10,y+9,String(g*2+j+1),7.5,'text-anchor="middle"');
-          out+=rect(bx,y+12,20,17,'stroke="#555"');
+          const bx=ansX+j*26;
+          out+=ht(bx+10,y+9,String(g*2+j+1),8,'text-anchor="middle"');
+          out+=rect(bx,y+13,20,19,'stroke="#555" stroke-width=".9"');
         }
       }
       return out;
