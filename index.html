@@ -1547,14 +1547,25 @@ button,select,input{touch-action:manipulation}
       @page{size:A4 portrait;margin:0}
       *{box-sizing:border-box}
       html,body{padding:0;margin:0;background:#e5e7eb}
-      .sheet{width:210mm;height:297mm;overflow:hidden;margin:12px auto;background:#fff;box-shadow:0 2px 10px #0002;break-after:page;page-break-after:always}
-      .sheet:last-of-type{break-after:auto;page-break-after:auto}
+      /* Screen preview can use margins and shadows; printing cannot. */
+      .sheet{width:210mm;height:297mm;overflow:hidden;margin:12px auto;background:#fff;box-shadow:0 2px 10px #0002}
       .sheet svg{display:block;width:100%;height:100%;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif}
       .printbar{position:sticky;top:0;z-index:2;background:#172554;color:white;padding:12px;text-align:center;font:15px system-ui,sans-serif}
       .printbar button{border:0;border-radius:6px;background:#fff;color:#172554;padding:10px 18px;font-weight:700;font-size:15px;cursor:pointer}
       .printbar small{display:block;margin-top:5px}
       @media screen and (max-width:800px){.sheet{width:min(100vw,210mm);height:auto;aspect-ratio:210/297;margin:8px auto}}
-      @media print{html,body{background:white!important;width:210mm!important;margin:0!important;padding:0!important}.printbar{display:none!important}.sheet{width:210mm!important;height:297mm!important;margin:0!important;box-shadow:none!important;overflow:hidden!important;break-after:page!important;page-break-after:always!important;page: auto}.sheet:last-of-type{break-after:auto!important;page-break-after:auto!important} .sheet svg{width:210mm!important;height:297mm!important}}
+      @media print{
+        html,body{background:white!important;margin:0!important;padding:0!important;width:auto!important;height:auto!important}
+        .printbar{display:none!important}
+        /* A small height tolerance avoids mobile print engines overflowing
+           an exactly-297mm box onto a second, otherwise blank page. */
+        .sheet{display:block!important;position:relative!important;width:210mm!important;height:296mm!important;
+          margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;
+          overflow:hidden!important;break-after:auto!important;page-break-after:auto!important;
+          break-inside:avoid!important;page-break-inside:avoid!important}
+        .sheet+.sheet{break-before:page!important;page-break-before:always!important}
+        .sheet svg{display:block!important;width:210mm!important;height:296mm!important}
+      }
       </style></head><body><div class="printbar"><button onclick="window.print()">Print / Save PDF (4 pages)</button><small>Choose A4, Portrait, 100% scale, no margins and turn off headers/footers.</small></div>${sheets.join('')}</body></html>`;
     }
     document.getElementById('print-btn').addEventListener('click',()=>window.print());
