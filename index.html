@@ -195,6 +195,21 @@
   #mock-answers{display:none!important}
 }
 
+/* Screen-only four-page portrait viewer. Each page is an unchanged SVG crop.
+   The original landscape SVGs remain the sole source for print and PDF. */
+#mobile-screen-paper{display:none}
+.mobile-screen-sheet{background:#fff;aspect-ratio:561 / 794;width:100%;overflow:hidden;box-shadow:0 2px 9px #0002;border:1px solid #d8dee8;position:relative}
+.mobile-screen-sheet svg{display:block;width:100%;height:100%;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif CJK JP",serif}
+.mobile-sheet-label{font:600 12px system-ui,sans-serif;color:#334155;margin:0 0 5px}
+@media screen and (max-width:700px){
+  #mobile-screen-paper{display:flex;flex-direction:column;gap:16px;max-width:600px;margin:0 auto 20px}
+  #mock-paper{display:none}
+  #mock-panel.landscape-screen #mobile-screen-paper{display:none}
+  #mock-panel.landscape-screen #mock-paper{display:flex}
+  #mock-panel.landscape-screen #mock-paper .exam-canvas{width:900px}
+  #mock-panel.landscape-screen.fit-pages #mock-paper .exam-canvas{width:calc(100vw - 24px)}
+}
+@media print{#mobile-screen-paper{display:none!important}}
 /* Mobile controls and readable on-screen examination viewer. Print geometry is unchanged. */
 *{box-sizing:border-box}
 button,select,input{touch-action:manipulation}
@@ -254,8 +269,8 @@ button,select,input{touch-action:manipulation}
     <div id="syllabus-grid" class="kanji-grid" style="grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px"></div>
   </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
-    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Mobile PDF (4 pages)</button><button id="mobile-view-btn" type="button" aria-pressed="false">Fit whole page</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
-    <p id="mobile-exam-tip">Swipe sideways to read the full-size exam. Use <strong>Fit whole page</strong> for an overview. <strong>Mobile PDF</strong> opens a separate four-page portrait print view (tap Print / Save PDF there); A4 Exam PDF keeps the original layout.</p><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
+    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Mobile PDF (4 pages)</button><button id="mobile-view-btn" type="button" aria-pressed="false">Landscape view</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
+    <p id="mobile-exam-tip">Read the exam as four portrait pages below. Tap <strong>Landscape view</strong> to see the original two-page layout. The PDF buttons are separate from this screen view.</p><div id="mobile-screen-paper" aria-label="Mobile-friendly portrait exam preview"></div><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
   </section>
 
   <script>
@@ -1470,6 +1485,33 @@ button,select,input{touch-action:manipulation}
       }
       return svg+'</svg>';
     }
+    // Render the same four right-to-left A4 portrait crops used by Mobile PDF.
+    // No section is reflowed or reconstructed, preserving SVG examination geometry.
+    function renderMobileScreenPaper(){
+      const target=document.getElementById('mobile-screen-paper');
+      const pages=[...mockPaper.querySelectorAll('.exam-canvas svg')];
+      if(pages.length!==2){target.replaceChildren();return;}
+      const fragment=document.createDocumentFragment();
+      for(let page=0;page<2;page++){
+        for(const [half,x] of [['right',561],['left',0]]){
+          const wrapper=document.createElement('section');
+          const heading=document.createElement('p');
+          heading.className='mobile-sheet-label';
+          heading.textContent=`Page ${page*2+(half==='right'?1:2)} of 4`;
+          const sheet=document.createElement('div');
+          sheet.className='mobile-screen-sheet';
+          const svg=pages[page].cloneNode(true);
+          svg.setAttribute('viewBox',`${x} 0 561 794`);
+          svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+          svg.setAttribute('role','img');
+          svg.setAttribute('aria-label',`Exam page ${page+1}, ${half} half`);
+          sheet.appendChild(svg);
+          wrapper.append(heading,sheet);
+          fragment.appendChild(wrapper);
+        }
+      }
+      target.replaceChildren(fragment);
+    }
     function validateMock(sections){
       if(sections.length!==11)throw Error('Expected eleven exam sections');
       for(const section of sections){
@@ -1501,6 +1543,7 @@ button,select,input{touch-action:manipulation}
       try{
         const sections=makeSections();validateMock(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
+        renderMobileScreenPaper();
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図はKanjiVG（2026年7月14日版、CC BY-SA 3.0）の資料を使用しています。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
         mockInfo.textContent=`Level 7 practice · 202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · embedded KanjiVG stroke-order figures: ${strokeDiagramByKanji.size}/202 (source-based; not independently hand-reviewed) · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
@@ -1579,10 +1622,10 @@ button,select,input{touch-action:manipulation}
       // A visible Print button is reliable on iOS; do not auto-print before fonts load.
     });
     document.getElementById('mobile-view-btn').addEventListener('click',()=>{
-      const fit=mockPanel.classList.toggle('fit-pages');
+      const landscape=mockPanel.classList.toggle('landscape-screen');
       const btn=document.getElementById('mobile-view-btn');
-      btn.textContent=fit?'Read with swipe':'Fit whole page';
-      btn.setAttribute('aria-pressed',String(fit));
+      btn.textContent=landscape?'Portrait view':'Landscape view';
+      btn.setAttribute('aria-pressed',String(landscape));
     });
     document.getElementById('answers-btn').addEventListener('click',()=>{mockAnswers.hidden=!mockAnswers.hidden;document.getElementById('answers-btn').textContent=mockAnswers.hidden?'Show Answer Key':'Hide Answer Key'});
     const syllabusPanel=document.getElementById('syllabus-panel');
