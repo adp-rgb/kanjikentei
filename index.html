@@ -207,7 +207,7 @@
       </select>
       <button id="shuffle-btn">Shuffle Cards</button><button id="refresh-data-btn" type="button" title="Refresh study-card readings from GitHub">Refresh GitHub Data</button>
       <button id="toggle-furigana">Toggle Readings</button>
-      <button id="mock-btn" type="button">Level 7 Mock Test</button><button id="syllabus-btn" type="button" style="background:#0f766e">202 Kanji Audit</button>
+      <button id="mock-btn" type="button">Level 7 Mock Test</button><button id="syllabus-btn" type="button" hidden aria-hidden="true" tabindex="-1" style="display:none!important">202 Kanji Audit</button>
     </div>
   </header>
 
@@ -876,6 +876,80 @@
     const MASTER_SOURCE_COUNTS = new Map(MASTER_LEVEL7_DATABASE.kanji.filter(q=>q.count_status==='agreement'||q.count_status==='step_only').map(q=>[q.kanji,q.stroke_count]));
     const MASTER_SENTENCE_POOL = [...new Map([...MASTER_SENTENCE_BANK,...SENTENCE_BANK].map(q=>[q[0],q])).values()];
 
+    // Internal quality gates: traceability and difficulty checks never appear on the paper.
+    // A source ID means the question was derived from that record, not that the
+    // authored sentence is quoted verbatim from the referenced study book.
+    const MASTER_KANJI_LOOKUP = new Map(MASTER_LEVEL7_DATABASE.kanji.map(r=>[r.kanji,r]));
+    const MASTER_SENTENCE_LOOKUP = new Map(MASTER_QUESTION_CONTENT.sentence_records.map((r,i)=>[r.word,{record:r,index:i}]));
+    const QUESTION_BANK_VERSION = 'level7-2026-11-14';
+    function annotateQuestions(sections){
+      for(const section of sections){
+        section.questions.forEach((q,i)=>{
+          const type=section.type;
+          const id=type+'-'+String(i+1).padStart(2,'0');
+          let record=null, provenance='', basis='curated-practice', target='';
+          if(type==='reading'||type==='writing'){
+            const word=type==='reading'?q.target:q.answer;
+            record=MASTER_SENTENCE_LOOKUP.get(word);
+            provenance=record?'master-question-content:sentence_records['+record.index+']':'legacy:SENTENCE_BANK';
+            basis=record?'authored-sentence-linked-to-study-steps':'curated-practice';
+            target=word;
+          }else if(type==='strokes'){
+            target=q.kanji;
+            if(q.total){
+              const m=MASTER_KANJI_LOOKUP.get(q.kanji);
+              if(!m||!['agreement','step_only'].includes(m.count_status)||Number(q.answer)!==m.stroke_count)
+                throw Error('Unverified stroke-count source for '+q.kanji);
+              provenance=m.step?'study-step:'+m.step:'earlier-pdf:stroke-count';
+              basis='reconciled-stroke-count';
+            }else{
+              const fig=reviewedFigurePool.find(f=>f.kanji===q.kanji && f.paths.length===q.paths.length);
+              if(!fig)throw Error('Untraceable draft stroke diagram: '+q.kanji);
+              provenance='draft-stroke-svg:'+q.kanji;
+              basis='draft-diagram-not-independently-verified';
+            }
+          }else if(type==='onyomi'){
+            target=q.kanji||'';
+            const idx=MASTER_QUESTION_CONTENT.reading_type.findIndex(r=>r.kanji===q.kanji&&r.reading===q.reading&&r.answer===q.answer);
+            provenance=idx>=0?'master-question-content:reading_type['+idx+']':'curated:reading-type';
+            basis=idx>=0?'authored-reading-classification':'curated-practice';
+          }else if(type==='okuri-correction'){
+            target=q.kanji||'';
+            const idx=MASTER_QUESTION_CONTENT.okurigana.findIndex(r=>r[0]===q.kanji&&r[3]===q.answer);
+            provenance=idx>=0?'master-question-content:okurigana['+idx+']':'curated:okurigana';
+          }else if(type==='choice'){
+            target=q.answer;
+            const idx=MASTER_QUESTION_CONTENT.choice.findIndex(r=>r[0]===q.prompt&&r[1]===q.answer);
+            provenance=idx>=0?'master-question-content:choice['+idx+']':'curated:choice';
+          }else if(type==='compound-pairs'){
+            target=q.head||'';
+            const idx=EXTRA_COMPOUND_PAIRS.findIndex(r=>r.head===q.head);
+            if(idx<0)throw Error('Untraceable compound question');
+            provenance='curated:EXTRA_COMPOUND_PAIRS['+idx+']';
+          }else if(type==='radical-fill'){
+            target=q.answer||'';
+            const idx=RADICAL_SAFE.findIndex(r=>r===q || (r.group===q.group&&r.answer===q.answer&&r.prompt===q.prompt));
+            if(idx<0)throw Error('Untraceable radical question');
+            provenance='curated:RADICAL_SAFE['+idx+']';
+          }else if(type==='antonym-fill'){
+            target=q.answer;
+            provenance='curated:antonym-bank';
+          }else if(type==='writing-eight'||type==='writing-final'){
+            target=q.answer;
+            const sr=MASTER_SENTENCE_LOOKUP.get(q.answer);
+            provenance=sr?'master-question-content:sentence_records['+sr.index+']':'curated:WRITING_10_BANK';
+            basis=sr?'authored-sentence-linked-to-study-steps':'curated-practice';
+          }else throw Error('Unmapped question section '+type);
+          if(!provenance||!target)throw Error('Question missing provenance or target: '+id);
+          const grade4=[...target].filter(ch=>LEVEL7_SYLLABUS_SET.has(ch));
+          q.audit={id:section.id+'-'+id,source:provenance,basis,
+            target,grade4Targets:grade4,level:'7級（小学校4年までの累積範囲）',
+            review: basis.startsWith('draft-')?'needs-stroke-order-verification':'question-bank-reviewed-by-rules',
+            bankVersion:QUESTION_BANK_VERSION};
+        });
+      }
+      return sections;
+    }
     function makeSections(){
       // Rotate through eligible sentence contexts, preferring Level 7 kanji
       // that have appeared least often in previous generated papers.
@@ -932,7 +1006,7 @@
         for(const ch of [...String(word||'')])if(LEVEL7_SYLLABUS_SET.has(ch))
           paperKanjiExposure.set(ch,(paperKanjiExposure.get(ch)||0)+1);
       }
-      return sections;
+      return annotateQuestions(sections);
     }
     const xmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
     function rect(x,y,w,h,extra=''){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="#333" stroke-width=".8" ${extra}/>`}
@@ -1325,6 +1399,15 @@
           if(section.questions.slice(0,5).some(q=>q.paths.length!==Number(q.totalStrokes||q.paths.length)))throw Error('Stroke figure inconsistency in Question 四');
         }
         for(const q of section.questions){
+          if(!q.audit||!q.audit.source||!q.audit.target||q.audit.level.indexOf('7級')<0)
+            throw Error('Missing source or level audit in '+section.id);
+          if(!q.audit.bankVersion||!q.audit.id)throw Error('Missing stable audit ID');
+          if(q.audit.grade4Targets.some(ch=>!MASTER_KANJI_LOOKUP.has(ch)))
+            throw Error('Out-of-syllabus target in '+section.id);
+          if(section.type==='choice' && (!Array.isArray(q.choices)||!q.choices.includes(q.answer)))
+            throw Error('Correct choice absent in '+section.id);
+          if(section.type==='onyomi' && !['ア','イ'].includes(q.answer))
+            throw Error('Invalid on/kun answer in '+section.id);
           if(q.answer===undefined||q.answer===null||String(q.answer).length===0)throw Error('Missing answer in '+section.id);
           if(section.type==='compound-pairs' && !['ア','イ','ウ','エ','オ'].includes(q.answer))throw Error('Invalid choice key');
           if(section.type==='antonym-fill' && (!q.full.includes(q.answer)||!q.hint))throw Error('Invalid antonym');
@@ -1334,11 +1417,11 @@
     }
     function createMock(){
       try{
-        const sections=makeSections();validateMock(sections);mockSerial++;
+        const sections=makeSections();validateMock(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図は未検証の草案です。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`Master knowledge base (4 PDFs) · 202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · Level 7 draft stroke-order figures: ${reviewedFigurePool.length} (not fully verified) · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`Level 7 practice · 202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · Level 7 draft stroke-order figures: ${reviewedFigurePool.length} (not fully verified) · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
@@ -1359,6 +1442,9 @@
       document.getElementById('syllabus-summary').textContent=`Master database: 202 syllabus kanji · ${MASTER_LEVEL7_DATABASE.kanji.filter(q=>q.count_status==='agreement').length} counts agreed across references · ${MASTER_LEVEL7_DATABASE.kanji.filter(q=>q.count_status==='step_only').length} study-step-only counts · ${MASTER_LEVEL7_DATABASE.kanji.filter(q=>q.count_status==='not_verified').length} missing from study steps · ${LEVEL7_STEP_RECORDS.length} characters in 25 photographed study steps · ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 syllabus matches · ${LEVEL7_STEP_OUTSIDE_SYLLABUS.map(q=>q.kanji).join('・')} appear in steps but not syllabus · ${LEVEL7_SYLLABUS_ABSENT_FROM_STEPS.join('・')} absent from steps · ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} count conflicts · ${LEVEL7_KNOWLEDGE.filter(q=>q.hasDraftSVG).length} draft SVGs · ${rows.length} shown`;
       document.getElementById('syllabus-grid').innerHTML=rows.map(q=>`<article class="kanji-card" style="padding:12px"><div class="kanji-header" style="margin-bottom:6px"><strong class="kanji-main">${escapeHTML(q.kanji)}</strong><span>${q.strokeCount}画</span></div><div style="font-size:.76rem;color:#475569">${q.studyStep?'Step '+q.studyStep+' · '+q.stepStrokeCount+'画 (photographed page)':'Not in 25 study steps'} · ${q.countConflict?'COUNT CONFLICT — review':'Count: '+q.countSource}</div><div style="font-size:.76rem;margin-top:5px">${q.hasDraftSVG?'Draft SVG · review needed':'Stroke SVG not available'}</div></article>`).join('');
     }
+    // Developer-only audit: open browser console and run window.openLevel7DeveloperAudit().
+    window.openLevel7DeveloperAudit = showSyllabus;
+    window.inspectLevel7Paper = () => window.__lastLevel7Audit || [];
     document.getElementById('syllabus-btn').addEventListener('click',showSyllabus);
     document.getElementById('syllabus-search').addEventListener('input',renderSyllabus);
     document.getElementById('syllabus-status').addEventListener('change',renderSyllabus);
