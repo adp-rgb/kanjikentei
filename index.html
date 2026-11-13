@@ -441,6 +441,46 @@
       {kanji:'人',paths:['M 25 5 L 21 25 L 6 43','M 24 12 L 43 43']},
       {kanji:'大',paths:['M 5 19 L 43 19','M 25 4 L 23 26 L 6 44','M 25 23 L 43 44']}
     ];
+    // Knowledge-base transcription: stroke counts checked against the photographed
+    // 「7級配当漢字表」 (uploaded study-book reference), pages 1–5 and 14–15.
+    // This is a deliberately reviewed subset, NOT a claim that all 202 entries
+    // or their individual SVG stroke sequences have been digitized.
+    const LEVEL7_BOOK_STROKES = [
+      ['愛',13],['案',10],['以',5],['衣',6],['位',7],
+      ['茨',9],['印',6],['英',8],['栄',9],['媛',12],
+      ['塩',13],['岡',8],['億',15],['加',5],['果',8],
+      ['貨',11],['課',15],['芽',8],['賀',12],['改',7],
+      ['械',11],['害',10],['街',12],['各',6],['覚',12],
+      ['潟',15],['完',7],['官',8],['管',14],['関',14],
+      ['観',18],['願',19],['岐',7],['希',7],['季',8],
+      ['旗',14],['器',15],['機',16],['議',20],['求',7],
+      ['泣',8],['給',12],['挙',10],['漁',14],['共',6],
+      ['巨',5],['隊',12],['兆',6],['博',12],['陸',11],
+      ['差',10],['郡',10],['械',11],['要',9],['単',9],
+      ['別',7],['無',12],['老',6],['建',9],
+      ['努',7],['軍',9],['成',6],['果',8],['牧',8],['察',14]
+    ];
+    const LEVEL7_BOOK_COUNT_MAP = new Map(LEVEL7_BOOK_STROKES);
+    const LEVEL7_BOOK_KANJI = new Set(LEVEL7_BOOK_COUNT_MAP.keys());
+    // Original vector figures are independent drawings; book photos serve as
+    // stroke-order references rather than being reproduced in the exam.
+    const BOOK_REVIEWED_FIGURES = [
+      {kanji:'十',paths:['M 5 18 L 43 18','M 24 3 L 24 45']},
+      {kanji:'土',paths:['M 9 17 L 39 17','M 24 3 L 24 43','M 4 43 L 44 43']},
+      {kanji:'王',paths:['M 7 5 L 41 5','M 24 5 L 24 43','M 7 23 L 41 23','M 4 43 L 44 43']},
+      {kanji:'木',paths:['M 4 16 L 44 16','M 24 3 L 24 46','M 23 16 L 6 43','M 25 16 L 43 43']},
+      {kanji:'本',paths:['M 4 14 L 44 14','M 24 3 L 24 46','M 23 14 L 6 40','M 25 14 L 43 40','M 13 34 L 35 34']},
+      ...EXTRA_STROKE_FIGURES.filter(q=>['一','二','三','工','口','山','川','小','人','大'].includes(q.kanji))
+    ];
+    // Each character is selected first, then a random marked stroke is chosen.
+    // Never manufacture stroke paths from a font glyph or a stroke count alone.
+    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1);
+    const paperKanjiExposure=new Map();
+    function selectCoverageAware(pool,n,extract){
+      const candidates=[...pool];shuffleArray(candidates);
+      candidates.sort((a,b)=>(paperKanjiExposure.get(extract(a))||0)-(paperKanjiExposure.get(extract(b))||0));
+      return candidates.slice(0,n);
+    }
     const STROKE_FIGURE_POOL = [
       ...STROKE_BANK.filter(q=>!q.total),
       ...EXTRA_STROKE_FIGURES.flatMap(q=>q.paths.map((_,mark)=>({
@@ -666,7 +706,11 @@
     function sample(pool,n){const a=[...pool];shuffleArray(a);if(a.length<n)throw Error('Question bank too small: '+n);return a.slice(0,n)}
     function toKatakana(text){return [...text].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c}).join('')}
     function makeSections(){
-      const sentences=sample(SENTENCE_BANK,50);
+      // Rotate through eligible sentence contexts, preferring Level 7 kanji
+      // that have appeared least often in previous generated papers.
+      const eligible=SENTENCE_BANK.filter(row=>[...row[0]].some(ch=>LEVEL7_BOOK_KANJI.has(ch)||kanjiData.some(k=>k.level==='7級'&&k.kanji===ch)));
+      const sentenceCandidates=eligible.length>=50?eligible:SENTENCE_BANK;
+      const sentences=selectCoverageAware(sentenceCandidates,50,row=>row[0]);
       const paperHistory={};let cursor=0;
       const sections=SPECS.map(spec=>{
         let questions;
@@ -685,8 +729,17 @@
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
-          const figurePool=[...new Map(sample(STROKE_FIGURE_POOL,STROKE_FIGURE_POOL.length).map(q=>[q.kanji,q])).values()];
-          questions=[...choose(figurePool,5),...choose([...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES],5)];
+          const figures=selectCoverageAware(reviewedFigurePool,5,q=>q.kanji).map(q=>{
+            const mark=Math.floor(Math.random()*q.paths.length);
+            return {kanji:q.kanji,paths:q.paths,mark,answer:String(mark+1),totalStrokes:q.paths.length};
+          });
+          const countPool=[...new Map([
+            ...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES,
+            ...LEVEL7_BOOK_STROKES.map(([kanji,answer])=>({kanji,answer:String(answer),total:true,source:'Level 7 study-book'}))
+          ].map(q=>[q.kanji,q])).values()];
+          const totals=selectCoverageAware(countPool,5,q=>q.kanji);
+          questions=[...figures,...totals];
+          paperHistory[spec.type]=questions.map(q=>JSON.stringify(q));
         } else if(spec.type==='onyomi'){
           questions=choose([...READING_TYPE_BANK,...EXTRA_READING_TYPES]);
         } else if(spec.type==='antonym-fill'){
@@ -706,6 +759,11 @@
         return {...spec,questions};
       });
       recentPapers.push(paperHistory);if(recentPapers.length>2)recentPapers.shift();
+      for(const section of sections)for(const q of section.questions){
+        const word=q.kanji||q.target||q.answer;
+        for(const ch of [...String(word||'')])if(LEVEL7_BOOK_KANJI.has(ch))
+          paperKanjiExposure.set(ch,(paperKanjiExposure.get(ch)||0)+1);
+      }
       return sections;
     }
     const xmlEscape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
@@ -772,10 +830,10 @@
           } else {
             // Exact stroke geometry is explicit, so the highlighted stroke
             // is unambiguous and its answer key matches the displayed figure.
-            const px=x-14,py=y+19;
-            out+=`<g transform="translate(${px} ${py}) scale(0.6)" fill="none" stroke="#222" stroke-linecap="round" stroke-linejoin="round">`;
+            const scale=.79,px=x-24*scale,py=y+15;
+            out+=`<g transform="translate(${px} ${py}) scale(${scale})" fill="none" stroke-linecap="round" stroke-linejoin="round">`;
             for(let j=0;j<q.paths.length;j++){
-              out+=`<path d="${q.paths[j]}" stroke-width="${j===q.mark?5:1.8}"/>`;
+              out+=`<path d="${q.paths[j]}" stroke="${j===q.mark?'#080808':'#b4b4b4'}" stroke-width="${j===q.mark?5.2:2.1}"/>`;
             }
             out+='</g>';
           }
@@ -1112,7 +1170,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`Book-reference stroke counts: ${LEVEL7_BOOK_COUNT_MAP.size} kanji · Verified vector figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
