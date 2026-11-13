@@ -460,7 +460,39 @@
       ['別',7],['無',12],['老',6],['建',9],
       ['努',7],['軍',9],['成',6],['果',8],['牧',8],['察',14]
     ];
-    const LEVEL7_BOOK_COUNT_MAP = new Map(LEVEL7_BOOK_STROKES);
+    // Page-indexed transcription of the printed stroke-count numbers from
+    // the uploaded Level 7 book, pages 6–13. This is data, not copied artwork.
+    const LEVEL7_BOOK_ADDITIONAL = [
+      ['建',9,6],['結',12,6],['久',3,6],['去',5,6],['景',12,6],['熊',14,6],['極',12,6],['競',20,6],
+      ['鏡',19,6],['協',8,6],['好',6,6],['功',5,6],['固',8,6],['験',18,6],['健',11,6],['径',8,6],
+      ['群',13,6],['郡',10,6],['軍',9,6],['訓',10,6],['参',8,7],['察',14,7],['刷',8,7],['札',5,7],
+      ['昨',9,7],['差',10,7],['佐',7,7],['康',11,7],['候',10,7],['香',9,7],['司',5,7],['氏',4,7],
+      ['残',10,7],['散',12,7],['産',11,7],['崎',11,7],['材',7,7],['埼',11,7],['最',12,7],['菜',11,7],
+      ['笑',10,8],['松',8,8],['初',7,8],['順',12,8],['祝',9,8],['辞',13,8],['滋',12,8],['治',8,8],
+      ['児',7,8],['試',13,8],['縄',15,8],['城',9,8],['照',13,8],['焼',12,8],['唱',11,8],['周',8,8],
+      ['積',16,8],['借',10,8],['失',5,8],['鹿',11,8],['選',15,9],['戦',13,9],['浅',9,9],['説',14,9],
+      ['節',13,9],['省',9,9],['成',6,9],['井',4,9],['信',9,9],['臣',7,9],['赤',7,9],['巣',11,9],
+      ['倉',10,9],['争',6,9],['然',12,9],['折',7,9],['積',16,9],['席',10,9],['静',14,9],['清',11,9],
+      ['的',8,10],['底',8,10],['低',7,10],['氷',5,10],['沖',7,10],['灯',6,10],['効',8,10],['徒',10,10],
+      ['伝',6,10],['典',8,10],['帯',10,10],['孫',10,10],['卒',8,10],['続',13,10],['側',11,10],['仲',6,10],
+      ['置',13,10],['単',9,10],['達',12,10],['隊',12,10],['必',5,11],['飛',9,11],['飯',12,11],['阪',7,11],
+      ['博',12,11],['奈',8,11],['祈',8,11],['徳',14,11],['特',10,11],['働',13,11],['付',5,11],['末',5,11],
+      ['不',4,11],['標',15,11],['票',11,11],['梅',10,11],['敗',11,11],['念',8,11],['熱',15,11],['梨',11,11],
+      ['満',12,12],['未',5,12],['牧',8,12],['望',11,12],['法',8,12],['兵',7,12],['副',11,12],['富',12,12],
+      ['卓',8,12],['府',8,12],['勇',9,12],['約',9,12],['無',12,12],['民',5,12],['木',4,12],['包',5,12],
+      ['便',9,12],['変',9,12],['辺',5,12],['別',7,12],['老',6,13],['連',10,13],['例',8,13],['冷',7,13],
+      ['令',5,13],['録',16,13],['労',7,13],['類',18,13],['輪',15,13],['量',12,13],['陸',11,13],['利',7,13],
+      ['浴',10,13],['養',15,13],['要',9,13],['料',10,13],['良',7,13],
+    ];
+    // Deduplicate by kanji; preserve original curated counts where present.
+    const bookCountByKanji = new Map(LEVEL7_BOOK_STROKES);
+    const bookSourcePages = new Map();
+    for (const [kanji, count, page] of LEVEL7_BOOK_ADDITIONAL) {
+      if (!bookCountByKanji.has(kanji)) bookCountByKanji.set(kanji, count);
+      bookSourcePages.set(kanji, page);
+    }
+    const LEVEL7_BOOK_COUNT_MAP = bookCountByKanji;
+    const LEVEL7_BOOK_COMPLETE_COUNTS = [...LEVEL7_BOOK_COUNT_MAP].map(([kanji,count])=>({kanji,answer:String(count),total:true,source:'Level 7 study-book',page:bookSourcePages.get(kanji)||null}));
     const LEVEL7_BOOK_KANJI = new Set(LEVEL7_BOOK_COUNT_MAP.keys());
     // Original vector figures are independent drawings; book photos serve as
     // stroke-order references rather than being reproduced in the exam.
@@ -472,14 +504,36 @@
       {kanji:'本',paths:['M 4 14 L 44 14','M 24 3 L 24 46','M 23 14 L 6 40','M 25 14 L 43 40','M 13 34 L 35 34']},
       ...EXTRA_STROKE_FIGURES.filter(q=>['一','二','三','工','口','山','川','小','人','大'].includes(q.kanji))
     ];
+    // Original SVG paths for additional characters shown in the supplied Level 7
+    // study-book tables. One path represents exactly one writing stroke.
+    // Source page is a photographed PDF page (not the printed page number).
+    const LEVEL7_ORIGINAL_STROKE_FIGURES = [
+      {kanji:'井',sourcePage:9,paths:['M 8 15 L 40 15','M 5 31 L 43 31','M 17 5 L 17 41','M 32 5 L 32 43']},
+      {kanji:'末',sourcePage:11,paths:['M 8 12 L 40 12','M 4 24 L 44 24','M 24 4 L 24 45','M 23 24 Q 17 35 6 42','M 25 24 Q 32 35 43 42']},
+      {kanji:'未',sourcePage:12,paths:['M 13 17 L 35 17','M 4 28 L 44 28','M 24 4 L 24 45','M 23 28 Q 17 37 6 43','M 25 28 Q 33 39 43 43']},
+      {kanji:'不',sourcePage:11,paths:['M 5 8 L 43 8','M 29 8 Q 21 23 9 31','M 25 19 L 25 45','M 29 22 Q 37 29 43 35']},
+      {kanji:'札',sourcePage:7,paths:['M 4 17 L 26 17','M 15 4 L 15 44','M 14 18 Q 9 31 4 36','M 16 19 L 26 34','M 35 6 L 35 41 Q 35 45 41 43 L 44 38']},
+      {kanji:'付',sourcePage:11,paths:['M 14 5 Q 10 20 3 27','M 12 17 L 12 45','M 22 16 L 45 16','M 36 5 L 36 43 Q 36 46 30 45','M 24 25 L 31 33']},
+      {kanji:'加',sourcePage:2,paths:['M 4 17 L 23 17','M 15 5 L 12 31 Q 10 42 4 45','M 23 17 L 22 41 Q 21 45 16 44','M 29 19 L 44 19 L 44 39','M 29 19 L 29 39 L 44 39']},
+      {kanji:'失',sourcePage:8,paths:['M 15 5 Q 12 14 7 18','M 12 18 L 39 18','M 5 28 L 44 28','M 26 6 Q 27 30 10 45','M 27 28 Q 35 39 44 44']}
+    ];
+    // The extra SVGs are independent drawings, not extracted book illustrations.
+    // Require path count to agree with the book's stroke-count transcription.
+    for (const q of LEVEL7_ORIGINAL_STROKE_FIGURES) {
+      if (LEVEL7_BOOK_COUNT_MAP.get(q.kanji)!==q.paths.length)
+        throw Error('Book stroke-count mismatch: '+q.kanji);
+    }
+    BOOK_REVIEWED_FIGURES.push(...LEVEL7_ORIGINAL_STROKE_FIGURES);
     // Each character is selected first, then a random marked stroke is chosen.
     // Never manufacture stroke paths from a font glyph or a stroke count alone.
-    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1);
+    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_BOOK_KANJI.has(q.kanji));
     const paperKanjiExposure=new Map();
     function selectCoverageAware(pool,n,extract){
       const candidates=[...pool];shuffleArray(candidates);
       candidates.sort((a,b)=>(paperKanjiExposure.get(extract(a))||0)-(paperKanjiExposure.get(extract(b))||0));
-      return candidates.slice(0,n);
+      const selected=candidates.slice(0,n);
+      selected.forEach(q=>paperKanjiExposure.set(extract(q),(paperKanjiExposure.get(extract(q))||0)+1));
+      return selected;
     }
     const STROKE_FIGURE_POOL = [
       ...STROKE_BANK.filter(q=>!q.total),
@@ -735,9 +789,11 @@
           });
           const countPool=[...new Map([
             ...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES,
-            ...LEVEL7_BOOK_STROKES.map(([kanji,answer])=>({kanji,answer:String(answer),total:true,source:'Level 7 study-book'}))
+            ...LEVEL7_BOOK_COMPLETE_COUNTS
           ].map(q=>[q.kanji,q])).values()];
-          const totals=selectCoverageAware(countPool,5,q=>q.kanji);
+          const grade7=new Set(kanjiData.filter(k=>k.level==='7級').map(k=>k.kanji));
+          const grade7Counts=countPool.filter(q=>grade7.size===0 || grade7.has(q.kanji));
+          const totals=selectCoverageAware(grade7Counts.length>=5?grade7Counts:countPool,5,q=>q.kanji);
           questions=[...figures,...totals];
           paperHistory[spec.type]=questions.map(q=>JSON.stringify(q));
         } else if(spec.type==='onyomi'){
@@ -1170,7 +1226,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`Book-reference stroke counts: ${LEVEL7_BOOK_COUNT_MAP.size} kanji · Verified vector figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`Book-reference stroke counts: ${LEVEL7_BOOK_COUNT_MAP.size} kanji · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
