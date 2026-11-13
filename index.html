@@ -623,6 +623,58 @@
       const entry=LEVEL7_KNOWLEDGE_BY_KANJI.get(q.kanji);
       if(entry && q.paths.length===entry.strokeCount)entry.hasDraftSVG=true;
     }
+    // KanjiVG supplies independently drawn stroke-order paths for the complete
+    // Level 7 syllabus. These are NOT reconstructed from fonts or stroke counts.
+    // Online acquisition is necessary until every source SVG has been reviewed
+    // and bundled with the application. Failures remain visible in the audit.
+    const KANJIVG_SOURCE='https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/';
+    const KANJIVG_LICENSE='KanjiVG (CC BY-SA 3.0), https://kanjivg.tagaini.net/';
+    const strokeDiagramByKanji=new Map(reviewedFigurePool.map(q=>[q.kanji,{...q,source:'local-draft',verified:false}]));
+    const strokeFetchIssues=new Map();
+    let strokeFetchPromise=null;
+    const strokeCoverageHistory=new Set();
+    function kanjivgFileName(kanji){return kanji.codePointAt(0).toString(16).padStart(5,'0')+'.svg'}
+    function extractKanjiVG(svgText,kanji){
+      const doc=new DOMParser().parseFromString(svgText,'image/svg+xml');
+      if(doc.querySelector('parsererror'))throw Error('Invalid SVG');
+      const all=[...doc.getElementsByTagName('path')];
+      const ordered=all.map(el=>({el,id:el.getAttribute('id')||''}))
+        .filter(x=>/\-s\d+$/.test(x.id)).sort((a,b)=>Number(a.id.match(/-s(\d+)$/)[1])-Number(b.id.match(/-s(\d+)$/)[1]));
+      const paths=ordered.map(x=>x.el.getAttribute('d')).filter(Boolean);
+      if(!paths.length)throw Error('No numbered stroke paths');
+      const master=LEVEL7_RECONCILED_COUNTS.get(kanji);
+      if(Number.isFinite(master)&&paths.length!==master)throw Error('Stroke count mismatch: KanjiVG '+paths.length+', master '+master);
+      return {kanji,paths,source:'kanjivg:'+kanjivgFileName(kanji),sourceUrl:KANJIVG_SOURCE+kanjivgFileName(kanji),verified:false,kanjivg:true};
+    }
+    async function fetchKanjiVG(kanji){
+      if(strokeDiagramByKanji.get(kanji)?.kanjivg)return;
+      const url=KANJIVG_SOURCE+kanjivgFileName(kanji);
+      try{
+        const response=await fetch(url,{cache:'force-cache'});
+        if(!response.ok)throw Error('HTTP '+response.status);
+        strokeDiagramByKanji.set(kanji,extractKanjiVG(await response.text(),kanji));
+        strokeFetchIssues.delete(kanji);
+      }catch(error){strokeFetchIssues.set(kanji,String(error.message||error));}
+    }
+    function loadAllLevel7StrokeDiagrams(){
+      if(strokeFetchPromise)return strokeFetchPromise;
+      const chars=[...LEVEL7_SYLLABUS_202];
+      let index=0;
+      strokeFetchPromise=Promise.all(Array.from({length:Math.min(12,chars.length)},async()=>{
+        while(index<chars.length){const kanji=chars[index++];await fetchKanjiVG(kanji)}
+      })).then(()=>strokeDiagramByKanji.size);
+      return strokeFetchPromise;
+    }
+    function getStrokeCoverage(){return {
+      syllabus:LEVEL7_SYLLABUS_202.length,
+      kanjivg:[...strokeDiagramByKanji.values()].filter(q=>q.kanjivg).length,
+      localDrafts:[...strokeDiagramByKanji.values()].filter(q=>!q.kanjivg).length,
+      shownInSection4:strokeCoverageHistory.size,
+      unavailable:[...LEVEL7_SYLLABUS_202].filter(k=>!strokeDiagramByKanji.has(k)),
+      failures:Object.fromEntries(strokeFetchIssues),
+      attribution:KANJIVG_LICENSE
+    }}
+    window.inspectLevel7StrokeCoverage=getStrokeCoverage;
     const paperKanjiExposure=new Map();
     function selectCoverageAware(pool,n,extract){
       const candidates=[...pool];shuffleArray(candidates);
@@ -974,9 +1026,12 @@
         } else if(spec.type==='reading'||spec.type==='writing'){
           questions=sentences.slice(cursor,cursor+spec.count).map(row=>({prompt:spec.type==='reading'?row[2]:row[3].replace(row[1],toKatakana(row[1])),answer:spec.type==='reading'?row[1]:row[0],target:spec.type==='reading'?row[0]:toKatakana(row[1])}));cursor+=spec.count;
         } else if(spec.type==='strokes'){
-          const figures=selectCoverageAware(reviewedFigurePool,5,q=>q.kanji).map(q=>{
+          const available=[...strokeDiagramByKanji.values()];
+          if(available.length<5)throw Error('At least five stroke-order diagrams are required');
+          const figures=selectCoverageAware(available,5,q=>q.kanji).map(q=>{
+            strokeCoverageHistory.add(q.kanji);
             const mark=Math.floor(Math.random()*q.paths.length);
-            return {kanji:q.kanji,paths:q.paths,mark,answer:String(mark+1),totalStrokes:q.paths.length};
+            return {kanji:q.kanji,paths:q.paths,mark,answer:String(mark+1),totalStrokes:q.paths.length,kanjivg:!!q.kanjivg,strokeSource:q.source};
           });
           const grade7Counts=[...MASTER_SOURCE_COUNTS].filter(([kanji])=>!LEVEL7_KNOWLEDGE_BY_KANJI.get(kanji)?.countConflict).map(([kanji,count])=>({kanji,answer:String(count),total:true,source:LEVEL7_STEP_MAP.has(kanji)?'study-step':'earlier-reference'}));
           const totals=selectCoverageAware(grade7Counts,5,q=>q.kanji);
@@ -1072,10 +1127,10 @@
           } else {
             // Exact stroke geometry is explicit, so the highlighted stroke
             // is unambiguous and its answer key matches the displayed figure.
-            const scale=.79,px=x-24*scale,py=y+15;
+            const scale=q.kanjivg?.35:.79,px=x-(q.kanjivg?54:24)*scale,py=y+(q.kanjivg?11:15);
             out+=`<g transform="translate(${px} ${py}) scale(${scale})" fill="none" stroke-linecap="round" stroke-linejoin="round">`;
             for(let j=0;j<q.paths.length;j++){
-              out+=`<path d="${q.paths[j]}" stroke="${j===q.mark?'#080808':'#b4b4b4'}" stroke-width="${j===q.mark?5.2:2.1}"/>`;
+              out+=`<path d="${q.paths[j]}" stroke="${j===q.mark?'#080808':'#b4b4b4'}" stroke-width="${q.kanjivg?(j===q.mark?7:3.3):(j===q.mark?5.2:2.1)}"/>`;
             }
             out+='</g>';
           }
@@ -1419,14 +1474,25 @@
       try{
         const sections=makeSections();validateMock(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
-        mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図は未検証の草案です。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
+        mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図はKanjiVG資料または未検証の草案です。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
         mockInfo.textContent=`Level 7 practice · 202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · Level 7 draft stroke-order figures: ${reviewedFigurePool.length} (not fully verified) · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
-    document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
+    async function generateWithStrokeCoverage(){
+      const regen=document.getElementById('regenerate-btn');
+      regen.disabled=true;
+      mockInfo.textContent='Loading Level 7 stroke-order source diagrams (up to 202) from KanjiVG…';
+      try{await loadAllLevel7StrokeDiagrams();}finally{regen.disabled=false;}
+      createMock();
+      const coverage=getStrokeCoverage();
+      mockInfo.textContent+=` · KanjiVG coverage ${coverage.kanjivg}/202; local drafts ${coverage.localDrafts}; Section 四 unique kanji shown ${coverage.shownInSection4}/202. `+
+        (coverage.kanjivg===202?'All 202 KanjiVG stroke diagrams available.':'Some diagrams unavailable; network or source verification required.')+
+        ' · KanjiVG CC BY-SA 3.0';
+    }
+    document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;generateWithStrokeCoverage();window.scrollTo(0,0)});
     document.getElementById('back-btn').addEventListener('click',()=>{document.querySelector('header').hidden=false;status.hidden=false;container.hidden=false;mockPanel.hidden=true});
-    document.getElementById('regenerate-btn').addEventListener('click',createMock);
+    document.getElementById('regenerate-btn').addEventListener('click',generateWithStrokeCoverage);
     document.getElementById('print-btn').addEventListener('click',()=>window.print());
     document.getElementById('answers-btn').addEventListener('click',()=>{mockAnswers.hidden=!mockAnswers.hidden;document.getElementById('answers-btn').textContent=mockAnswers.hidden?'Show Answer Key':'Hide Answer Key'});
     const syllabusPanel=document.getElementById('syllabus-panel');
@@ -1445,6 +1511,7 @@
     // Developer-only audit: open browser console and run window.openLevel7DeveloperAudit().
     window.openLevel7DeveloperAudit = showSyllabus;
     window.inspectLevel7Paper = () => window.__lastLevel7Audit || [];
+    window.inspectLevel7StrokeCoverage = getStrokeCoverage;
     document.getElementById('syllabus-btn').addEventListener('click',showSyllabus);
     document.getElementById('syllabus-search').addEventListener('input',renderSyllabus);
     document.getElementById('syllabus-status').addEventListener('change',renderSyllabus);
