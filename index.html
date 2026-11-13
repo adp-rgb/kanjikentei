@@ -492,7 +492,14 @@
       bookSourcePages.set(kanji, page);
     }
     const LEVEL7_BOOK_COUNT_MAP = bookCountByKanji;
-    const LEVEL7_BOOK_COMPLETE_COUNTS = [...LEVEL7_BOOK_COUNT_MAP].map(([kanji,count])=>({kanji,answer:String(count),total:true,source:'Level 7 study-book',page:bookSourcePages.get(kanji)||null}));
+    // Authoritative 2020 grade-four allocation (202 newly assigned characters).
+    // Kanken 7 also examines cumulative lower-grade kanji in other sections.
+    const LEVEL7_SYLLABUS_202 = Object.freeze("愛案以衣位茨印英栄媛塩岡億加果貨課芽賀改械害街各覚潟完官管関観願岐希季旗器機議求泣給挙漁共協鏡競極熊訓軍郡群径景芸欠結建健験固功好香候康佐差菜最埼材崎昨札刷察参産散残氏司試児治滋辞鹿失借種周祝順初松笑唱焼照城縄臣信井成省清静席積折節説浅戦選然争倉巣束側続卒孫帯隊達単置仲沖兆低底的典伝徒努灯働特徳栃奈梨熱念敗梅博阪飯飛必票標不夫付府阜富副兵別辺変便包法望牧末満未民無約勇要養浴利陸良料量輪類令冷例連老労録".split(''));
+    const LEVEL7_SYLLABUS_SET = new Set(LEVEL7_SYLLABUS_202);
+    if (LEVEL7_SYLLABUS_SET.size !== 202) throw Error('Level 7 syllabus must contain exactly 202 unique kanji');
+
+    const LEVEL7_BOOK_COMPLETE_COUNTS = [...LEVEL7_BOOK_COUNT_MAP].filter(([kanji])=>LEVEL7_SYLLABUS_SET.has(kanji)).map(([kanji,count])=>({kanji,answer:String(count),total:true,source:'Level 7 study-book',page:bookSourcePages.get(kanji)||null}));
+
     const LEVEL7_BOOK_KANJI = new Set(LEVEL7_BOOK_COUNT_MAP.keys());
     // Original vector figures are independent drawings; book photos serve as
     // stroke-order references rather than being reproduced in the exam.
@@ -526,7 +533,7 @@
     BOOK_REVIEWED_FIGURES.push(...LEVEL7_ORIGINAL_STROKE_FIGURES);
     // Each character is selected first, then a random marked stroke is chosen.
     // Never manufacture stroke paths from a font glyph or a stroke count alone.
-    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_BOOK_KANJI.has(q.kanji));
+    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_SYLLABUS_SET.has(q.kanji));
     const paperKanjiExposure=new Map();
     function selectCoverageAware(pool,n,extract){
       const candidates=[...pool];shuffleArray(candidates);
@@ -762,7 +769,7 @@
     function makeSections(){
       // Rotate through eligible sentence contexts, preferring Level 7 kanji
       // that have appeared least often in previous generated papers.
-      const eligible=SENTENCE_BANK.filter(row=>[...row[0]].some(ch=>LEVEL7_BOOK_KANJI.has(ch)||kanjiData.some(k=>k.level==='7級'&&k.kanji===ch)));
+      const eligible=SENTENCE_BANK.filter(row=>[...row[0]].some(ch=>LEVEL7_SYLLABUS_SET.has(ch)||kanjiData.some(k=>k.level==='7級'&&k.kanji===ch)));
       const sentenceCandidates=eligible.length>=50?eligible:SENTENCE_BANK;
       const sentences=selectCoverageAware(sentenceCandidates,50,row=>row[0]);
       const paperHistory={};let cursor=0;
@@ -817,7 +824,7 @@
       recentPapers.push(paperHistory);if(recentPapers.length>2)recentPapers.shift();
       for(const section of sections)for(const q of section.questions){
         const word=q.kanji||q.target||q.answer;
-        for(const ch of [...String(word||'')])if(LEVEL7_BOOK_KANJI.has(ch))
+        for(const ch of [...String(word||'')])if(LEVEL7_SYLLABUS_SET.has(ch))
           paperKanjiExposure.set(ch,(paperKanjiExposure.get(ch)||0)+1);
       }
       return sections;
@@ -1226,7 +1233,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`Book-reference stroke counts: ${LEVEL7_BOOK_COUNT_MAP.size} kanji · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`202-character syllabus · book stroke counts: ${LEVEL7_BOOK_COMPLETE_COUNTS.length}/202 · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
