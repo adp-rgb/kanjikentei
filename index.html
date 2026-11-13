@@ -214,8 +214,8 @@
   <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
   <main id="kanji-container" class="kanji-grid"></main>
   <section id="syllabus-panel" hidden aria-label="Level 7 syllabus knowledge-base audit" style="max-width:1100px;margin:0 auto 24px">
-    <div class="mock-toolbar"><button id="syllabus-back-btn">← Study Cards</button><input id="syllabus-search" type="search" placeholder="Search kanji / 漢字" aria-label="Search syllabus kanji" style="padding:9px;border:1px solid #cbd5e1;border-radius:6px"><select id="syllabus-status" aria-label="Filter knowledge base"><option value="all">All 202</option><option value="missing">Missing book transcription</option><option value="diagram">Draft stroke diagrams</option><option value="pending">Needs SVG</option></select></div>
-    <h2>漢検7級・小学4年配当漢字（202字）</h2><p id="syllabus-summary" role="status"></p><p style="font-size:.85rem;color:#475569">Grade allocation: 漢字検定Vs学年別表.pdf, photographed classification table (page 2). Stroke counts: Level 7 Kanji Knowledge Base.pdf, photographed character tables (pages 1–13). Draft SVGs are NOT independently verified against all book stroke sequences.</p>
+    <div class="mock-toolbar"><button id="syllabus-back-btn">← Study Cards</button><input id="syllabus-search" type="search" placeholder="Search kanji / 漢字" aria-label="Search syllabus kanji" style="padding:9px;border:1px solid #cbd5e1;border-radius:6px"><select id="syllabus-status" aria-label="Filter knowledge base"><option value="all">All 202</option><option value="missing">Missing book transcription</option><option value="step">Present in Steps 1–25</option><option value="conflict">Count conflicts</option><option value="diagram">Draft stroke diagrams</option><option value="pending">Needs SVG</option></select></div>
+    <h2>漢検7級・小学4年配当漢字（202字）</h2><p id="syllabus-summary" role="status"></p><p style="font-size:.85rem;color:#475569">Grade allocation: 漢字検定Vs学年別表.pdf (page 2). New character and stroke-count cross-check: 漢字学習ステップ7級 Steps 1–24 (24-page PDF) and Step 25 (one-page PDF). Earlier reference: Level 7 Kanji Knowledge Base.pdf (pages 1–13). Draft SVGs are NOT independently verified against all book stroke sequences.</p>
     <div id="syllabus-grid" class="kanji-grid" style="grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px"></div>
   </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
@@ -338,7 +338,7 @@
         }).join('');
         const link = /^https:\/\/www\.kanjipedia\.jp\/kanji\//.test(item.dictionaryUrl)
           ? `<a href="${escapeHTML(item.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">Kanjipedia ↗</a>` : '';
-        card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}</span></div>
+        card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}${LEVEL7_STEP_MAP?.has(item.kanji)?" · Step "+LEVEL7_STEP_MAP.get(item.kanji).step:""}</span></div>
           <ul class="vocab-list">${readingHTML || '<li class="vocab-item">No Jōyō reading in this dataset</li>'}</ul>
           <div style="margin-top:12px;font-size:.85rem">${link}</div>`;
         fragment.appendChild(card);
@@ -519,6 +519,41 @@
       bookPage:bookSourcePages.get(kanji)||null,
       hasDraftSVG:false,verifiedSVG:false
     }));
+
+    // New primary reference: 漢字学習ステップ7級, Steps 1–25.
+    // Transcribed character headings and printed 画数 from the 25 photographed pages.
+    // These are stroke COUNTS, not verified stroke-by-stroke paths.
+    const LEVEL7_STUDY_STEPS = Object.freeze([{"step":1,"kanji":"愛案以衣位茨印英栄","counts":[13,10,5,6,7,9,6,8,9]},{"step":2,"kanji":"媛塩岡億加果貨課芽","counts":[12,13,8,15,5,8,11,15,8]},{"step":3,"kanji":"賀改械害街各覚潟完","counts":[12,7,11,10,12,6,12,15,7]},{"step":4,"kanji":"官管関観願岐希季","counts":[8,14,14,18,19,7,7,8]},{"step":5,"kanji":"旗器機議求泣給","counts":[14,15,16,20,7,8,12]},{"step":6,"kanji":"挙漁共協鏡競極熊","counts":[10,14,6,8,19,20,12,14]},{"step":7,"kanji":"訓軍郡群径景芸欠","counts":[10,9,10,13,8,12,7,4]},{"step":8,"kanji":"結建健験固功好香候","counts":[12,9,11,18,8,5,6,9,10]},{"step":9,"kanji":"康佐差菜最埼材崎昨","counts":[11,7,10,11,12,11,7,11,9]},{"step":10,"kanji":"札刷察参産散残","counts":[5,8,14,8,11,12,10]},{"step":11,"kanji":"氏司試児治滋辞鹿","counts":[4,5,13,7,8,12,13,11]},{"step":12,"kanji":"失借種周祝順初松","counts":[5,10,14,8,9,12,7,8]},{"step":13,"kanji":"笑唱焼照城縄臣信","counts":[10,11,12,13,9,15,7,9]},{"step":14,"kanji":"井成省清静席積折節","counts":[4,6,9,11,14,10,16,7,13]},{"step":15,"kanji":"説浅戦選然争倉巣","counts":[14,9,13,15,12,6,10,11]},{"step":16,"kanji":"束側続卒孫帯隊達","counts":[7,11,13,8,10,10,12,12]},{"step":17,"kanji":"単置仲沖兆低底","counts":[9,13,6,7,6,7,8]},{"step":18,"kanji":"的典伝徒努灯働特","counts":[8,8,6,10,7,6,13,10]},{"step":19,"kanji":"徳板奈梨熱念敗梅","counts":[14,9,8,11,15,8,11,10]},{"step":20,"kanji":"博阪飯飛必票標不","counts":[12,7,12,9,5,11,15,4]},{"step":21,"kanji":"夫付府卓富副兵別辺","counts":[4,5,8,8,12,11,7,7,5]},{"step":22,"kanji":"変便包法望牧末満","counts":[9,9,5,8,11,8,5,12]},{"step":23,"kanji":"未民無約勇要養","counts":[5,5,12,9,9,9,15]},{"step":24,"kanji":"浴利陸良料量輪類","counts":[10,7,11,7,10,12,15,18]},{"step":25,"kanji":"令冷例連老労録","counts":[5,7,8,10,6,7,16]}]);
+    const LEVEL7_STEP_RECORDS = LEVEL7_STUDY_STEPS.flatMap(({step,kanji,counts})=>
+      [...kanji].map((character,i)=>({kanji:character,step,strokeCount:counts[i],
+        source:step<=24?'漢字学習ステップ7級1-24.pdf':'漢字学習ステップ7級25.pdf',
+        pdfPage:step<=24?step:1})));
+    const LEVEL7_STEP_MAP = new Map(LEVEL7_STEP_RECORDS.map(x=>[x.kanji,x]));
+    if(LEVEL7_STEP_RECORDS.length!==202 || LEVEL7_STEP_MAP.size!==202)
+      throw Error('The 25 study steps must contain 202 distinct characters');
+    const LEVEL7_STEP_OUTSIDE_SYLLABUS = LEVEL7_STEP_RECORDS.filter(x=>!LEVEL7_SYLLABUS_SET.has(x.kanji));
+    const LEVEL7_SYLLABUS_ABSENT_FROM_STEPS = LEVEL7_SYLLABUS_202.filter(k=>!LEVEL7_STEP_MAP.has(k));
+    const LEVEL7_STEP_COUNT_DISAGREEMENTS = LEVEL7_STEP_RECORDS.filter(x=>
+      LEVEL7_BOOK_COUNT_MAP.has(x.kanji) && LEVEL7_BOOK_COUNT_MAP.get(x.kanji)!==x.strokeCount);
+    // Prefer the photographed study-step counts when they agree with the existing book.
+    // Disagreements remain visible in the audit and are excluded from total-stroke questions.
+    const LEVEL7_RECONCILED_COUNTS = new Map(LEVEL7_ALL_COUNTS);
+    for(const item of LEVEL7_STEP_RECORDS){
+      if(LEVEL7_SYLLABUS_SET.has(item.kanji) &&
+         (!LEVEL7_BOOK_COUNT_MAP.has(item.kanji) || LEVEL7_BOOK_COUNT_MAP.get(item.kanji)===item.strokeCount))
+        LEVEL7_RECONCILED_COUNTS.set(item.kanji,item.strokeCount);
+    }
+    for(const entry of LEVEL7_KNOWLEDGE){
+      const step=LEVEL7_STEP_MAP.get(entry.kanji);
+      entry.studyStep=step?.step??null;
+      entry.studyPage=step?.pdfPage??null;
+      entry.stepStrokeCount=step?.strokeCount??null;
+      entry.countConflict=!!step && LEVEL7_BOOK_COUNT_MAP.has(entry.kanji) &&
+        LEVEL7_BOOK_COUNT_MAP.get(entry.kanji)!==step.strokeCount;
+      entry.strokeCount=LEVEL7_RECONCILED_COUNTS.get(entry.kanji);
+      if(step && !entry.countConflict)entry.countSource='study-step reference'+(LEVEL7_BOOK_COUNT_MAP.has(entry.kanji)?' + original book':'');
+    }
+
     const LEVEL7_BOOK_KANJI = new Set(LEVEL7_BOOK_COUNT_MAP.keys());
     // Original vector figures are independent drawings; book photos serve as
     // stroke-order references rather than being reproduced in the exam.
@@ -552,7 +587,7 @@
     BOOK_REVIEWED_FIGURES.push(...LEVEL7_ORIGINAL_STROKE_FIGURES);
     // Each character is selected first, then a random marked stroke is chosen.
     // Never manufacture stroke paths from a font glyph or a stroke count alone.
-    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_SYLLABUS_SET.has(q.kanji) && LEVEL7_ALL_COUNTS.get(q.kanji)===q.paths.length);
+    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_SYLLABUS_SET.has(q.kanji) && LEVEL7_RECONCILED_COUNTS.get(q.kanji)===q.paths.length && !LEVEL7_STEP_COUNT_DISAGREEMENTS.some(x=>x.kanji===q.kanji));
     const LEVEL7_KNOWLEDGE_BY_KANJI = new Map(LEVEL7_KNOWLEDGE.map(item=>[item.kanji,item]));
     for(const q of reviewedFigurePool){
       const entry=LEVEL7_KNOWLEDGE_BY_KANJI.get(q.kanji);
@@ -822,7 +857,7 @@
             ...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES,
             ...LEVEL7_BOOK_COMPLETE_COUNTS
           ].map(q=>[q.kanji,q])).values()];
-          const grade7Counts=[...LEVEL7_ALL_COUNTS].map(([kanji,count])=>({kanji,answer:String(count),total:true,source:LEVEL7_BOOK_COUNT_MAP.has(kanji)?'book':'supplemental'}));
+          const grade7Counts=[...LEVEL7_RECONCILED_COUNTS].filter(([kanji])=>!LEVEL7_KNOWLEDGE_BY_KANJI.get(kanji)?.countConflict).map(([kanji,count])=>({kanji,answer:String(count),total:true,source:LEVEL7_STEP_MAP.has(kanji)?'study-step':'earlier-reference'}));
           const totals=selectCoverageAware(grade7Counts,5,q=>q.kanji);
           questions=[...figures,...totals];
           paperHistory[spec.type]=questions.map(q=>JSON.stringify(q));
@@ -1256,7 +1291,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`202-character syllabus · book-transcribed counts: ${LEVEL7_BOOK_COMPLETE_COUNTS.length}/202 · supplemental: ${LEVEL7_BOOK_MISSING.length} · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`202-character syllabus · study-step matches: ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 · stroke-count conflicts: ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
@@ -1273,9 +1308,9 @@
       const term=document.getElementById('syllabus-search').value.trim();
       const filter=document.getElementById('syllabus-status').value;
       const rows=LEVEL7_KNOWLEDGE.filter(q=>(!term||q.kanji.includes(term))&&
-        (filter==='all'||filter==='missing'&&q.countSource!=='book transcription'||filter==='diagram'&&q.hasDraftSVG||filter==='pending'&&!q.hasDraftSVG));
-      document.getElementById('syllabus-summary').textContent=`202 unique Grade 4 characters · ${LEVEL7_BOOK_COMPLETE_COUNTS.length} book-transcribed stroke counts · ${LEVEL7_BOOK_MISSING.length} supplemental counts awaiting book confirmation · ${LEVEL7_KNOWLEDGE.filter(q=>q.hasDraftSVG).length} draft stroke SVGs (not fully visually verified) · ${rows.length} shown`;
-      document.getElementById('syllabus-grid').innerHTML=rows.map(q=>`<article class="kanji-card" style="padding:12px"><div class="kanji-header" style="margin-bottom:6px"><strong class="kanji-main">${escapeHTML(q.kanji)}</strong><span>${q.strokeCount}画</span></div><div style="font-size:.76rem;color:#475569">${q.countSource==='book transcription'?'Book count'+(q.bookPage?' · PDF p.'+q.bookPage:''):'Supplemental count — verify'}</div><div style="font-size:.76rem;margin-top:5px">${q.hasDraftSVG?'Draft SVG · review needed':'Stroke SVG not available'}</div></article>`).join('');
+        (filter==='all'||filter==='missing'&&!LEVEL7_BOOK_COUNT_MAP.has(q.kanji)||filter==='step'&&q.studyStep||filter==='conflict'&&q.countConflict||filter==='diagram'&&q.hasDraftSVG||filter==='pending'&&!q.hasDraftSVG));
+      document.getElementById('syllabus-summary').textContent=`202 syllabus characters · ${LEVEL7_STEP_RECORDS.length} characters in 25 photographed study steps · ${LEVEL7_KNOWLEDGE.filter(q=>q.studyStep).length}/202 syllabus matches · ${LEVEL7_STEP_OUTSIDE_SYLLABUS.map(q=>q.kanji).join('・')} appear in steps but not syllabus · ${LEVEL7_SYLLABUS_ABSENT_FROM_STEPS.join('・')} absent from steps · ${LEVEL7_STEP_COUNT_DISAGREEMENTS.length} count conflicts · ${LEVEL7_KNOWLEDGE.filter(q=>q.hasDraftSVG).length} draft SVGs · ${rows.length} shown`;
+      document.getElementById('syllabus-grid').innerHTML=rows.map(q=>`<article class="kanji-card" style="padding:12px"><div class="kanji-header" style="margin-bottom:6px"><strong class="kanji-main">${escapeHTML(q.kanji)}</strong><span>${q.strokeCount}画</span></div><div style="font-size:.76rem;color:#475569">${q.studyStep?'Step '+q.studyStep+' · '+q.stepStrokeCount+'画 (photographed page)':'Not in 25 study steps'} · ${q.countConflict?'COUNT CONFLICT — review':'Count: '+q.countSource}</div><div style="font-size:.76rem;margin-top:5px">${q.hasDraftSVG?'Draft SVG · review needed':'Stroke SVG not available'}</div></article>`).join('');
     }
     document.getElementById('syllabus-btn').addEventListener('click',showSyllabus);
     document.getElementById('syllabus-search').addEventListener('input',renderSyllabus);
