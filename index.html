@@ -207,12 +207,17 @@
       </select>
       <button id="shuffle-btn">Shuffle Cards</button>
       <button id="toggle-furigana">Toggle Readings</button>
-      <button id="mock-btn" type="button">Level 7 Mock Test</button>
+      <button id="mock-btn" type="button">Level 7 Mock Test</button><button id="syllabus-btn" type="button" style="background:#0f766e">202 Kanji Audit</button>
     </div>
   </header>
 
   <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
   <main id="kanji-container" class="kanji-grid"></main>
+  <section id="syllabus-panel" hidden aria-label="Level 7 syllabus knowledge-base audit" style="max-width:1100px;margin:0 auto 24px">
+    <div class="mock-toolbar"><button id="syllabus-back-btn">← Study Cards</button><input id="syllabus-search" type="search" placeholder="Search kanji / 漢字" aria-label="Search syllabus kanji" style="padding:9px;border:1px solid #cbd5e1;border-radius:6px"><select id="syllabus-status" aria-label="Filter knowledge base"><option value="all">All 202</option><option value="missing">Missing book transcription</option><option value="diagram">Draft stroke diagrams</option><option value="pending">Needs SVG</option></select></div>
+    <h2>漢検7級・小学4年配当漢字（202字）</h2><p id="syllabus-summary" role="status"></p><p style="font-size:.85rem;color:#475569">Grade allocation: 漢字検定Vs学年別表.pdf, photographed classification table (page 2). Stroke counts: Level 7 Kanji Knowledge Base.pdf, photographed character tables (pages 1–13). Draft SVGs are NOT independently verified against all book stroke sequences.</p>
+    <div id="syllabus-grid" class="kanji-grid" style="grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px"></div>
+  </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
     <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">Print / Save PDF</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
     <div id="mock-paper"></div><div id="mock-answers" hidden></div>
@@ -263,7 +268,7 @@
       const previous = localStorage.getItem('selectedKanjiStep') || '7級';
       stepSelect.innerHTML = '<option value="all">All Levels</option>';
       for (const level of LEVELS) {
-        if (!kanjiData.some(item => item.level === level)) continue;
+        if (level!=='7級' && !kanjiData.some(item => item.level === level)) continue;
         const option = document.createElement('option');
         option.value = level;
         option.textContent = level + (level === '7級' ? ' (new at Level 7)' : '');
@@ -317,7 +322,7 @@
 
     function renderCards() {
       const filter = stepSelect.value;
-      let active = kanjiData.filter(item => filter === 'all' || item.level === filter ||
+      let active = kanjiData.filter(item => filter === 'all' || (filter === '7級' ? LEVEL7_SYLLABUS_SET.has(item.kanji) : item.level === filter) ||
         (filter === '7級-cumulative' && ['10級','9級','8級','7級'].includes(item.level)));
       if (shuffledOrder) active.sort((a,b) => (shuffledOrder.get(a.kanji) ?? Infinity) - (shuffledOrder.get(b.kanji) ?? Infinity));
       const withReadings = active.filter(item => item.readings.length).length;
@@ -500,6 +505,20 @@
 
     const LEVEL7_BOOK_COMPLETE_COUNTS = [...LEVEL7_BOOK_COUNT_MAP].filter(([kanji])=>LEVEL7_SYLLABUS_SET.has(kanji)).map(([kanji,count])=>({kanji,answer:String(count),total:true,source:'Level 7 study-book',page:bookSourcePages.get(kanji)||null}));
 
+    // These seven characters occur in the 202-character grade allocation but
+    // were absent from the earlier photographed-book transcription. The counts
+    // below are provisional supplemental reference values, NOT book-verified.
+    const LEVEL7_UNVERIFIED_COUNTS = new Map([['芸',7],['欠',4],['種',14],['束',7],['栃',9],['夫',4],['阜',8]]);
+    const LEVEL7_ALL_COUNTS = new Map([...LEVEL7_BOOK_COUNT_MAP].filter(([k])=>LEVEL7_SYLLABUS_SET.has(k)));
+    for(const [k,n] of LEVEL7_UNVERIFIED_COUNTS)if(!LEVEL7_ALL_COUNTS.has(k))LEVEL7_ALL_COUNTS.set(k,n);
+    const LEVEL7_BOOK_MISSING = LEVEL7_SYLLABUS_202.filter(k=>!LEVEL7_BOOK_COUNT_MAP.has(k));
+    if(LEVEL7_ALL_COUNTS.size!==202)throw Error('Incomplete 202-kanji count coverage');
+    const LEVEL7_KNOWLEDGE = LEVEL7_SYLLABUS_202.map(kanji=>({
+      kanji,grade:4,kanken:'7級',strokeCount:LEVEL7_ALL_COUNTS.get(kanji),
+      countSource:LEVEL7_BOOK_COUNT_MAP.has(kanji)?'book transcription':'supplemental — check against book',
+      bookPage:bookSourcePages.get(kanji)||null,
+      hasDraftSVG:false,verifiedSVG:false
+    }));
     const LEVEL7_BOOK_KANJI = new Set(LEVEL7_BOOK_COUNT_MAP.keys());
     // Original vector figures are independent drawings; book photos serve as
     // stroke-order references rather than being reproduced in the exam.
@@ -533,7 +552,12 @@
     BOOK_REVIEWED_FIGURES.push(...LEVEL7_ORIGINAL_STROKE_FIGURES);
     // Each character is selected first, then a random marked stroke is chosen.
     // Never manufacture stroke paths from a font glyph or a stroke count alone.
-    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_SYLLABUS_SET.has(q.kanji));
+    const reviewedFigurePool=BOOK_REVIEWED_FIGURES.filter(q=>q.paths.length>1 && LEVEL7_SYLLABUS_SET.has(q.kanji) && LEVEL7_ALL_COUNTS.get(q.kanji)===q.paths.length);
+    const LEVEL7_KNOWLEDGE_BY_KANJI = new Map(LEVEL7_KNOWLEDGE.map(item=>[item.kanji,item]));
+    for(const q of reviewedFigurePool){
+      const entry=LEVEL7_KNOWLEDGE_BY_KANJI.get(q.kanji);
+      if(entry && q.paths.length===entry.strokeCount)entry.hasDraftSVG=true;
+    }
     const paperKanjiExposure=new Map();
     function selectCoverageAware(pool,n,extract){
       const candidates=[...pool];shuffleArray(candidates);
@@ -798,9 +822,8 @@
             ...STROKE_BANK.filter(q=>q.total),...EXTRA_TOTAL_STROKES,
             ...LEVEL7_BOOK_COMPLETE_COUNTS
           ].map(q=>[q.kanji,q])).values()];
-          const grade7=new Set(kanjiData.filter(k=>k.level==='7級').map(k=>k.kanji));
-          const grade7Counts=countPool.filter(q=>grade7.size===0 || grade7.has(q.kanji));
-          const totals=selectCoverageAware(grade7Counts.length>=5?grade7Counts:countPool,5,q=>q.kanji);
+          const grade7Counts=[...LEVEL7_ALL_COUNTS].map(([kanji,count])=>({kanji,answer:String(count),total:true,source:LEVEL7_BOOK_COUNT_MAP.has(kanji)?'book':'supplemental'}));
+          const totals=selectCoverageAware(grade7Counts,5,q=>q.kanji);
           questions=[...figures,...totals];
           paperHistory[spec.type]=questions.map(q=>JSON.stringify(q));
         } else if(spec.type==='onyomi'){
@@ -1233,7 +1256,7 @@
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。語句・学年配当は利用前に確認してください。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
         mockAnswers.hidden=true;document.getElementById('answers-btn').textContent='Show Answer Key';
-        mockInfo.textContent=`202-character syllabus · book stroke counts: ${LEVEL7_BOOK_COMPLETE_COUNTS.length}/202 · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
+        mockInfo.textContent=`202-character syllabus · book-transcribed counts: ${LEVEL7_BOOK_COMPLETE_COUNTS.length}/202 · supplemental: ${LEVEL7_BOOK_MISSING.length} · Level 7 stroke-order figures: ${reviewedFigurePool.length} · ${sections.reduce((n,s)=>n+s.questions.length,0)} questions · ${sections.reduce((n,s)=>n+s.questions.length*s.points,0)} points · 11 sections · 2 A4 landscape pages · reference-inspired section placement · unofficial practice`;
       }catch(e){mockPaper.innerHTML=`<p role="alert">${escapeHTML(e.message)}</p>`;console.error(e)}
     }
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;createMock();window.scrollTo(0,0)});
@@ -1241,6 +1264,23 @@
     document.getElementById('regenerate-btn').addEventListener('click',createMock);
     document.getElementById('print-btn').addEventListener('click',()=>window.print());
     document.getElementById('answers-btn').addEventListener('click',()=>{mockAnswers.hidden=!mockAnswers.hidden;document.getElementById('answers-btn').textContent=mockAnswers.hidden?'Show Answer Key':'Hide Answer Key'});
+    const syllabusPanel=document.getElementById('syllabus-panel');
+    function showSyllabus(){
+      document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=true;syllabusPanel.hidden=false;
+      renderSyllabus();window.scrollTo(0,0);
+    }
+    function renderSyllabus(){
+      const term=document.getElementById('syllabus-search').value.trim();
+      const filter=document.getElementById('syllabus-status').value;
+      const rows=LEVEL7_KNOWLEDGE.filter(q=>(!term||q.kanji.includes(term))&&
+        (filter==='all'||filter==='missing'&&q.countSource!=='book transcription'||filter==='diagram'&&q.hasDraftSVG||filter==='pending'&&!q.hasDraftSVG));
+      document.getElementById('syllabus-summary').textContent=`202 unique Grade 4 characters · ${LEVEL7_BOOK_COMPLETE_COUNTS.length} book-transcribed stroke counts · ${LEVEL7_BOOK_MISSING.length} supplemental counts awaiting book confirmation · ${LEVEL7_KNOWLEDGE.filter(q=>q.hasDraftSVG).length} draft stroke SVGs (not fully visually verified) · ${rows.length} shown`;
+      document.getElementById('syllabus-grid').innerHTML=rows.map(q=>`<article class="kanji-card" style="padding:12px"><div class="kanji-header" style="margin-bottom:6px"><strong class="kanji-main">${escapeHTML(q.kanji)}</strong><span>${q.strokeCount}画</span></div><div style="font-size:.76rem;color:#475569">${q.countSource==='book transcription'?'Book count'+(q.bookPage?' · PDF p.'+q.bookPage:''):'Supplemental count — verify'}</div><div style="font-size:.76rem;margin-top:5px">${q.hasDraftSVG?'Draft SVG · review needed':'Stroke SVG not available'}</div></article>`).join('');
+    }
+    document.getElementById('syllabus-btn').addEventListener('click',showSyllabus);
+    document.getElementById('syllabus-search').addEventListener('input',renderSyllabus);
+    document.getElementById('syllabus-status').addEventListener('change',renderSyllabus);
+    document.getElementById('syllabus-back-btn').addEventListener('click',()=>{syllabusPanel.hidden=true;document.querySelector('header').hidden=false;status.hidden=false;container.hidden=false});
     loadData();
   </script>
 </body>
