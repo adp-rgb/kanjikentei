@@ -194,6 +194,41 @@
   .exam-canvas:last-child{break-after:auto;page-break-after:auto}
   #mock-answers{display:none!important}
 }
+
+/* Mobile controls and readable on-screen examination viewer. Print geometry is unchanged. */
+*{box-sizing:border-box}
+button,select,input{touch-action:manipulation}
+#mobile-exam-tip{display:none;font-size:.88rem;color:#475569;margin:0 auto 8px;max-width:1100px}
+#mock-paper{max-width:100%;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+#mobile-print-paper{display:none}
+@media screen and (max-width:700px){
+  body{padding:12px}
+  header{gap:12px}
+  h1{font-size:1.3rem}
+  .controls{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .controls label{align-self:center}
+  .controls button,.controls select{min-height:44px;min-width:0;font-size:.85rem;padding:9px 7px}
+  .kanji-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+  .kanji-card{padding:14px}
+  .mock-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .mock-toolbar button{min-height:44px;padding:9px 7px;font-size:.82rem}
+  .mock-toolbar #mock-info{grid-column:1/-1;line-height:1.5;overflow-wrap:anywhere}
+  #mobile-exam-tip{display:block}
+  #mock-paper{align-items:flex-start;gap:12px;scroll-snap-type:x proximity}
+  .exam-canvas{width:900px;height:auto;aspect-ratio:1122 / 794;scroll-snap-align:start}
+  #mock-panel.fit-pages .exam-canvas{width:calc(100vw - 24px)}
+  #mock-answers{padding:12px}
+  .key-grid{grid-template-columns:1fr}
+}
+@media screen and (min-width:701px){#mobile-view-btn{display:none}}
+@media print{
+  #mobile-exam-tip,#mobile-view-btn,#mobile-print-paper{display:none!important}
+  body.mobile-pdf-print #mock-paper{display:none!important}
+  body.mobile-pdf-print #mobile-print-paper{display:block!important}
+  body.mobile-pdf-print .mobile-print-canvas{width:210mm!important;height:297mm!important;display:block!important;break-after:page;page-break-after:always;overflow:hidden!important;margin:0!important;padding:0!important}
+  body.mobile-pdf-print .mobile-print-canvas:last-child{break-after:auto;page-break-after:auto}
+  body.mobile-pdf-print .mobile-print-canvas svg{display:block;width:100%;height:100%}
+}
 </style>
 </head>
 <body>
@@ -219,8 +254,8 @@
     <div id="syllabus-grid" class="kanji-grid" style="grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px"></div>
   </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
-    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">Print / Save PDF</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
-    <div id="mock-paper"></div><div id="mock-answers" hidden></div>
+    <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Mobile PDF (4 pages)</button><button id="mobile-view-btn" type="button" aria-pressed="false">Fit whole page</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
+    <p id="mobile-exam-tip">Swipe sideways to read the full-size exam. Use <strong>Fit whole page</strong> for an overview. <strong>Mobile PDF</strong> splits the same two exam pages into four portrait pages for easier phone viewing; A4 Exam PDF keeps the original layout.</p><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
   </section>
 
   <script>
@@ -1485,7 +1520,51 @@
     document.getElementById('mock-btn').addEventListener('click',()=>{document.querySelector('header').hidden=true;status.hidden=true;container.hidden=true;mockPanel.hidden=false;generateWithStrokeCoverage();window.scrollTo(0,0)});
     document.getElementById('back-btn').addEventListener('click',()=>{document.querySelector('header').hidden=false;status.hidden=false;container.hidden=false;mockPanel.hidden=true});
     document.getElementById('regenerate-btn').addEventListener('click',generateWithStrokeCoverage);
-    document.getElementById('print-btn').addEventListener('click',()=>window.print());
+    // Mobile-friendly portrait PDF: divide each original landscape SVG into two
+    // half-width portrait pages. Do not modify the exam SVG or its question layout.
+    function prepareMobilePrintPages(){
+      const holder=document.getElementById('mobile-print-paper');
+      holder.replaceChildren();
+      for(const canvas of mockPaper.querySelectorAll('.exam-canvas')){
+        const source=canvas.querySelector('svg');
+        if(!source)continue;
+        // Japanese exam reads from right to left: show right half first.
+        for(const x of [561,0]){
+          const sheet=document.createElement('article');
+          sheet.className='mobile-print-canvas';
+          const svg=source.cloneNode(true);
+          svg.setAttribute('viewBox',`${x} 0 561 794`);
+          svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+          svg.setAttribute('aria-label',(source.getAttribute('aria-label')||'Mock exam')+(x?' right half':' left half'));
+          sheet.appendChild(svg);holder.appendChild(sheet);
+        }
+      }
+      return holder.children.length;
+    }
+    function restoreNormalPrint(){document.body.classList.remove('mobile-pdf-print');}
+    window.addEventListener('afterprint',restoreNormalPrint);
+    document.getElementById('print-btn').addEventListener('click',()=>{restoreNormalPrint();window.print();});
+    document.getElementById('mobile-pdf-btn').addEventListener('click',()=>{
+      if(prepareMobilePrintPages()!==4){alert('Generate a mock exam before saving the mobile PDF.');return;}
+      document.body.classList.add('mobile-pdf-print');
+      window.print();
+    });
+    document.getElementById('mobile-view-btn').addEventListener('click',()=>{
+      const fit=mockPanel.classList.toggle('fit-pages');
+      const btn=document.getElementById('mobile-view-btn');
+      btn.textContent=fit?'Read with swipe':'Fit whole page';
+      btn.setAttribute('aria-pressed',String(fit));
+    });
+    // Override page size only when printing the mobile portrait edition.
+    const mobilePrintPageStyle=document.createElement('style');
+    mobilePrintPageStyle.textContent='@media print { @page { size: A4 landscape; margin: 0; } }';
+    document.head.appendChild(mobilePrintPageStyle);
+    const portraitPageStyle=document.createElement('style');
+    portraitPageStyle.media='print';
+    portraitPageStyle.textContent='';
+    // Browsers that support named pages use this dedicated portrait rule.
+    portraitPageStyle.textContent+=' body.mobile-pdf-print .mobile-print-canvas{page:mobileExamPortrait} @page mobileExamPortrait{size:A4 portrait;margin:0}';
+    document.head.appendChild(portraitPageStyle);
     document.getElementById('answers-btn').addEventListener('click',()=>{mockAnswers.hidden=!mockAnswers.hidden;document.getElementById('answers-btn').textContent=mockAnswers.hidden?'Show Answer Key':'Hide Answer Key'});
     const syllabusPanel=document.getElementById('syllabus-panel');
     function showSyllabus(){
