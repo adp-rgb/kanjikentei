@@ -244,6 +244,16 @@ button,select,input{touch-action:manipulation}
   body.mobile-pdf-print .mobile-print-canvas svg{display:block;width:100%;height:100%}
 }
 </style>
+<style id="study-book-styles">
+.studybook-details,.dictionary-details{border:1px solid #dbe3ee;border-radius:10px;padding:12px;margin:12px 0;background:#f8fafc}
+.studybook-details summary,.dictionary-details summary{font-weight:700;cursor:pointer;line-height:1.5}
+.studybook-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0;font-size:.91rem}
+.studybook-meaning{margin:10px 0;line-height:1.6}
+.studybook-words ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px 14px;margin:8px 0;padding-left:20px}
+.studybook-words li{line-height:1.5}
+.studybook-details small{color:#526176;line-height:1.5;display:block;margin-top:10px}
+@media(max-width:650px){.studybook-meta{grid-template-columns:1fr 1fr}.studybook-words ul{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
@@ -398,6 +408,7 @@ button,select,input{touch-action:manipulation}
       }
     }
 
+    const STUDY_BOOK_PAGE_DETAILS = {"栄":{"on":["エイ"],"kun":["さかえる","はえ","はえる"],"radical":"木","radical_name":"き","meaning":"さかんになる・ほまれ・さかんにする","words":["出来栄え","栄光","栄養","繁栄","町が栄える"],"kanji":"栄","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"英":{"on":["エイ"],"kun":[],"radical":"艹","radical_name":"くさかんむり","meaning":"人なみすぐれる・イギリスの略","words":["英会話","英語","英雄","俊英","英才"],"kanji":"英","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"印":{"on":["イン"],"kun":["しるし"],"radical":"卩","radical_name":"ふしづくり","meaning":"はんこ・版で刷る・しるし・心に残る","words":["印刷","調印","印字","印象","消印"],"kanji":"印","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"茨":{"on":[],"kun":["いばら"],"radical":"艹","radical_name":"くさかんむり","meaning":"いばら・とげのある低木・屋根をふく","words":["茨の道","茨城県"],"kanji":"茨","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"位":{"on":["イ"],"kun":["くらい"],"radical":"亻","radical_name":"にんべん","meaning":"場所・身分・数のくらい・人をうやまう言い方","words":["方位","位置","順位","水位","単位"],"kanji":"位","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"衣":{"on":["イ"],"kun":["ころも"],"radical":"衣","radical_name":"ころも","meaning":"からだにきるもの","words":["着衣","白衣","衣食住","衣服","羽衣","衣類"],"kanji":"衣","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"以":{"on":["イ"],"kun":[],"radical":"人","radical_name":"ひと","meaning":"言葉の上について「…より」の意味を表す","words":["以前","以上","以心伝心"],"kanji":"以","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"案":{"on":["アン"],"kun":[],"radical":"木","radical_name":"き","meaning":"考える・心配する・下書き","words":["案外","案内","提案","思案","答案","名案"],"kanji":"案","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"愛":{"on":["アイ"],"kun":[],"radical":"心","radical_name":"こころ","meaning":"かわいがる・このむ・心をひかれる","words":["愛犬","愛唱","愛情","愛読書","親愛","愛媛県","愛鳥"],"kanji":"愛","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"}};
     function renderCards() {
       const filter = stepSelect.value;
       let active = kanjiData.filter(item => filter === 'all' || (filter === '7級' ? LEVEL7_SYLLABUS_SET.has(item.kanji) : item.level === filter) ||
@@ -415,11 +426,19 @@ button,select,input{touch-action:manipulation}
           const examples = Array.isArray(reading['例']) ? reading['例'] : [];
           return `<li class="vocab-item"><span><ruby>${escapeHTML(item.kanji)}<rt>${escapeHTML(reading['読み'] || '')}</rt></ruby></span><span>${examples.map(escapeHTML).join(' · ') || '—'}</span></li>`;
         }).join('');
+        const book=STUDY_BOOK_PAGE_DETAILS[item.kanji];
+        const sourceStep=masterRecord?.step;
+        const bookHTML=book ? `<details class="studybook-details" open><summary>📖 漢字学習ステップ7級 — Step ${book.step} · 原本確認済み</summary>
+          <div class="studybook-meta"><span><b>音読み</b> ${escapeHTML(book.on.join('・')||'—')}</span><span><b>訓読み</b> ${escapeHTML(book.kun.join('・')||'—')}</span><span><b>部首</b> ${escapeHTML(book.radical)}（${escapeHTML(book.radical_name)}）</span><span><b>画数</b> ${escapeHTML(masterRecord?.stroke_count)}画</span></div>
+          <div class="studybook-meaning"><b>漢字の意味</b> ${escapeHTML(book.meaning)}</div>
+          <div class="studybook-words"><b>原本にある言葉・用例</b><ul>${book.words.map(word=>`<li>${escapeHTML(word)}</li>`).join('')}</ul></div>
+          <small>出典: ${escapeHTML(book.source)} · p.${book.page}。語の読みは個別に未転記。手書き注釈は含みません。</small></details>`
+          : sourceStep ? `<details class="studybook-details"><summary>📖 漢字学習ステップ7級 — Step ${escapeHTML(sourceStep)} · 詳細転記待ち</summary><p>ステップと画数は登録済みです。原本の語彙・読み・意味・部首は、まだ確認済みデータとして転記していません。</p></details>`
+          : `<details class="studybook-details"><summary>📖 学習ステップ — 原本対応未確認</summary><p>この漢字は現在のステップ対応表で確認できません。辞書情報と区別して表示しています。</p></details>`;
         const link = /^https:\/\/www\.kanjipedia\.jp\/kanji\//.test(item.dictionaryUrl)
           ? `<a href="${escapeHTML(item.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">Kanjipedia ↗</a>` : '';
         card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}${LEVEL7_STEP_MAP?.has(item.kanji)?" · Step "+LEVEL7_STEP_MAP.get(item.kanji).step:""}</span></div>
-          <ul class="vocab-list">${readingHTML || '<li class="vocab-item">Readings available after GitHub update</li>'}${masterRecord?'<li class="vocab-item">'+escapeHTML(masterRecord.stroke_count??'Unverified')+' strokes · '+escapeHTML(masterRecord.step?'Step '+masterRecord.step:'Step not found')+' · '+escapeHTML(masterRecord.count_status)+'</li>':''}</ul>
-          <div style="margin-top:12px;font-size:.85rem">${link}</div>`;
+          ${bookHTML}<details class="dictionary-details"><summary>📚 Additional Dictionary Information (GitHub)</summary><ul class="vocab-list">${readingHTML || '<li class="vocab-item">Readings available after GitHub update</li>'}${masterRecord?'<li class="vocab-item">'+escapeHTML(masterRecord.stroke_count??'Unverified')+' strokes · '+escapeHTML(masterRecord.step?'Step '+masterRecord.step:'Step not found')+' · '+escapeHTML(masterRecord.count_status)+'</li>':''}</ul><div style="margin-top:12px;font-size:.85rem">${link}</div></details>`;
         fragment.appendChild(card);
       }
       container.appendChild(fragment);
