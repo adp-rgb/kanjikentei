@@ -70,7 +70,25 @@
       margin: 0 auto;
     }
 
-    .kanji-card {
+
+    /* Step 1 study cards: explicit front/back views, no 3D text mirroring. */
+    .step-flip-card{padding:0;overflow:hidden}
+    .step-flip-card .kanji-header{margin:0 18px;padding-top:16px}
+    .step-face{padding:16px 18px 18px}
+    .step-face[hidden]{display:none!important}
+    .step-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .step-card-actions button{font-size:.86rem;padding:9px 12px;border-radius:8px}
+    .step-book-words{list-style:none;padding:0;margin:8px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}
+    .step-book-words li{padding:9px 10px;border:1px solid #dce5f0;border-radius:8px;background:#fff;min-width:0;overflow-wrap:anywhere}
+    .step-book-words ruby{font-size:1.05rem;ruby-position:over}
+    .step-book-words rt{font-size:.68rem}
+    .step-book-words .reading-unavailable{font-size:.75rem;color:#64748b}
+    .step-card-actions .flip-button{background:#334155}
+    .step-card-actions .reading-button{background:#166534}
+    .step-card-actions button:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+    .step-card-help{font-size:.76rem;color:#64748b}
+    @media(max-width:650px){.step-book-words{grid-template-columns:repeat(2,minmax(0,1fr))}}
+\n    .kanji-card {
       background-color: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -409,6 +427,44 @@ button,select,input{touch-action:manipulation}
     }
 
     const STUDY_BOOK_PAGE_DETAILS = {"栄":{"on":["エイ"],"kun":["さかえる","はえ","はえる"],"radical":"木","radical_name":"き","meaning":"さかんになる・ほまれ・さかんにする","words":["出来栄え","栄光","栄養","繁栄","町が栄える"],"kanji":"栄","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"英":{"on":["エイ"],"kun":[],"radical":"艹","radical_name":"くさかんむり","meaning":"人なみすぐれる・イギリスの略","words":["英会話","英語","英雄","俊英","英才"],"kanji":"英","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"印":{"on":["イン"],"kun":["しるし"],"radical":"卩","radical_name":"ふしづくり","meaning":"はんこ・版で刷る・しるし・心に残る","words":["印刷","調印","印字","印象","消印"],"kanji":"印","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"茨":{"on":[],"kun":["いばら"],"radical":"艹","radical_name":"くさかんむり","meaning":"いばら・とげのある低木・屋根をふく","words":["茨の道","茨城県"],"kanji":"茨","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"位":{"on":["イ"],"kun":["くらい"],"radical":"亻","radical_name":"にんべん","meaning":"場所・身分・数のくらい・人をうやまう言い方","words":["方位","位置","順位","水位","単位"],"kanji":"位","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"衣":{"on":["イ"],"kun":["ころも"],"radical":"衣","radical_name":"ころも","meaning":"からだにきるもの","words":["着衣","白衣","衣食住","衣服","羽衣","衣類"],"kanji":"衣","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"以":{"on":["イ"],"kun":[],"radical":"人","radical_name":"ひと","meaning":"言葉の上について「…より」の意味を表す","words":["以前","以上","以心伝心"],"kanji":"以","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"案":{"on":["アン"],"kun":[],"radical":"木","radical_name":"き","meaning":"考える・心配する・下書き","words":["案外","案内","提案","思案","答案","名案"],"kanji":"案","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"},"愛":{"on":["アイ"],"kun":[],"radical":"心","radical_name":"こころ","meaning":"かわいがる・このむ・心をひかれる","words":["愛犬","愛唱","愛情","愛読書","親愛","愛媛県","愛鳥"],"kanji":"愛","step":1,"page":1,"source":"漢字学習ステップ7級1-24.pdf","review":"visually_transcribed","word_readings_review":"not_individually_transcribed"}};
+    // Readings are editorial furigana for the already-transcribed Step 1 vocabulary.
+    // The original study-page words remain unchanged; readings are kept separately
+    // because the photographed page does not provide a furigana transcription for each.
+    const STEP1_VOCAB_FURIGANA = {"栄": ["できばえ", "えいこう", "えいよう", "はんえい", "まちがさかえる"], "英": ["えいかいわ", "えいご", "えいゆう", "しゅんえい", "えいさい"], "印": ["いんさつ", "ちょういん", "いんじ", "いんしょう", "けしいん"], "茨": ["いばらのみち", "いばらきけん"], "位": ["ほうい", "いち", "じゅんい", "すいい", "たんい"], "衣": ["ちゃくい", "はくい", "いしょくじゅう", "いふく", "はごろも", "いるい"], "以": ["いぜん", "いじょう", "いしんでんしん"], "案": ["あんがい", "あんない", "ていあん", "しあん", "とうあん", "めいあん"], "愛": ["あいけん", "あいしょう", "あいじょう", "あいどくしょ", "しんあい", "えひめけん", "あいちょう"]};
+    const step1CardSide = new Map();
+    let step1ReadingsVisible = true;
+    function renderStep1Words(book){
+      const readings=STEP1_VOCAB_FURIGANA[book.kanji]||[];
+      return book.words.map((word,i)=>{
+        const reading=readings[i];
+        return `<li>${reading?`<ruby>${escapeHTML(word)}<rt>${escapeHTML(reading)}</rt></ruby>`:`<span>${escapeHTML(word)}</span><span class="reading-unavailable">読み未確認</span>`}</li>`;
+      }).join('');
+    }
+    // Delegated controls work after shuffling, filtering and GitHub refresh.
+    container.addEventListener('click', event=>{
+      const flip=event.target.closest('.flip-button');
+      const reading=event.target.closest('.reading-button');
+      if(flip){
+        const card=flip.closest('.step-flip-card');
+        const kanji=card?.dataset.kanji;
+        if(!kanji)return;
+        const next=step1CardSide.get(kanji)==='dictionary'?'book':'dictionary';
+        step1CardSide.set(kanji,next);
+        card.querySelector('.step-book-face').hidden=next!=='book';
+        card.querySelector('.step-dictionary-face').hidden=next!=='dictionary';
+      }
+      if(reading){
+        step1ReadingsVisible=!step1ReadingsVisible;
+        container.querySelectorAll('.step-flip-card').forEach(card=>{
+          card.classList.toggle('hide-reading',!step1ReadingsVisible);
+          const b=card.querySelector('.reading-button');
+          if(b){
+            b.textContent=step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示';
+            b.setAttribute('aria-pressed',String(step1ReadingsVisible));
+          }
+        });
+      }
+    });
     function renderCards() {
       const filter = stepSelect.value;
       let active = kanjiData.filter(item => filter === 'all' || (filter === '7級' ? LEVEL7_SYLLABUS_SET.has(item.kanji) : item.level === filter) ||
@@ -439,6 +495,30 @@ button,select,input{touch-action:manipulation}
           ? `<a href="${escapeHTML(item.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">Kanjipedia ↗</a>` : '';
         card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}${LEVEL7_STEP_MAP?.has(item.kanji)?" · Step "+LEVEL7_STEP_MAP.get(item.kanji).step:""}</span></div>
           ${bookHTML}<details class="dictionary-details"><summary>📚 Additional Dictionary Information (GitHub)</summary><ul class="vocab-list">${readingHTML || '<li class="vocab-item">Readings available after GitHub update</li>'}${masterRecord?'<li class="vocab-item">'+escapeHTML(masterRecord.stroke_count??'Unverified')+' strokes · '+escapeHTML(masterRecord.step?'Step '+masterRecord.step:'Step not found')+' · '+escapeHTML(masterRecord.count_status)+'</li>':''}</ul><div style="margin-top:12px;font-size:.85rem">${link}</div></details>`;
+        if(book){
+          const side=step1CardSide.get(item.kanji)||'book';
+          card.classList.add('step-flip-card');
+          card.dataset.kanji=item.kanji;
+          card.classList.toggle('hide-reading',!step1ReadingsVisible);
+          const actions=`<div class="step-card-actions"><button type="button" class="flip-button">カードを裏返す ↻</button><button type="button" class="reading-button" aria-pressed="${step1ReadingsVisible}">${step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示'}</button></div>`;
+          card.innerHTML=`<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">7級 · Step ${book.step}</span></div>
+            <section class="step-face step-book-face" ${side==='dictionary'?'hidden':''} aria-label="${escapeHTML(item.kanji)} 学習ステップ">
+              <strong>📖 漢字学習ステップ7級</strong>
+              ${actions}
+              <div class="studybook-meta"><span><b>音読み</b> ${escapeHTML(book.on.join('・')||'—')}</span><span><b>訓読み</b> ${escapeHTML(book.kun.join('・')||'—')}</span><span><b>部首</b> ${escapeHTML(book.radical)}（${escapeHTML(book.radical_name)}）</span><span><b>画数</b> ${escapeHTML(masterRecord?.stroke_count)}画</span></div>
+              <p class="studybook-meaning"><b>意味</b> ${escapeHTML(book.meaning)}</p>
+              <b>原本にある言葉・用例</b>
+              <ul class="step-book-words">${renderStep1Words(book)}</ul>
+              <p class="step-card-help">語彙: 学習ステップ原本 Step ${book.step} / p.${book.page}。ふりがな: 補足した読み（原本の個別転記ではありません）。</p>
+            </section>
+            <section class="step-face step-dictionary-face" ${side!=='dictionary'?'hidden':''} aria-label="${escapeHTML(item.kanji)} GitHub 辞書">
+              <strong>📚 GitHub Dictionary</strong>
+              ${actions}
+              <ul class="vocab-list">${readingHTML || '<li class="vocab-item">GitHub 読みデータ未取得</li>'}</ul>
+              <p class="step-card-help">GitHub 由来の補助情報。学習ステップ原本の語彙とは区別しています。</p>
+              ${link}
+            </section>`;
+        }
         fragment.appendChild(card);
       }
       container.appendChild(fragment);
@@ -457,6 +537,8 @@ button,select,input{touch-action:manipulation}
     toggleBtn.addEventListener('click', () => {
       container.classList.toggle('hide-reading');
       toggleBtn.setAttribute('aria-pressed', String(container.classList.contains('hide-reading')));
+      step1ReadingsVisible=!container.classList.contains('hide-reading');
+      container.querySelectorAll('.reading-button').forEach(b=>{b.textContent=step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示';b.setAttribute('aria-pressed',String(step1ReadingsVisible));});
     });
     // A fixed-coordinate SVG renderer: one coordinate system for screen and PDF.
     const mockPanel=document.getElementById('mock-panel'),mockPaper=document.getElementById('mock-paper'),mockAnswers=document.getElementById('mock-answers'),mockInfo=document.getElementById('mock-info');
