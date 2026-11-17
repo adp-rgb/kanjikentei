@@ -282,6 +282,7 @@ button,select,input{touch-action:manipulation}
       <select id="step-select">
         <option value="all">All Levels</option>
       </select>
+      <label for="study-book-step">学習ステップ:</label><select id="study-book-step"><option value="all">All Steps</option></select>
       <button id="shuffle-btn">Shuffle Cards</button><button id="refresh-data-btn" type="button" title="Refresh study-card readings from GitHub">Refresh GitHub Data</button>
       <button id="toggle-furigana" aria-pressed="false">ふりがなを隠す</button>
       <button id="mock-btn" type="button">Level 7 Mock Test</button><button id="syllabus-btn" type="button" hidden aria-hidden="true" tabindex="-1" style="display:none!important">202 Kanji Audit</button>
@@ -309,6 +310,8 @@ button,select,input{touch-action:manipulation}
     let shuffledOrder = null;
     const container = document.getElementById('kanji-container');
     const stepSelect = document.getElementById('step-select');
+    const bookStepSelect=document.getElementById('study-book-step');
+    for(let i=1;i<=25;i++){const o=document.createElement('option');o.value=String(i);o.textContent='Step '+i;bookStepSelect.appendChild(o);}
     const status = document.getElementById('status');
     const shuffleBtn = document.getElementById('shuffle-btn');
     const toggleBtn = document.getElementById('toggle-furigana');
@@ -461,9 +464,11 @@ button,select,input{touch-action:manipulation}
       const filter = stepSelect.value;
       let active = kanjiData.filter(item => filter === 'all' || (filter === '7級' ? LEVEL7_SYLLABUS_SET.has(item.kanji) : item.level === filter) ||
         (filter === '7級-cumulative' && ['10級','9級','8級','7級'].includes(item.level)));
+      if(bookStepSelect.value!=='all') active=active.filter(item=>String(STUDY_BOOK_PAGE_DETAILS[item.kanji]?.step ?? LEVEL7_STEP_MAP.get(item.kanji)?.step)===bookStepSelect.value);
       if (shuffledOrder) active.sort((a,b) => (shuffledOrder.get(a.kanji) ?? Infinity) - (shuffledOrder.get(b.kanji) ?? Infinity));
       const withReadings = active.filter(item => item.readings.length).length;
       status.textContent = `${active.length} kanji • ${withReadings} with Jōyō readings • ${filter === '7級-cumulative' ? 'Kanken Level 7 cumulative' : filter === 'all' ? 'All levels' : filter}`;
+      status.textContent += ` · Study book details: ${active.filter(item=>STUDY_BOOK_PAGE_DETAILS[item.kanji]).length}/${active.length} · Steps 1–5 edition`;
       container.innerHTML = '';
       const fragment = document.createDocumentFragment();
       for (const item of active) {
@@ -475,7 +480,7 @@ button,select,input{touch-action:manipulation}
           return `<li class="vocab-item"><span><ruby>${escapeHTML(item.kanji)}<rt>${escapeHTML(reading['読み'] || '')}</rt></ruby></span><span>${examples.map(escapeHTML).join(' · ') || '—'}</span></li>`;
         }).join('');
         const book=STUDY_BOOK_PAGE_DETAILS[item.kanji];
-        const sourceStep=masterRecord?.step;
+        const sourceStep=book?.step ?? masterRecord?.step;
         const bookHTML=book ? `<details class="studybook-details" open><summary>📖 漢字学習ステップ7級 — Step ${book.step} · 原本確認済み</summary>
           <div class="studybook-meta"><span><b>音読み</b> ${escapeHTML(book.on.join('・')||'—')}</span><span><b>訓読み</b> ${escapeHTML(book.kun.join('・')||'—')}</span><span><b>部首</b> ${escapeHTML(book.radical)}（${escapeHTML(book.radical_name)}）</span><span><b>画数</b> ${escapeHTML(masterRecord?.stroke_count)}画</span></div>
           <div class="studybook-meaning"><b>漢字の意味</b> ${escapeHTML(book.meaning)}</div>
@@ -515,7 +520,9 @@ button,select,input{touch-action:manipulation}
       container.appendChild(fragment);
     }
 
+    bookStepSelect.addEventListener('change',()=>{if(bookStepSelect.value!=='all'){stepSelect.value='7級';try{localStorage.setItem('selectedKanjiStep','7級')}catch(_e){}}renderCards();});
     stepSelect.addEventListener('change', () => {
+      bookStepSelect.value='all';
       try{localStorage.setItem('selectedKanjiStep',stepSelect.value)}catch(_e){}
       renderCards();
     });
