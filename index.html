@@ -283,7 +283,7 @@ button,select,input{touch-action:manipulation}
         <option value="all">All Levels</option>
       </select>
       <button id="shuffle-btn">Shuffle Cards</button><button id="refresh-data-btn" type="button" title="Refresh study-card readings from GitHub">Refresh GitHub Data</button>
-      <button id="toggle-furigana">Toggle Readings</button>
+      <button id="toggle-furigana" aria-pressed="false">ふりがなを隠す</button>
       <button id="mock-btn" type="button">Level 7 Mock Test</button><button id="syllabus-btn" type="button" hidden aria-hidden="true" tabindex="-1" style="display:none!important">202 Kanji Audit</button>
     </div>
   </header>
@@ -431,8 +431,10 @@ button,select,input{touch-action:manipulation}
     // The original study-page words remain unchanged; readings are kept separately
     // because the photographed page does not provide a furigana transcription for each.
     const STEP1_VOCAB_FURIGANA = {"栄": ["できばえ", "えいこう", "えいよう", "はんえい", "まちがさかえる"], "英": ["えいかいわ", "えいご", "えいゆう", "しゅんえい", "えいさい"], "印": ["いんさつ", "ちょういん", "いんじ", "いんしょう", "けしいん"], "茨": ["いばらのみち", "いばらきけん"], "位": ["ほうい", "いち", "じゅんい", "すいい", "たんい"], "衣": ["ちゃくい", "はくい", "いしょくじゅう", "いふく", "はごろも", "いるい"], "以": ["いぜん", "いじょう", "いしんでんしん"], "案": ["あんがい", "あんない", "ていあん", "しあん", "とうあん", "めいあん"], "愛": ["あいけん", "あいしょう", "あいじょう", "あいどくしょ", "しんあい", "えひめけん", "あいちょう"]};
+    Object.assign(STUDY_BOOK_PAGE_DETAILS,{"媛": {"kanji": "媛", "on": ["エン"], "kun": [], "radical": "女", "radical_name": "おんなへん", "meaning": "美しい・たおやか・美しい女性・ひめ", "words": ["才媛", "愛媛県"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "塩": {"kanji": "塩", "on": ["エン"], "kun": ["しお"], "radical": "土", "radical_name": "つちへん", "meaning": "しお", "words": ["塩分", "塩味", "食塩", "塩気", "塩焼き", "手塩にかける"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "岡": {"kanji": "岡", "on": [], "kun": ["おか"], "radical": "山", "radical_name": "やま", "meaning": "おか・小高い土地・そば・かたわら", "words": ["岡山県", "静岡県", "福岡県"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "億": {"kanji": "億", "on": ["オク"], "kun": [], "radical": "亻", "radical_name": "にんべん", "meaning": "一万の一万倍・数がひじょうに多いこと", "words": ["一億", "一億人", "三億", "二億年", "百億円"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "加": {"kanji": "加", "on": ["カ"], "kun": ["くわえる", "くわわる"], "radical": "力", "radical_name": "ちから", "meaning": "たす・ふやす・なかまになる", "words": ["加工", "加算", "加入", "加熱", "参加", "追加", "塩を加える"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "果": {"kanji": "果", "on": ["カ"], "kun": ["はたす", "はてる", "はて"], "radical": "木", "radical_name": "き", "meaning": "くだもの・できばえ・思いきってする", "words": ["果実", "因果", "結果", "効果", "成果", "果物", "使い果たす"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "貨": {"kanji": "貨", "on": ["カ"], "kun": [], "radical": "貝", "radical_name": "かい・こがい", "meaning": "おかね・商品・価値をもつ品物", "words": ["貨車", "貨物", "金貨", "硬貨", "通貨", "銅貨", "百貨店"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "課": {"kanji": "課", "on": ["カ"], "kun": [], "radical": "言", "radical_name": "ごんべん", "meaning": "わりあてる・なすべき仕事", "words": ["課題", "課程", "課目", "学課", "日課", "放課後"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}, "芽": {"kanji": "芽", "on": ["ガ"], "kun": ["め"], "radical": "艹", "radical_name": "くさかんむり", "meaning": "草や木のめ・物事の起こり", "words": ["麦芽", "発芽", "芽ぶく", "新芽", "草木が芽生える"], "step": 2, "page": 2, "source": "漢字学習ステップ7級1-24.pdf"}});
+    Object.assign(STEP1_VOCAB_FURIGANA,{"媛": ["さいえん", "えひめけん"], "塩": ["えんぶん", "えんみ", "しょくえん", "しおけ", "しおやき", "てしおにかける"], "岡": ["おかやまけん", "しずおかけん", "ふくおかけん"], "億": ["いちおく", "いちおくにん", "さんおく", "におくねん", "ひゃくおくえん"], "加": ["かこう", "かさん", "かにゅう", "かねつ", "さんか", "ついか", "しおをくわえる"], "果": ["かじつ", "いんが", "けっか", "こうか", "せいか", "くだもの", "つかいはたす"], "貨": ["かしゃ", "かもつ", "きんか", "こうか", "つうか", "どうか", "ひゃっかてん"], "課": ["かだい", "かてい", "かもく", "がっか", "にっか", "ほうかご"], "芽": ["ばくが", "はつが", "めぶく", "しんめ", "くさきがめばえる"]});
     const step1CardSide = new Map();
-    let step1ReadingsVisible = true;
+
     function renderStep1Words(book){
       const readings=STEP1_VOCAB_FURIGANA[book.kanji]||[];
       return book.words.map((word,i)=>{
@@ -443,7 +445,6 @@ button,select,input{touch-action:manipulation}
     // Delegated controls work after shuffling, filtering and GitHub refresh.
     container.addEventListener('click', event=>{
       const flip=event.target.closest('.flip-button');
-      const reading=event.target.closest('.reading-button');
       if(flip){
         const card=flip.closest('.step-flip-card');
         const kanji=card?.dataset.kanji;
@@ -452,17 +453,6 @@ button,select,input{touch-action:manipulation}
         step1CardSide.set(kanji,next);
         card.querySelector('.step-book-face').hidden=next!=='book';
         card.querySelector('.step-dictionary-face').hidden=next!=='dictionary';
-      }
-      if(reading){
-        step1ReadingsVisible=!step1ReadingsVisible;
-        container.querySelectorAll('.step-flip-card').forEach(card=>{
-          card.classList.toggle('hide-reading',!step1ReadingsVisible);
-          const b=card.querySelector('.reading-button');
-          if(b){
-            b.textContent=step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示';
-            b.setAttribute('aria-pressed',String(step1ReadingsVisible));
-          }
-        });
       }
     });
     function renderCards() {
@@ -495,21 +485,20 @@ button,select,input{touch-action:manipulation}
           ? `<a href="${escapeHTML(item.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">Kanjipedia ↗</a>` : '';
         card.innerHTML = `<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">${escapeHTML(item.level)}${LEVEL7_STEP_MAP?.has(item.kanji)?" · Step "+LEVEL7_STEP_MAP.get(item.kanji).step:""}</span></div>
           ${bookHTML}<details class="dictionary-details"><summary>📚 Additional Dictionary Information (GitHub)</summary><ul class="vocab-list">${readingHTML || '<li class="vocab-item">Readings available after GitHub update</li>'}${masterRecord?'<li class="vocab-item">'+escapeHTML(masterRecord.stroke_count??'Unverified')+' strokes · '+escapeHTML(masterRecord.step?'Step '+masterRecord.step:'Step not found')+' · '+escapeHTML(masterRecord.count_status)+'</li>':''}</ul><div style="margin-top:12px;font-size:.85rem">${link}</div></details>`;
-        if(book){
+        if(masterRecord){
           const side=step1CardSide.get(item.kanji)||'book';
           card.classList.add('step-flip-card');
           card.dataset.kanji=item.kanji;
-          card.classList.toggle('hide-reading',!step1ReadingsVisible);
-          const actions=`<div class="step-card-actions"><button type="button" class="flip-button">カードを裏返す ↻</button><button type="button" class="reading-button" aria-pressed="${step1ReadingsVisible}">${step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示'}</button></div>`;
-          card.innerHTML=`<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">7級 · Step ${book.step}</span></div>
+          const actions=`<div class="step-card-actions"><button type="button" class="flip-button">カードを裏返す ↻</button></div>`;
+          card.innerHTML=`<div class="kanji-header"><span class="kanji-main">${escapeHTML(item.kanji)}</span><span class="kanji-meaning">7級${sourceStep?` · Step ${sourceStep}`:""}</span></div>
             <section class="step-face step-book-face" ${side==='dictionary'?'hidden':''} aria-label="${escapeHTML(item.kanji)} 学習ステップ">
               <strong>📖 漢字学習ステップ7級</strong>
               ${actions}
-              <div class="studybook-meta"><span><b>音読み</b> ${escapeHTML(book.on.join('・')||'—')}</span><span><b>訓読み</b> ${escapeHTML(book.kun.join('・')||'—')}</span><span><b>部首</b> ${escapeHTML(book.radical)}（${escapeHTML(book.radical_name)}）</span><span><b>画数</b> ${escapeHTML(masterRecord?.stroke_count)}画</span></div>
+              ${book ? `              <div class="studybook-meta"><span><b>音読み</b> ${escapeHTML(book.on.join('・')||'—')}</span><span><b>訓読み</b> ${escapeHTML(book.kun.join('・')||'—')}</span><span><b>部首</b> ${escapeHTML(book.radical)}（${escapeHTML(book.radical_name)}）</span><span><b>画数</b> ${escapeHTML(masterRecord?.stroke_count)}画</span></div>
               <p class="studybook-meaning"><b>意味</b> ${escapeHTML(book.meaning)}</p>
               <b>原本にある言葉・用例</b>
               <ul class="step-book-words">${renderStep1Words(book)}</ul>
-              <p class="step-card-help">語彙: 学習ステップ原本 Step ${book.step} / p.${book.page}。ふりがな: 補足した読み（原本の個別転記ではありません）。</p>
+              <p class="step-card-help">語彙: 学習ステップ原本 Step ${book.step} / p.${book.page}。ふりがな: 補足した読み（原本の個別転記ではありません）。</p>` : `<p>画数：${escapeHTML(masterRecord.stroke_count??"未確認")}画</p><p>${sourceStep?`出典対応：Step ${sourceStep}`:"原本対応未確認"}</p><p>原本の語彙・読み・意味・部首は詳細転記待ちです。</p>`}
             </section>
             <section class="step-face step-dictionary-face" ${side!=='dictionary'?'hidden':''} aria-label="${escapeHTML(item.kanji)} GitHub 辞書">
               <strong>📚 GitHub Dictionary</strong>
@@ -537,8 +526,7 @@ button,select,input{touch-action:manipulation}
     toggleBtn.addEventListener('click', () => {
       container.classList.toggle('hide-reading');
       toggleBtn.setAttribute('aria-pressed', String(container.classList.contains('hide-reading')));
-      step1ReadingsVisible=!container.classList.contains('hide-reading');
-      container.querySelectorAll('.reading-button').forEach(b=>{b.textContent=step1ReadingsVisible?'ふりがなを隠す':'ふりがなを表示';b.setAttribute('aria-pressed',String(step1ReadingsVisible));});
+      toggleBtn.textContent=container.classList.contains('hide-reading')?'ふりがなを表示':'ふりがなを隠す';
     });
     // A fixed-coordinate SVG renderer: one coordinate system for screen and PDF.
     const mockPanel=document.getElementById('mock-panel'),mockPaper=document.getElementById('mock-paper'),mockAnswers=document.getElementById('mock-answers'),mockInfo=document.getElementById('mock-info');
