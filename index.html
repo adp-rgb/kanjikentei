@@ -275,7 +275,7 @@ button,select,input{touch-action:manipulation}
 .studybook-details small{color:#526176;line-height:1.5;display:block;margin-top:10px}
 @media(max-width:650px){.studybook-meta{grid-template-columns:1fr 1fr}.studybook-words ul{grid-template-columns:1fr 1fr}}
 </style>
-</head>
+<style>@media screen{.learn-panel{max-width:1060px;margin:16px auto;padding:16px;background:white;border:1px solid #e2e8f0;border-radius:14px}.learn-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px}.learn-actions button,.learn-panel button{border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e3a8a;padding:8px;cursor:pointer}.learn-actions button[aria-pressed=true]{background:#1e40af;color:white}.learn-panel input,.learn-panel select{padding:8px;max-width:100%;border:1px solid #cbd5e1;border-radius:6px}.online-q{padding:12px;border-bottom:1px solid #e2e8f0}.online-q input{display:block;margin-top:8px}.online-q svg{display:block;width:100px;height:100px}body:has(#mock-panel:not([hidden])) #learn-panel,body:has(#syllabus-panel:not([hidden])) #learn-panel{display:none}#mock-panel.online-active #mock-paper,#mock-panel.online-active #mobile-screen-paper,#mock-panel.online-active #mock-answers,#mock-panel.online-active #mobile-exam-tip{display:none!important}}@media print{#learn-panel,#online-tools,.learn-actions{display:none!important}}</style></head>
 <body>
 
   <header>
@@ -301,7 +301,7 @@ button,select,input{touch-action:manipulation}
   </section>
 
   <p id="status" style="max-width:1000px;margin:0 auto 18px;color:#475569" role="status">Loading Kanken and Jōyō datasets…</p>
-  <main id="kanji-container" class="kanji-grid"></main>
+  <section id="learn-panel" class="learn-panel"><h2>学習進捗 · Progress</h2><div id="learn-summary"></div><div class="learn-actions"><button id="learn-export">Export progress</button><button id="learn-import">Import progress</button><input id="learn-file" type="file" accept="application/json" hidden><button id="learn-paper">Record paper score</button></div><details><summary>Step progress / Exam history</summary><div id="learn-steps"></div><div id="learn-history"></div></details><div class="learn-actions"><label>Search <input id="learn-search" placeholder="漢字・読み・部首"></label><label>Filter <select id="learn-filter"><option value="all">All</option><option value="known">覚えた</option><option value="weak">要復習</option><option value="new">未学習</option></select></label></div></section><main id="kanji-container" class="kanji-grid"></main>
   <section id="syllabus-panel" hidden aria-label="Level 7 syllabus knowledge-base audit" style="max-width:1100px;margin:0 auto 24px">
     <div class="mock-toolbar"><button id="syllabus-back-btn">← Study Cards</button><input id="syllabus-search" type="search" placeholder="Search kanji / 漢字" aria-label="Search syllabus kanji" style="padding:9px;border:1px solid #cbd5e1;border-radius:6px"><select id="syllabus-status" aria-label="Filter knowledge base"><option value="all">All 202</option><option value="missing">Missing book transcription</option><option value="step">Present in Steps 1–25</option><option value="conflict">Count conflicts</option><option value="diagram">Draft stroke diagrams</option><option value="pending">Needs SVG</option></select></div>
     <h2>漢検7級・小学4年配当漢字（202字）</h2><p id="syllabus-summary" role="status"></p><p style="font-size:.85rem;color:#475569">Grade allocation: 漢字検定Vs学年別表.pdf (page 2). New character and stroke-count cross-check: 漢字学習ステップ7級 Steps 1–24 (24-page PDF) and Step 25 (one-page PDF). Earlier reference: Level 7 Kanji Knowledge Base.pdf (pages 1–13). Draft SVGs are NOT independently verified against all book stroke sequences.</p>
@@ -309,7 +309,7 @@ button,select,input{touch-action:manipulation}
   </section>
   <section id="mock-panel" hidden aria-label="Kanken Level 7 mock test">
     <div class="mock-toolbar"><button id="back-btn">← Study Cards</button><button id="regenerate-btn">Generate New Paper</button><button id="print-btn">A4 Exam PDF</button><button id="mobile-pdf-btn" type="button">Download Vertical PDF</button><button id="mobile-view-btn" type="button" aria-pressed="false">Landscape view</button><button id="answers-btn">Show Answer Key</button><span id="mock-info"></span></div>
-    <p id="mobile-exam-tip">Read the exam in a native vertical Japanese portrait layout below. Tap <strong>Landscape view</strong> to see the original two-page PC layout. The PDF buttons are separate from this screen view.</p><div id="mobile-screen-paper" aria-label="Mobile-friendly portrait exam preview"></div><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
+    <p id="mobile-exam-tip">Read the exam in a native vertical Japanese portrait layout below. Tap <strong>Landscape view</strong> to see the original two-page PC layout. The PDF buttons are separate from this screen view.</p><div id="mobile-screen-paper" aria-label="Mobile-friendly portrait exam preview"></div><div id="online-tools" class="learn-panel"><button id="online-start">Start online exam (60 min)</button><button id="online-close" hidden>Return to paper view</button><div id="online-content" hidden></div></div><div id="mock-paper"></div><div id="mobile-print-paper" aria-hidden="true"></div><div id="mock-answers" hidden></div>
   </section>
 
   <footer class="site-footer">
@@ -497,10 +497,13 @@ Object.assign(STEP1_VOCAB_FURIGANA,{"訓": ["くんじ", "くんよみ", "くん
       let active = kanjiData.filter(item => filter === 'all' || (filter === '7級' ? LEVEL7_SYLLABUS_SET.has(item.kanji) : item.level === filter) ||
         (filter === '7級-cumulative' && ['10級','9級','8級','7級'].includes(item.level)));
       if(bookStepSelect.value!=='all') active=active.filter(item=>String(STUDY_BOOK_PAGE_DETAILS[item.kanji]?.step ?? ({栃:19,阜:21})[item.kanji] ?? LEVEL7_STEP_MAP.get(item.kanji)?.step)===bookStepSelect.value);
+      const query=document.getElementById('learn-search').value.trim().normalize('NFKC');
+      const state=document.getElementById('learn-filter').value;
+      active=active.filter(item=>{const b=STUDY_BOOK_PAGE_DETAILS[item.kanji];return (!query||[item.kanji,b?.radical,b?.radical_name,...(b?.on||[]),...(b?.kun||[]),...item.readings.map(r=>r['読み'])].some(v=>normalizeLearn(v).includes(normalizeLearn(query))))&&(state==='all'||(learning.cards[item.kanji]||'new')===state)});
       if (shuffledOrder) active.sort((a,b) => (shuffledOrder.get(a.kanji) ?? Infinity) - (shuffledOrder.get(b.kanji) ?? Infinity));
       const withReadings = active.filter(item => item.readings.length).length;
       status.textContent = `${active.length} kanji • ${withReadings} with Jōyō readings • ${filter === '7級-cumulative' ? 'Kanken Level 7 cumulative' : filter === 'all' ? 'All levels' : filter}`;
-      status.textContent += ` · Study book details: ${active.filter(item=>STUDY_BOOK_PAGE_DETAILS[item.kanji]).length}/${active.length} · Steps 1–6 text · Steps 6–25 original pages`;
+      status.textContent += ` · Study book details: ${active.filter(item=>STUDY_BOOK_PAGE_DETAILS[item.kanji]).length}/${active.length} · Steps 1–25`;
       container.innerHTML = '';
       const fragment = document.createDocumentFragment();
       for (const item of active) {
@@ -548,6 +551,7 @@ Object.assign(STEP1_VOCAB_FURIGANA,{"訓": ["くんじ", "くんよみ", "くん
               ${link}
             </section>`;
         }
+        if(masterRecord){const bar=document.createElement('div');bar.className='learn-actions';bar.innerHTML=['known','weak','new'].map((v,i)=>`<button type="button" data-learn="${v}" aria-pressed="${(learning.cards[item.kanji]||'new')===v}">${['覚えた','要復習','未学習'][i]}</button>`).join('');bar.addEventListener('click',e=>{const v=e.target.dataset.learn;if(!v)return;learning.cards[item.kanji]=v;saveLearn();renderCards()});card.append(bar)}
         fragment.appendChild(card);
       }
       container.appendChild(fragment);
@@ -1710,7 +1714,7 @@ Object.assign(STEP1_VOCAB_FURIGANA,{"訓": ["くんじ", "くんよみ", "くん
     }
     function createMock(){
       try{
-        const sections=makeSections();validateMock(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
+        const sections=makeSections();validateMock(sections);resetOnline(sections);window.__lastLevel7Audit=sections.flatMap(section=>section.questions.map(q=>({...q.audit,answer:q.answer})));mockSerial++;
         mockPaper.innerHTML=[0,1].map(i=>`<article class="exam-canvas">${pageSVG(sections,i)}</article>`).join('');
         renderMobileScreenPaper(sections);
         mockAnswers.innerHTML=`<h2>解答・第${mockSerial}回</h2><p>非公式の練習問題です。第4問の筆順図はKanjiVG（2026年7月14日版、CC BY-SA 3.0）の資料を使用しています。画数は出典の照合済みデータから出題しています。</p><div class="key-grid">${sections.map(s=>`<section><h3>${s.id}　${escapeHTML(s.title)}（${s.count*s.points}点）</h3><p>${s.questions.map((q,i)=>`${i+1}. ${escapeHTML(q.answer)}`).join('　／　')}</p></section>`).join('')}</div>`;
@@ -1860,6 +1864,26 @@ Object.assign(STEP1_VOCAB_FURIGANA,{"訓": ["くんじ", "くんよみ", "くん
     document.getElementById('syllabus-search').addEventListener('input',renderSyllabus);
     document.getElementById('syllabus-status').addEventListener('change',renderSyllabus);
     document.getElementById('syllabus-back-btn').addEventListener('click',()=>{syllabusPanel.hidden=true;document.querySelector('header').hidden=false;status.hidden=false;container.hidden=false});
+    // V2 local learning layer; does not modify the paper renderer or question banks.
+    const learnKey='kanken-level7-progress-v1';
+    const normalizeLearn=v=>String(v??'').normalize('NFKC').trim().replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
+    function validLearn(x){return x&&x.cards&&typeof x.cards==='object'&&Array.isArray(x.exams)&&Object.entries(x.cards).every(([k,v])=>LEVEL7_SYLLABUS_SET.has(k)&&['new','known','weak'].includes(v))&&x.exams.every(e=>e&&Number.isInteger(e.score)&&e.score>=0&&e.score<=200&&typeof e.date==='string'&&['paper','online'].includes(e.mode))}
+    let learning={cards:{},exams:[]};try{const x=JSON.parse(localStorage.getItem(learnKey));if(validLearn(x))learning=x}catch(e){}
+    const $learn=id=>document.getElementById(id);
+    function refreshLearn(){const known=Object.values(learning.cards).filter(v=>v==='known').length,weak=Object.values(learning.cards).filter(v=>v==='weak').length;$learn('learn-summary').textContent=`覚えた ${known}/202 · 要復習 ${weak} · 未学習 ${202-known-weak}`;$learn('learn-steps').innerHTML=Array.from({length:25},(_,i)=>{const keys=[...LEVEL7_SYLLABUS_SET].filter(k=>STUDY_BOOK_PAGE_DETAILS[k]?.step===i+1);return `<div>Step ${i+1}: ${keys.filter(k=>learning.cards[k]==='known').length}/${keys.length}</div>`}).join('');$learn('learn-history').innerHTML='<h3>Exam history</h3>'+learning.exams.slice().reverse().map(e=>`<div>${escapeHTML(e.date)} · ${escapeHTML(e.mode)} · ${e.score}/200</div>`).join('')}
+    function saveLearn(){try{localStorage.setItem(learnKey,JSON.stringify(learning))}catch(e){alert('Browser storage unavailable. Export your progress before closing.')}refreshLearn()}
+    $learn('learn-search').addEventListener('input',renderCards);$learn('learn-filter').addEventListener('change',renderCards);
+    $learn('learn-export').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(learning,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='kanken-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+    $learn('learn-import').onclick=()=>$learn('learn-file').click();$learn('learn-file').onchange=async e=>{try{const x=JSON.parse(await e.target.files[0].text());if(!validLearn(x))throw Error('Invalid backup');if(confirm('Replace current progress with this backup?')){learning=x;saveLearn();renderCards()}}catch(err){alert(err.message)}finally{e.target.value=''}};
+    $learn('learn-paper').onclick=()=>{const raw=prompt('Paper exam score (0–200)');if(raw===null||!raw.trim())return;const score=Number(raw);if(!Number.isInteger(score)||score<0||score>200)return alert('Enter an integer from 0 to 200.');learning.exams.push({date:new Date().toISOString().slice(0,10),mode:'paper',score});saveLearn()};
+    let onlineSections=[],onlineTimer=null,onlineDeadline=0,onlineDone=false;
+    function resetOnline(sections){clearInterval(onlineTimer);onlineSections=sections;onlineDone=false;mockPanel.classList.remove('online-active');$learn('online-content').hidden=true;$learn('online-close').hidden=true;$learn('online-start').hidden=false}
+    function onlinePrompt(s,q){const esc=escapeHTML;if(s.type==='strokes'){if(q.total)return `${esc(q.kanji)} の総画数`;return `赤い線は何画目？<svg viewBox="0 0 109 109" aria-label="筆順図">${q.paths.map((p,i)=>`<path d="${esc(p)}" fill="none" stroke="${i===q.mark?'#c00':'#111'}" stroke-width="3" stroke-linecap="round"/>`).join('')}</svg>`}if(s.type==='compound-pairs')return `${esc(q.head)}＋□（二つの熟語を作る：${q.variant+1}） ${q.options.map((x,i)=>'アイウエオ'[i]+' '+esc(x)).join('　')}`;if(s.type==='radical-fill')return `${esc(q.radical)}：${esc(q.before)}□${esc(q.after)}`;if(s.type==='antonym-fill')return `${esc(q.prompt)} ↔ □${esc(q.other)}（${esc(q.hint)}）`;if(s.type==='onyomi')return `${esc(q.prompt||q.word||q.kanji)}　${esc(q.target||'')}　ア：音読み　イ：訓読み`;return `${esc(q.kanji||'')} ${esc(q.prompt||'')} ${q.target?`（${esc(q.target)}）`:''} ${q.choices?.map(esc).join('　')||''}`}
+    function finishOnline(){if(onlineDone)return;onlineDone=true;clearInterval(onlineTimer);let score=0;const parts=[];onlineSections.forEach((s,i)=>{let points=0;s.questions.forEach((q,j)=>{const input=$learn(`online-${i}-${j}`);const correct=normalizeLearn(input.value)===normalizeLearn(q.answer);input.disabled=true;const feedback=document.createElement('span');feedback.textContent=correct?' ✓':' × 正解：'+q.answer;input.after(feedback);if(correct)points+=s.points;else for(const k of q.audit?.grade4Targets||[])learning.cards[k]='weak'});score+=points;parts.push({section:s.id,score:points,max:s.count*s.points})});learning.exams.push({date:new Date().toISOString().slice(0,10),mode:'online',score,parts});saveLearn();$learn('online-result').textContent=`${score}/200 · ${score>=140?'合格目安達成':'要復習'} · `+parts.map(p=>`${p.section} ${p.score}/${p.max}`).join('　');$learn('online-submit').disabled=true;$learn('online-result').scrollIntoView()}
+    $learn('online-start').onclick=()=>{if(!onlineSections.length||onlineSections.reduce((n,s)=>n+s.count*s.points,0)!==200)return alert('Generate a valid paper first.');mockPanel.classList.add('online-active');$learn('online-start').hidden=true;$learn('online-close').hidden=false;const pane=$learn('online-content');pane.hidden=false;pane.innerHTML='<p id="online-clock"></p><h3 id="online-result" role="status"></h3>'+onlineSections.map((s,i)=>`<section><h3>${s.id} ${escapeHTML(s.title)}（${s.count*s.points}点）</h3>${s.questions.map((q,j)=>`<div class="online-q"><label for="online-${i}-${j}">${j+1}. ${onlinePrompt(s,q)}</label><input id="online-${i}-${j}" autocomplete="off" aria-label="${s.id} ${j+1} 解答"></div>`).join('')}</section>`).join('')+'<button id="online-submit">採点する</button>';$learn('online-submit').onclick=()=>{if(confirm('Submit answers?'))finishOnline()};onlineDeadline=Date.now()+3600000;const tick=()=>{const n=Math.max(0,Math.ceil((onlineDeadline-Date.now())/1000));$learn('online-clock').textContent=`残り時間 ${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;if(!n)finishOnline()};tick();onlineTimer=setInterval(tick,1000)};
+    $learn('online-close').onclick=()=>{if(!onlineDone&&!confirm('Discard this online attempt?'))return;resetOnline(onlineSections)};
+    $learn('back-btn').addEventListener('click',()=>resetOnline([]));refreshLearn();
+
     loadData();
   </script>
 <style>
