@@ -1796,7 +1796,17 @@ Object.assign(STEP1_VOCAB_FURIGANA,{"訓": ["くんじ", "くんよみ", "くん
       function addObject(content){const id=nextObject++;offsets[id]=byteLength;append(`${id} 0 obj\n${content}\nendobj\n`);return id;}
       function jpegBytes(dataUrl){const raw=atob(dataUrl.split(',')[1]);return Uint8Array.from(raw,c=>c.charCodeAt(0));}
       async function renderPortrait(markup){
-        const url=URL.createObjectURL(new Blob([markup],{type:'image/svg+xml;charset=utf-8'}));
+        // HTML parsing tolerates duplicate attributes in the legacy SVG helpers;
+        // standalone XML images do not. Serialize the normalized SVG DOM.
+        const template=document.createElement('template');
+        template.innerHTML=markup.trim();
+        const svg=template.content.firstElementChild;
+        if(!svg || svg.namespaceURI!=='http://www.w3.org/2000/svg')throw Error('Invalid portrait SVG root');
+        svg.setAttribute('width','595');svg.setAttribute('height','842');
+        const normalized=new XMLSerializer().serializeToString(svg);
+        const parsed=new DOMParser().parseFromString(normalized,'image/svg+xml');
+        if(parsed.querySelector('parsererror'))throw Error('Invalid portrait SVG XML');
+        const url=URL.createObjectURL(new Blob([normalized],{type:'image/svg+xml;charset=utf-8'}));
         try{
           const img=new Image();
           await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(Error('Unable to render portrait SVG'));img.src=url;});
